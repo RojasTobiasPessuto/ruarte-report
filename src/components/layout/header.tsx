@@ -15,8 +15,8 @@ export function Header({ title }: { title: string }) {
   }, [supabase.auth])
 
   return (
-    <header className="bg-gray-900 border-b border-gray-800 px-8 py-4 flex items-center justify-between">
-      <h2 className="text-xl font-semibold text-white">{title}</h2>
+    <header className="bg-gray-900 border-b border-gray-800 px-4 md:px-8 py-3 md:py-4 flex items-center justify-between">
+      <h2 className="text-lg md:text-xl font-semibold text-white truncate">{title}</h2>
       {email && (
         <div className="flex items-center gap-2 text-sm text-gray-400">
           <User className="h-4 w-4" />

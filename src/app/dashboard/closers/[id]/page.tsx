@@ -120,7 +120,7 @@ export default async function CloserDetailPage({
   return (
     <div>
       <Header title={`Closer — ${typedCloser.name}`} />
-      <div className="p-8 space-y-6">
+      <div className="p-4 md:p-8 space-y-4 md:space-y-6">
         <StatsCards stats={stats} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

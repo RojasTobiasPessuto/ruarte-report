@@ -60,11 +60,11 @@ const cards = [
 
 export function StatsCards({ stats }: StatsCardsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
       {cards.map((card) => (
         <div
           key={card.key}
-          className="bg-gray-900 border border-gray-800 rounded-xl p-5"
+          className="bg-gray-900 border border-gray-800 rounded-xl p-3 md:p-5"
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm text-gray-400">{card.label}</span>

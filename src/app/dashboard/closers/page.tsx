@@ -49,7 +49,7 @@ export default async function ClosersPage() {
   return (
     <div>
       <Header title="Closers" />
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {closerStats.map((closer) => (
             <Link

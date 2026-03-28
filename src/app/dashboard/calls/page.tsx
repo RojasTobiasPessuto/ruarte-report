@@ -60,7 +60,7 @@ export default async function CallsPage({
   return (
     <div>
       <Header title="Llamadas" />
-      <div className="p-8 space-y-6">
+      <div className="p-4 md:p-8 space-y-4 md:space-y-6">
         <CallsFilters closers={(closers || []) as Closer[]} currentParams={params} />
         <CallsTable calls={filteredCalls} />
       </div>

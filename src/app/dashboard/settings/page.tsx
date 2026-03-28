@@ -80,6 +80,30 @@ export default function SettingsPage() {
     loadData()
   }
 
+  async function deleteItem(type: 'closer' | 'user', id: string) {
+    const label = type === 'closer' ? 'closer' : 'usuario'
+    if (!confirm(`¿Estás seguro de eliminar este ${label}? Esta acción no se puede deshacer.`)) return
+
+    try {
+      const response = await fetch('/api/admin/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, id }),
+      })
+
+      if (response.ok) {
+        setMessage(`${label.charAt(0).toUpperCase() + label.slice(1)} eliminado`)
+        loadData()
+      } else {
+        const data = await response.json()
+        setMessage(data.error || `Error al eliminar ${label}`)
+      }
+    } catch {
+      setMessage('Error de conexión')
+    }
+    setTimeout(() => setMessage(''), 3000)
+  }
+
   async function createUser(e: React.FormEvent) {
     e.preventDefault()
     if (!newUserEmail.trim() || !newUserPassword.trim()) return
@@ -115,7 +139,7 @@ export default function SettingsPage() {
   return (
     <div>
       <Header title="Configuración" />
-      <div className="p-8 space-y-8">
+      <div className="p-4 md:p-8 space-y-6 md:space-y-8">
         {message && (
           <div className="bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 px-4 py-3 rounded-lg text-sm">
             {message}
@@ -170,12 +194,22 @@ export default function SettingsPage() {
                     <span className="text-xs text-gray-500">{closer.email}</span>
                   )}
                 </div>
-                <button
-                  onClick={() => toggleCloser(closer.id, closer.active)}
-                  className="text-xs text-gray-400 hover:text-white transition-colors px-3 py-1 rounded"
-                >
-                  {closer.active ? 'Desactivar' : 'Activar'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => toggleCloser(closer.id, closer.active)}
+                    className="text-xs text-gray-400 hover:text-white transition-colors px-3 py-1 rounded"
+                  >
+                    {closer.active ? 'Desactivar' : 'Activar'}
+                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => deleteItem('closer', closer.id)}
+                      className="text-xs text-red-400 hover:text-red-300 transition-colors p-1 rounded"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
             {closers.length === 0 && (
@@ -245,6 +279,12 @@ export default function SettingsPage() {
                       {user.role}
                     </span>
                   </div>
+                  <button
+                    onClick={() => deleteItem('user', user.id)}
+                    className="text-xs text-red-400 hover:text-red-300 transition-colors p-1 rounded"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               ))}
             </div>

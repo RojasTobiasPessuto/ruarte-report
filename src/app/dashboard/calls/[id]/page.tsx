@@ -16,6 +16,13 @@ export default async function CallDetailPage({
   const { id } = await params
   const supabase = await createServerSupabaseClient()
 
+  const { data: { user } } = await supabase.auth.getUser()
+  let isAdmin = false
+  if (user) {
+    const { data: appUser } = await supabase.from('app_users').select('role').eq('id', user.id).single()
+    isAdmin = appUser?.role === 'admin'
+  }
+
   const { data: call } = await supabase
     .from('calls')
     .select(`
@@ -35,8 +42,8 @@ export default async function CallDetailPage({
   return (
     <div>
       <Header title={`Llamada — ${typedCall.contact_name || 'Sin nombre'}`} />
-      <div className="p-8 space-y-6">
-        <CallDetail call={typedCall} />
+      <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+        <CallDetail call={typedCall} isAdmin={isAdmin} />
 
         {typedCall.analysis && (
           <>

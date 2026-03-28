@@ -2,7 +2,8 @@
 
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Phone, User, Clock, Calendar, Copy, ExternalLink } from 'lucide-react'
+import { Phone, User, Clock, Calendar, Copy, ExternalLink, Trash2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import type { Call } from '@/types'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
@@ -14,8 +15,10 @@ const resultLabels: Record<string, { label: string; className: string }> = {
   not_qualified: { label: 'No calificada', className: 'bg-gray-400/10 text-gray-400 border-gray-400/20' },
 }
 
-export function CallDetail({ call }: { call: Call }) {
+export function CallDetail({ call, isAdmin = false }: { call: Call; isAdmin?: boolean }) {
   const [copied, setCopied] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const router = useRouter()
   const result = call.analysis?.result
   const resultInfo = result ? resultLabels[result] : null
 
@@ -69,23 +72,49 @@ export function CallDetail({ call }: { call: Call }) {
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={handleCopyLink}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-sm text-white rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 md:px-4 py-2 bg-gray-800 hover:bg-gray-700 text-sm text-white rounded-lg transition-colors"
           >
             <Copy className="h-4 w-4" />
-            {copied ? 'Copiado!' : 'Copiar link público'}
+            <span className="hidden sm:inline">{copied ? 'Copiado!' : 'Copiar link público'}</span>
+            <span className="sm:hidden">{copied ? 'Copiado!' : 'Copiar link'}</span>
           </button>
           <a
             href={`/summary/${call.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-sm text-white rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 md:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-sm text-white rounded-lg transition-colors"
           >
             <ExternalLink className="h-4 w-4" />
             Ver resumen
           </a>
+          {isAdmin && (
+            <button
+              onClick={async () => {
+                if (!confirm('¿Estás seguro de eliminar esta llamada? Esta acción no se puede deshacer.')) return
+                setDeleting(true)
+                const res = await fetch('/api/admin/delete', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ type: 'call', id: call.id }),
+                })
+                if (res.ok) {
+                  router.push('/dashboard/calls')
+                  router.refresh()
+                } else {
+                  alert('Error al eliminar')
+                  setDeleting(false)
+                }
+              }}
+              disabled={deleting}
+              className="flex items-center gap-2 px-3 md:px-4 py-2 bg-red-600/20 hover:bg-red-600/40 text-sm text-red-400 rounded-lg transition-colors"
+            >
+              <Trash2 className="h-4 w-4" />
+              {deleting ? 'Eliminando...' : 'Eliminar'}
+            </button>
+          )}
         </div>
       </div>
 

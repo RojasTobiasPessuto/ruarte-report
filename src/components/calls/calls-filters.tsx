@@ -24,7 +24,7 @@ export function CallsFilters({
   }
 
   return (
-    <div className="flex flex-wrap gap-4">
+    <div className="flex flex-wrap gap-2 md:gap-4">
       <select
         value={currentParams.closer || ''}
         onChange={(e) => updateFilter('closer', e.target.value)}
