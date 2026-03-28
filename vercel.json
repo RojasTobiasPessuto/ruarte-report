@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/fathom",
+      "schedule": "*/10 * * * *"
+    }
+  ]
+}
