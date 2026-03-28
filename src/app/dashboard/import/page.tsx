@@ -11,8 +11,9 @@ interface ImportResult {
 }
 
 export default function ImportPage() {
-  const [files, setFiles] = useState<Array<{ filename: string; content: string }>>([])
+  const [files, setFiles] = useState<File[]>([])
   const [importing, setImporting] = useState(false)
+  const [progress, setProgress] = useState('')
   const [results, setResults] = useState<{
     success: number
     errors: number
@@ -21,22 +22,10 @@ export default function ImportPage() {
   } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files
     if (!selectedFiles) return
-
-    const parsed: Array<{ filename: string; content: string }> = []
-
-    for (let i = 0; i < selectedFiles.length; i++) {
-      const file = selectedFiles[i]
-      const content = await file.text()
-      parsed.push({
-        filename: file.name,
-        content,
-      })
-    }
-
-    setFiles(parsed)
+    setFiles(Array.from(selectedFiles))
     setResults(null)
   }
 
@@ -46,21 +35,25 @@ export default function ImportPage() {
     setImporting(true)
     setResults(null)
 
-    try {
-      // Process in batches of 10 to avoid timeouts
-      const batchSize = 10
-      const allResults: ImportResult[] = []
-      let totalSuccess = 0
-      let totalErrors = 0
-      let totalSkipped = 0
+    const allResults: ImportResult[] = []
+    let totalSuccess = 0
+    let totalErrors = 0
+    let totalSkipped = 0
 
+    // Process in batches of 5 to avoid timeouts
+    const batchSize = 5
+
+    try {
       for (let i = 0; i < files.length; i += batchSize) {
         const batch = files.slice(i, i + batchSize)
+        setProgress(`Procesando ${i + 1}-${Math.min(i + batchSize, files.length)} de ${files.length}...`)
+
+        const formData = new FormData()
+        batch.forEach((file) => formData.append('files', file))
 
         const response = await fetch('/api/import', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ files: batch }),
+          body: formData,
         })
 
         if (response.ok) {
@@ -72,31 +65,22 @@ export default function ImportPage() {
         } else {
           totalErrors += batch.length
           batch.forEach((f) =>
-            allResults.push({ filename: f.filename, status: 'error', error: 'Error de conexión' })
+            allResults.push({ filename: f.name, status: 'error', error: 'Error de conexión' })
           )
         }
       }
-
-      setResults({
-        success: totalSuccess,
-        errors: totalErrors,
-        skipped: totalSkipped,
-        details: allResults,
-      })
     } catch {
-      setResults({
-        success: 0,
-        errors: files.length,
-        skipped: 0,
-        details: files.map((f) => ({
-          filename: f.filename,
-          status: 'error' as const,
-          error: 'Error de conexión',
-        })),
-      })
+      totalErrors += files.length - allResults.length
     }
 
+    setResults({
+      success: totalSuccess,
+      errors: totalErrors,
+      skipped: totalSkipped,
+      details: allResults,
+    })
     setImporting(false)
+    setProgress('')
   }
 
   return (
@@ -108,18 +92,20 @@ export default function ImportPage() {
           <h3 className="text-lg font-semibold text-white mb-3">Instrucciones</h3>
           <ol className="text-sm text-gray-400 space-y-2 list-decimal list-inside">
             <li>
-              Descargá los Google Docs como archivos <code className="text-indigo-400">.txt</code> desde Google Drive
-              (seleccioná todos → click derecho → Descargar → se bajan como .zip)
+              Descargá los Google Docs desde Google Drive
+              (seleccioná todos → click derecho → Descargar)
             </li>
-            <li>Descomprimí el .zip</li>
+            <li>Descomprimí el .zip si es necesario</li>
             <li>
-              Seleccioná todos los archivos <code className="text-indigo-400">.txt</code> abajo
+              Seleccioná todos los archivos <code className="text-indigo-400">.docx</code> o <code className="text-indigo-400">.txt</code> abajo
             </li>
             <li>
-              Los archivos deben tener el formato:{' '}
-              <code className="text-indigo-400">DD/MM/YYYY Llamada Closer con Lead: Nombre</code>
+              Los archivos deben contener el análisis estructurado con bloques 1-6 y puntuación global
             </li>
           </ol>
+          <div className="mt-3 text-xs text-gray-500">
+            Formato de nombre soportado: <code className="text-gray-400">DD_MM_YYYY Llamada Closer con Lead_ Nombre.docx</code>
+          </div>
         </div>
 
         {/* File selector */}
@@ -142,7 +128,7 @@ export default function ImportPage() {
               Click para seleccionar archivos
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Archivos .txt exportados de Google Docs
+              Archivos .docx o .txt exportados de Google Docs
             </p>
           </button>
 
@@ -168,7 +154,10 @@ export default function ImportPage() {
                 {files.map((f, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm text-gray-400 py-1">
                     <FileText className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
-                    <span className="truncate">{f.filename}</span>
+                    <span className="truncate">{f.name}</span>
+                    <span className="text-xs text-gray-600 flex-shrink-0">
+                      {(f.size / 1024).toFixed(0)} KB
+                    </span>
                   </div>
                 ))}
               </div>
@@ -186,7 +175,7 @@ export default function ImportPage() {
             {importing ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Importando... (esto puede tardar unos minutos)
+                {progress || 'Importando...'}
               </>
             ) : (
               <>
@@ -200,7 +189,6 @@ export default function ImportPage() {
         {/* Results */}
         {results && (
           <div className="space-y-4">
-            {/* Summary */}
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-gray-900 border border-green-800 rounded-xl p-4 text-center">
                 <CheckCircle className="h-6 w-6 text-green-400 mx-auto mb-2" />
@@ -219,7 +207,6 @@ export default function ImportPage() {
               </div>
             </div>
 
-            {/* Detail list */}
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
               <h4 className="text-sm font-medium text-gray-400 mb-3">Detalle</h4>
               <div className="max-h-64 overflow-y-auto space-y-1">
@@ -235,7 +222,6 @@ export default function ImportPage() {
               </div>
             </div>
 
-            {/* Import more button */}
             <button
               onClick={() => {
                 setFiles([])

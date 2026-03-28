@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { parseFilename, parseDocContent, toCallAnalysis } from '@/lib/import-parser'
+import mammoth from 'mammoth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,11 +23,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Solo administradores pueden importar' }, { status: 403 })
     }
 
-    const { files } = await request.json() as {
-      files: Array<{ filename: string; content: string }>
-    }
+    const formData = await request.formData()
+    const uploadedFiles = formData.getAll('files') as File[]
 
-    if (!files || !Array.isArray(files) || files.length === 0) {
+    if (!uploadedFiles || uploadedFiles.length === 0) {
       return NextResponse.json({ error: 'No se recibieron archivos' }, { status: 400 })
     }
 
@@ -49,34 +49,68 @@ export async function POST(request: NextRequest) {
       closerMap.set(closer.name.toLowerCase(), closer.id)
     }
 
-    for (const file of files) {
+    for (const file of uploadedFiles) {
       try {
+        const filename = file.name
+
+        // Extract text content from file
+        let textContent: string
+        if (filename.endsWith('.docx') || filename.endsWith('.doc')) {
+          const arrayBuffer = await file.arrayBuffer()
+          const buffer = Buffer.from(arrayBuffer)
+          const result = await mammoth.extractRawText({ buffer })
+          textContent = result.value
+        } else {
+          // .txt files
+          textContent = await file.text()
+        }
+
+        if (!textContent || textContent.trim().length < 50) {
+          results.errors++
+          results.details.push({
+            filename,
+            status: 'error',
+            error: 'Archivo vacío o contenido insuficiente',
+          })
+          continue
+        }
+
         // Parse filename
-        const { date, closerName, contactName } = parseFilename(file.filename)
+        const { date, closerName, contactName } = parseFilename(filename)
+
+        // Try to find closer name from document content if filename says "Closer"
+        let resolvedCloserName = closerName
+        if (closerName.toLowerCase() === 'closer') {
+          // Try to extract closer name from content
+          const closerInContent = textContent.match(/(?:closer|vendedor|asesor)[:\s]+([A-ZÁÉÍÓÚÑa-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑa-záéíóúñ]+)?)/i)
+          if (closerInContent) {
+            resolvedCloserName = closerInContent[1].trim()
+          }
+        }
 
         // Find or create closer
-        let closerId: string | undefined = closerMap.get(closerName.toLowerCase())
-        if (!closerId) {
+        let closerId: string | undefined = closerMap.get(resolvedCloserName.toLowerCase())
+        if (!closerId && resolvedCloserName.toLowerCase() !== 'closer' && resolvedCloserName.toLowerCase() !== 'desconocido') {
           const { data: newCloser } = await serviceClient
             .from('closers')
-            .insert({ name: closerName })
+            .insert({ name: resolvedCloserName })
             .select('id')
             .single()
 
           if (newCloser) {
             closerId = newCloser.id as string
-            closerMap.set(closerName.toLowerCase(), closerId!)
+            closerMap.set(resolvedCloserName.toLowerCase(), closerId!)
           }
         }
 
         // Parse content
-        const parsed = parseDocContent(file.content)
+        const parsed = parseDocContent(textContent)
         const fullParsed = {
           ...parsed,
           date,
-          closerName,
+          closerName: resolvedCloserName,
           contactName,
-          rawContent: file.content,
+          rawContent: textContent,
         }
 
         // Check if call already exists (by date + contact name)
@@ -90,7 +124,7 @@ export async function POST(request: NextRequest) {
         if (existing) {
           results.skipped++
           results.details.push({
-            filename: file.filename,
+            filename,
             status: 'skipped',
             error: 'Llamada ya existe',
           })
@@ -104,7 +138,7 @@ export async function POST(request: NextRequest) {
             closer_id: closerId || null,
             contact_name: contactName,
             call_date: date,
-            fathom_summary: file.content.substring(0, 5000),
+            fathom_summary: textContent.substring(0, 5000),
             transcript: null,
             status: 'analyzed',
           })
@@ -114,7 +148,7 @@ export async function POST(request: NextRequest) {
         if (callError || !call) {
           results.errors++
           results.details.push({
-            filename: file.filename,
+            filename,
             status: 'error',
             error: callError?.message || 'Error al insertar llamada',
           })
@@ -133,7 +167,7 @@ export async function POST(request: NextRequest) {
         if (analysisError) {
           results.errors++
           results.details.push({
-            filename: file.filename,
+            filename,
             status: 'error',
             error: `Llamada guardada pero análisis falló: ${analysisError.message}`,
           })
@@ -142,13 +176,13 @@ export async function POST(request: NextRequest) {
 
         results.success++
         results.details.push({
-          filename: file.filename,
+          filename,
           status: 'success',
         })
       } catch (err) {
         results.errors++
         results.details.push({
-          filename: file.filename,
+          filename: file.name,
           status: 'error',
           error: err instanceof Error ? err.message : 'Error desconocido',
         })

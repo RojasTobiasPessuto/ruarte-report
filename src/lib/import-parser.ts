@@ -48,8 +48,8 @@ export function parseFilename(filename: string): {
   // Remove file extension
   const name = filename.replace(/\.(txt|doc|docx)$/i, '').trim()
 
-  // Extract date (DD/MM/YYYY at the start)
-  const dateMatch = name.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/)
+  // Extract date - supports both DD/MM/YYYY and DD_MM_YYYY formats
+  const dateMatch = name.match(/^(\d{1,2})[/_](\d{1,2})[/_](\d{4})/)
   let date = new Date().toISOString()
   if (dateMatch) {
     const [, day, month, year] = dateMatch
@@ -57,8 +57,12 @@ export function parseFilename(filename: string): {
   }
 
   // Extract closer name and contact name
-  // Pattern: "Llamada {CloserName} con Lead: {ContactName}"
-  const nameMatch = name.match(/Llamada\s+(.+?)\s+con\s+Lead:\s*(.+)/i)
+  // Supports multiple formats:
+  // "Llamada {CloserName} con Lead: {ContactName}"
+  // "Llamada {CloserName} con Lead_ {ContactName}" (Google Drive download format)
+  // "Llamada Closer con Lead: {ContactName}" (generic closer name)
+  // "Llamada Closer con Lead_ {ContactName}" (generic closer name, Drive format)
+  const nameMatch = name.match(/Llamada\s+(.+?)\s+con\s+Lead[_:]\s*(.+)/i)
   let closerName = 'Desconocido'
   let contactName = 'Desconocido'
 
