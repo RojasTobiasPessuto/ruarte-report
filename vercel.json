@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/fathom",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
