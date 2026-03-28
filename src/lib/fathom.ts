@@ -88,9 +88,20 @@ export async function listRecordings(
       throw new Error(`Fathom API error ${response.status}: ${errorText}`)
     }
 
-    const data: FathomListResponse = await response.json()
-    allRecordings.push(...data.recordings)
-    cursor = data.next_cursor
+    const data = await response.json()
+
+    // Handle different response formats from Fathom API
+    const recordings: FathomRecording[] = Array.isArray(data)
+      ? data
+      : data.recordings || data.data || data.results || []
+
+    if (!Array.isArray(recordings)) {
+      console.error('Unexpected Fathom API response format:', JSON.stringify(data).substring(0, 500))
+      break
+    }
+
+    allRecordings.push(...recordings)
+    cursor = data.next_cursor || data.nextCursor || null
   } while (cursor)
 
   return allRecordings
