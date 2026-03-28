@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
 
         // Try to find closer name from document content if filename says "Closer"
         let resolvedCloserName = closerName
-        if (closerName.toLowerCase() === 'closer') {
+        if (closerName.toLowerCase() === 'closer' || closerName.toLowerCase() === 'desconocido') {
           // Try to extract closer name from content
           const closerInContent = textContent.match(/(?:closer|vendedor|asesor)[:\s]+([A-ZÁÉÍÓÚÑa-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑa-záéíóúñ]+)?)/i)
           if (closerInContent) {
@@ -88,19 +88,31 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Find or create closer
+        // Find closer by exact name or partial match (e.g., "Hernan" matches "Hernan Grando")
         let closerId: string | undefined = closerMap.get(resolvedCloserName.toLowerCase())
-        if (!closerId && resolvedCloserName.toLowerCase() !== 'closer' && resolvedCloserName.toLowerCase() !== 'desconocido') {
-          const { data: newCloser } = await serviceClient
-            .from('closers')
-            .insert({ name: resolvedCloserName })
-            .select('id')
-            .single()
+        if (!closerId) {
+          // Try partial match: check if any existing closer name starts with or contains the resolved name
+          const resolvedLower = resolvedCloserName.toLowerCase()
+          closerMap.forEach((existingId, existingName) => {
+            if (closerId) return
+            if (
+              existingName.startsWith(resolvedLower) ||
+              existingName.includes(resolvedLower) ||
+              resolvedLower.includes(existingName.split(' ')[0])
+            ) {
+              closerId = existingId
+            }
+          })
+        }
 
-          if (newCloser) {
-            closerId = newCloser.id as string
-            closerMap.set(resolvedCloserName.toLowerCase(), closerId!)
-          }
+        // Default to "Hernan Grando" if no closer found (don't create new closers)
+        if (!closerId) {
+          closerMap.forEach((existingId, existingName) => {
+            if (closerId) return
+            if (existingName.includes('hernan')) {
+              closerId = existingId
+            }
+          })
         }
 
         // Parse content
