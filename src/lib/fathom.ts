@@ -93,7 +93,7 @@ export async function listRecordings(
     // Handle different response formats from Fathom API
     const recordings: FathomRecording[] = Array.isArray(data)
       ? data
-      : data.recordings || data.data || data.results || []
+      : data.items || data.recordings || data.data || data.results || []
 
     if (!Array.isArray(recordings)) {
       console.error('Unexpected Fathom API response format:', JSON.stringify(data).substring(0, 500))
