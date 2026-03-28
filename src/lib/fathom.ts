@@ -20,8 +20,10 @@ interface FathomTranscriptEntry {
 }
 
 interface FathomRecording {
-  id: string
+  id?: string
+  recording_id?: number
   title: string
+  meeting_title?: string
   url: string
   share_url: string
   scheduled_start_time: string | null
@@ -33,13 +35,16 @@ interface FathomRecording {
   recorded_by: {
     name: string
     email: string
+    email_domain?: string
     team: string | null
   }
-  transcript?: FathomTranscriptEntry[]
+  transcript?: FathomTranscriptEntry[] | null
+  transcript_language?: string
   default_summary?: {
     template_name: string
-    summary: string
-  }
+    markdown_formatted?: string
+    summary?: string
+  } | null
   action_items?: Array<{
     description: string
     assignee: { name: string; email: string } | null
@@ -105,6 +110,23 @@ export async function listRecordings(
   } while (cursor)
 
   return allRecordings
+}
+
+/**
+ * Get unique ID for a Fathom recording
+ */
+export function getRecordingId(recording: FathomRecording): string {
+  return String(recording.recording_id || recording.id || recording.url || '')
+}
+
+/**
+ * Get summary text from a Fathom recording (handles both formats)
+ */
+export function getSummaryText(recording: FathomRecording): string | null {
+  if (!recording.default_summary) return null
+  return recording.default_summary.markdown_formatted
+    || recording.default_summary.summary
+    || null
 }
 
 /**

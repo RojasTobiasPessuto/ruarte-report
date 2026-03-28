@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
-import { listRecordings, formatTranscript, calculateDuration } from '@/lib/fathom'
+import { listRecordings, formatTranscript, calculateDuration, getRecordingId, getSummaryText } from '@/lib/fathom'
 import { analyzeCall } from '@/lib/claude'
 import { sendCallSummaryNotification } from '@/lib/highlevel'
 
@@ -69,11 +69,19 @@ export async function GET(request: NextRequest) {
 
         for (const recording of recordings) {
           try {
+            // Get unique recording ID
+            const fathomId = getRecordingId(recording)
+            if (!fathomId) {
+              console.error('Recording has no ID:', JSON.stringify(recording).substring(0, 200))
+              totalErrors++
+              continue
+            }
+
             // Skip if already processed
             const { data: existing } = await supabase
               .from('calls')
               .select('id')
-              .eq('fathom_call_id', recording.id)
+              .eq('fathom_call_id', fathomId)
               .single()
 
             if (existing) {
@@ -106,11 +114,11 @@ export async function GET(request: NextRequest) {
             )
 
             // Build transcript string
-            const transcript = recording.transcript
+            const transcript = recording.transcript && Array.isArray(recording.transcript)
               ? formatTranscript(recording.transcript)
               : null
 
-            const summary = recording.default_summary?.summary || null
+            const summary = getSummaryText(recording)
 
             // Calculate duration
             const duration = recording.recording_start_time && recording.recording_end_time
@@ -122,9 +130,9 @@ export async function GET(request: NextRequest) {
               .from('calls')
               .insert({
                 closer_id: closerId,
-                contact_name: contact?.name || recording.title,
+                contact_name: contact?.name || recording.title || recording.meeting_title,
                 contact_email: contact?.email || null,
-                fathom_call_id: recording.id,
+                fathom_call_id: fathomId,
                 call_date: recording.created_at,
                 duration_minutes: duration,
                 transcript,
