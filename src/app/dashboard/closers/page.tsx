@@ -55,10 +55,10 @@ export default async function ClosersPage() {
             <Link
               key={closer.id}
               href={`/dashboard/closers/${closer.id}`}
-              className="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-indigo-500/50 transition-colors group"
+              className="bg-gray-900/80 border border-gray-800/50 rounded-2xl p-6 hover:border-indigo-500/30 transition-all duration-300 group card-hover"
             >
               <div className="flex items-center gap-4 mb-6">
-                <div className="h-14 w-14 bg-indigo-600/20 rounded-full flex items-center justify-center">
+                <div className="h-14 w-14 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/20 rounded-2xl flex items-center justify-center group-hover:shadow-lg group-hover:shadow-indigo-500/10 transition-shadow">
                   <Users className="h-7 w-7 text-indigo-400" />
                 </div>
                 <div>
