@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { BarChart3, TrendingUp, Phone, Zap } from 'lucide-react'
+import { TrendingUp, Phone, Zap } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -45,14 +45,8 @@ export default function LoginPage() {
       {/* Left side - Branding (hidden on mobile) */}
       <div className="hidden lg:flex flex-1 flex-col justify-center px-16 relative z-10">
         <div className="max-w-lg animate-fade-in-up">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="h-12 w-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25">
-              <BarChart3 className="h-7 w-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white tracking-tight">Ruarte Report</h1>
-              <p className="text-sm text-indigo-400 font-medium">Call Analytics Platform</p>
-            </div>
+          <div className="mb-8">
+            <img src="/logo.png" alt="Ruarte Reports" className="h-14" />
           </div>
 
           <h2 className="text-4xl font-bold text-white leading-tight mb-6">
@@ -91,15 +85,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
-            <div className="inline-flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25">
-                <BarChart3 className="h-6 w-6 text-white" />
-              </div>
-              <div className="text-left">
-                <h1 className="text-2xl font-bold text-white tracking-tight">Ruarte Report</h1>
-                <p className="text-xs text-indigo-400 font-medium">Call Analytics Platform</p>
-              </div>
-            </div>
+            <img src="/logo.png" alt="Ruarte Reports" className="h-12 mx-auto" />
           </div>
 
           <div className="glass rounded-2xl border border-gray-800/50 p-8 shadow-2xl shadow-black/20">

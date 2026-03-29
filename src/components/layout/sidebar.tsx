@@ -10,7 +10,6 @@ import {
   Users,
   Settings,
   LogOut,
-  BarChart3,
   Upload,
   Menu,
   X,
@@ -42,10 +41,7 @@ export function Sidebar() {
       {/* Mobile header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 glass border-b border-gray-800/50 px-4 py-3 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <BarChart3 className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-base font-bold text-white">Ruarte Report</span>
+          <img src="/logo.png" alt="Ruarte Reports" className="h-8" />
         </Link>
         <button
           onClick={() => setOpen(!open)}
@@ -72,14 +68,8 @@ export function Sidebar() {
         )}
       >
         <div className="p-6 border-b border-gray-800/50 hidden lg:block">
-          <Link href="/dashboard" className="flex items-center gap-3 group">
-            <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 transition-shadow">
-              <BarChart3 className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-white tracking-tight">Ruarte Report</h1>
-              <p className="text-[10px] text-indigo-400 font-medium uppercase tracking-widest">Call Analytics</p>
-            </div>
+          <Link href="/dashboard" className="flex items-center group">
+            <img src="/logo.png" alt="Ruarte Reports" className="h-10" />
           </Link>
         </div>
 

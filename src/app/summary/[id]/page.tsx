@@ -6,7 +6,7 @@ import { es } from 'date-fns/locale'
 import { notFound } from 'next/navigation'
 import type { Call } from '@/types'
 import type { Metadata } from 'next'
-import { BarChart3, Calendar, MessageSquare, ArrowRight } from 'lucide-react'
+import { Calendar, MessageSquare, ArrowRight } from 'lucide-react'
 
 export async function generateMetadata({
   params,
@@ -62,11 +62,8 @@ export default async function PublicSummaryPage({
       <div className="max-w-2xl mx-auto px-4 py-12 relative z-10">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 mb-6">
-            <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <BarChart3 className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-sm font-semibold text-white">Ruarte Report</span>
+          <div className="mb-6">
+            <img src="/logo.png" alt="Ruarte Reports" className="h-10 mx-auto" />
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Resumen de Llamada</h1>
           <div className="flex items-center justify-center gap-2 text-gray-400">
