@@ -7,15 +7,37 @@ import { CloserComparison } from '@/components/dashboard/closer-comparison'
 import { TrendChart } from '@/components/dashboard/trend-chart'
 import { ObjectionsChart } from '@/components/dashboard/objections-chart'
 import { CallsTable } from '@/components/dashboard/calls-table'
+import { DateFilter } from '@/components/dashboard/date-filter'
 import type { DashboardStats, Call } from '@/types'
-import { format, startOfWeek, endOfWeek, subWeeks } from 'date-fns'
+import { format, startOfWeek, endOfWeek, subWeeks, subDays, startOfDay, endOfDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 
-async function getDashboardData() {
+function getDateRange(params: { range?: string; from?: string; to?: string }): { from: Date | null; to: Date | null } {
+  const now = new Date()
+
+  switch (params.range) {
+    case 'today':
+      return { from: startOfDay(now), to: endOfDay(now) }
+    case '7d':
+      return { from: startOfDay(subDays(now, 7)), to: endOfDay(now) }
+    case '30d':
+      return { from: startOfDay(subDays(now, 30)), to: endOfDay(now) }
+    case '90d':
+      return { from: startOfDay(subDays(now, 90)), to: endOfDay(now) }
+    case 'custom':
+      return {
+        from: params.from ? new Date(params.from) : null,
+        to: params.to ? endOfDay(new Date(params.to)) : null,
+      }
+    default:
+      return { from: null, to: null }
+  }
+}
+
+async function getDashboardData(dateFrom: Date | null, dateTo: Date | null) {
   const supabase = await createServerSupabaseClient()
 
-  // Get all calls with analyses and closers
-  const { data: calls } = await supabase
+  let query = supabase
     .from('calls')
     .select(`
       *,
@@ -23,6 +45,11 @@ async function getDashboardData() {
       analysis:call_analyses(*)
     `)
     .order('call_date', { ascending: false })
+
+  if (dateFrom) query = query.gte('call_date', dateFrom.toISOString())
+  if (dateTo) query = query.lte('call_date', dateTo.toISOString())
+
+  const { data: calls } = await query
 
   const allCalls = (calls || []) as Call[]
   const analyzedCalls = allCalls.filter((c) => c.analysis)
@@ -126,14 +153,21 @@ async function getDashboardData() {
   return { stats, closerComparison, trendData, objectionsData, recentCalls }
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string; from?: string; to?: string }>
+}) {
+  const params = await searchParams
+  const { from, to } = getDateRange(params)
   const { stats, closerComparison, trendData, objectionsData, recentCalls } =
-    await getDashboardData()
+    await getDashboardData(from, to)
 
   return (
     <div>
       <Header title="Dashboard" />
       <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+        <DateFilter />
         <StatsCards stats={stats} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
