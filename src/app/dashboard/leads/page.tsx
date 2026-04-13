@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/header'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import type { Lead } from '@/types'
 import { cn } from '@/lib/utils'
 import { Users, Calendar, TrendingUp, Clock, ExternalLink } from 'lucide-react'
@@ -31,6 +32,12 @@ export default async function LeadsPage({
 }) {
   const params = await searchParams
   const supabase = await createServerSupabaseClient()
+
+  // Admin only
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+  const { data: appUser } = await supabase.from('app_users').select('role').eq('id', user.id).single()
+  if (appUser?.role !== 'admin') redirect('/dashboard')
 
   let query = supabase
     .from('leads')

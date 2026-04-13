@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { Header } from '@/components/layout/header'
 import { LeadTimeline } from '@/components/leads/lead-timeline'
 import { LeadStatusUpdate } from '@/components/leads/lead-status-update'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import type { Lead } from '@/types'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -25,6 +25,12 @@ export default async function LeadDetailPage({
 }) {
   const { id } = await params
   const supabase = await createServerSupabaseClient()
+
+  // Admin only
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+  const { data: appUser } = await supabase.from('app_users').select('role').eq('id', user.id).single()
+  if (appUser?.role !== 'admin') redirect('/dashboard')
 
   const { data: lead } = await supabase
     .from('leads')

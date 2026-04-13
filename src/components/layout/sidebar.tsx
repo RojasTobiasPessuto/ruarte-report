@@ -18,18 +18,32 @@ import {
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/calls', label: 'Llamadas', icon: Phone },
-  { href: '/dashboard/closers', label: 'Closers', icon: Users },
-  { href: '/dashboard/leads', label: 'Leads', icon: UserCheck },
-  { href: '/dashboard/import', label: 'Importar', icon: Upload },
-  { href: '/dashboard/settings', label: 'Configuración', icon: Settings },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: false },
+  { href: '/dashboard/calls', label: 'Llamadas', icon: Phone, adminOnly: false },
+  { href: '/dashboard/closers', label: 'Closers', icon: Users, adminOnly: false },
+  { href: '/dashboard/leads', label: 'Leads', icon: UserCheck, adminOnly: true },
+  { href: '/dashboard/import', label: 'Importar', icon: Upload, adminOnly: true },
+  { href: '/dashboard/settings', label: 'Configuración', icon: Settings, adminOnly: false },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useState(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        supabase.from('app_users').select('role').eq('id', data.user.id).single().then(({ data: appUser }) => {
+          setIsAdmin(appUser?.role === 'admin')
+        })
+      }
+    })
+  })
+
+  const filteredNavItems = navItems.filter(item => !item.adminOnly || isAdmin)
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -82,7 +96,7 @@ export function Sidebar() {
           <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 pt-3 pb-2">
             Menu
           </p>
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const isActive =
               item.href === '/dashboard'
                 ? pathname === '/dashboard'
