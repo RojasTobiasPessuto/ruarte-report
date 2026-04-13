@@ -9,25 +9,10 @@ interface ManyChatTag {
   name: string
 }
 
-interface ManyChatSubscriber {
-  id: string
-  name: string
-  first_name: string
-  last_name: string
-  ig_username?: string
-  instagram_id?: string
-  phone?: string
-  email?: string
-  tags: ManyChatTag[]
-  created_at?: string
-  subscribed_at?: string
-  custom_fields?: Array<{ id: number; name: string; value: unknown }>
-}
-
-async function getSubscriberInfo(subscriberId: string): Promise<ManyChatSubscriber | null> {
+async function getSubscriberTags(subscriberId: string): Promise<ManyChatTag[]> {
   if (!MANYCHAT_TOKEN) {
     console.error('MANYCHAT_API_TOKEN not configured')
-    return null
+    return []
   }
 
   const response = await fetch(
@@ -42,45 +27,38 @@ async function getSubscriberInfo(subscriberId: string): Promise<ManyChatSubscrib
 
   if (!response.ok) {
     console.error('ManyChat API error:', response.status, await response.text())
-    return null
+    return []
   }
 
   const result = await response.json()
-  return result.data || null
+  return result.data?.tags || []
 }
 
 export async function POST(request: NextRequest) {
   try {
     const payload = await request.json()
 
-    const subscriberId = payload.subscriber_id || payload.id
+    // Full Contact Data format from ManyChat
+    const subscriberId = payload.id || payload.subscriber_id
     if (!subscriberId) {
-      return NextResponse.json({ error: 'subscriber_id is required' }, { status: 400 })
+      return NextResponse.json({ error: 'subscriber_id/id is required' }, { status: 400 })
     }
 
-    // Get full subscriber info from ManyChat API
-    const subscriber = await getSubscriberInfo(subscriberId)
-
-    // Extract data from webhook payload + ManyChat API
-    const name = subscriber?.name
+    // Extract data from Full Contact Data
+    const name = payload.name
       || `${payload.first_name || ''} ${payload.last_name || ''}`.trim()
-      || payload.name
       || null
 
-    const igUsername = subscriber?.ig_username
-      || payload.ig_username
-      || null
+    const igUsername = payload.ig_username || null
+    const joinedAt = payload.subscribed || null
 
-    const joinedAt = subscriber?.created_at
-      || subscriber?.subscribed_at
-      || payload.joined_at
-      || null
+    // GET tags from ManyChat API (not included in Full Contact Data)
+    const allTags = await getSubscriberTags(String(subscriberId))
 
-    // Filter tags by "angulo_" prefix
-    const allTags = subscriber?.tags || []
+    // Filter tags by "angulo_" prefix, keep order as they come
     const angleTags = allTags
-      .filter((tag: ManyChatTag) => tag.name.toLowerCase().startsWith('angulo_'))
-      .map((tag: ManyChatTag) => tag.name)
+      .filter((tag) => tag.name.toLowerCase().startsWith('angulo_'))
+      .map((tag) => tag.name)
 
     const firstAngle = angleTags.length > 0 ? angleTags[0] : null
     const lastAngle = angleTags.length > 0 ? angleTags[angleTags.length - 1] : null
@@ -104,21 +82,23 @@ export async function POST(request: NextRequest) {
       .eq('manychat_subscriber_id', String(subscriberId))
       .single()
 
+    const leadData = {
+      manychat_subscriber_id: String(subscriberId),
+      name,
+      ig_username: igUsername,
+      first_angle: firstAngle,
+      all_angles: angleTags,
+      last_angle: lastAngle,
+      total_angles: totalAngles,
+      manychat_joined_at: joinedAt,
+      agenda_requested_at: now.toISOString(),
+      time_to_agenda_hours: timeToAgendaHours,
+    }
+
     if (existing) {
-      // Update existing lead
       const { error } = await supabase
         .from('leads')
-        .update({
-          name,
-          ig_username: igUsername,
-          first_angle: firstAngle,
-          all_angles: angleTags,
-          last_angle: lastAngle,
-          total_angles: totalAngles,
-          manychat_joined_at: joinedAt,
-          agenda_requested_at: now.toISOString(),
-          time_to_agenda_hours: timeToAgendaHours,
-        })
+        .update(leadData)
         .eq('id', existing.id)
 
       if (error) {
@@ -129,22 +109,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Lead updated', id: existing.id })
     }
 
-    // Insert new lead
     const { data: lead, error: insertError } = await supabase
       .from('leads')
-      .insert({
-        manychat_subscriber_id: String(subscriberId),
-        name,
-        ig_username: igUsername,
-        first_angle: firstAngle,
-        all_angles: angleTags,
-        last_angle: lastAngle,
-        total_angles: totalAngles,
-        manychat_joined_at: joinedAt,
-        agenda_requested_at: now.toISOString(),
-        time_to_agenda_hours: timeToAgendaHours,
-        status: 'nuevo',
-      })
+      .insert({ ...leadData, status: 'nuevo' })
       .select('id')
       .single()
 
