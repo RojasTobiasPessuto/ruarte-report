@@ -1,0 +1,16 @@
+[
+  {
+    "id": "7d3f216f-9488-4815-912e-00b8fbf2de9e",
+    "name": "Hernan Grando",
+    "email": "ruartecloser@gmail.com",
+    "active": true,
+    "created_at": "2026-03-28T16:22:43.590363+00:00"
+  },
+  {
+    "id": "13efd70a-98a3-4d6a-a1f9-508f0cb2d22f",
+    "name": "Patricio Rocha",
+    "email": "ruartecloser2@gmail.com",
+    "active": true,
+    "created_at": "2026-03-28T16:23:04.046721+00:00"
+  }
+]

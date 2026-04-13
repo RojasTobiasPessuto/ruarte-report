@@ -10,6 +10,7 @@ const ANALYSIS_PROMPT = `Eres un analista experto en ventas y llamadas comercial
 Analiza la siguiente transcripción de una llamada de ventas y devuelve ÚNICAMENTE un JSON válido (sin markdown, sin backticks, solo el JSON) con la siguiente estructura exacta:
 
 {
+  "contact_name": "Nombre completo del prospecto/cliente/lead mencionado en la llamada. Si no se menciona, null.",
   "summary": "Resumen ejecutivo de la llamada en 3-5 oraciones. Debe ser claro y entendible para un gerente que no escuchó la llamada.",
   "result": "closed | not_closed | follow_up | not_qualified",
   "result_reason": "Explicación clara de por qué se cerró o no se cerró la venta",

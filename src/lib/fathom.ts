@@ -130,6 +130,69 @@ export function getSummaryText(recording: FathomRecording): string | null {
 }
 
 /**
+ * Extract the client/contact name from a Fathom recording.
+ * Tries multiple sources: calendar invitees, transcript speakers, summary text.
+ */
+export function extractContactName(
+  recording: FathomRecording,
+  closerEmails: Set<string>
+): string | null {
+  // 1. Try external calendar invitee (not the closer)
+  if (recording.calendar_invitees) {
+    const external = recording.calendar_invitees.find(
+      (a) => a.is_external || !closerEmails.has(a.email.toLowerCase())
+    )
+    if (external?.name && !external.name.toLowerCase().includes('closer') && !external.name.toLowerCase().includes('ruarte')) {
+      return external.name
+    }
+  }
+
+  // 2. Try transcript speakers - find one that's not the closer
+  if (recording.transcript && Array.isArray(recording.transcript)) {
+    const speakerNames: string[] = []
+    for (const entry of recording.transcript) {
+      if (entry.display_name && !speakerNames.includes(entry.display_name)) {
+        speakerNames.push(entry.display_name)
+      }
+    }
+    // Remove the recorder (closer) name
+    const recorderName = recording.recorded_by?.name?.toLowerCase()
+    for (const name of speakerNames) {
+      if (recorderName && name.toLowerCase() !== recorderName && !name.toLowerCase().includes('closer') && !name.toLowerCase().includes('ruarte')) {
+        return name
+      }
+    }
+  }
+
+  // 3. Try to extract from summary text
+  const summary = getSummaryText(recording)
+  if (summary) {
+    // Look for patterns like "Client: Name", "cliente: Name", "Lead: Name"
+    const patterns = [
+      /\*\*Client[ea]?:\*\*\s*"?([A-ZÁÉÍÓÚÑa-záéíóúñ][A-ZÁÉÍÓÚÑa-záéíóúñ\s]+)"?/i,
+      /Client[ea]?[:\s]+"?([A-ZÁÉÍÓÚÑa-záéíóúñ][A-ZÁÉÍÓÚÑa-záéíóúñ\s]+)"?/i,
+      /Lead[:\s]+"?([A-ZÁÉÍÓÚÑa-záéíóúñ][A-ZÁÉÍÓÚÑa-záéíóúñ\s]+)"?/i,
+      /prospecto[:\s]+"?([A-ZÁÉÍÓÚÑa-záéíóúñ][A-ZÁÉÍÓÚÑa-záéíóúñ\s]+)"?/i,
+      /llamada (?:con|a)\s+"?([A-ZÁÉÍÓÚÑa-záéíóúñ][A-ZÁÉÍÓÚÑa-záéíóúñ\s]+)"?/i,
+      /\*\*"([A-ZÁÉÍÓÚÑa-záéíóúñ][A-ZÁÉÍÓÚÑa-záéíóúñ\s]+)"\*\*/,
+    ]
+
+    for (const pattern of patterns) {
+      const match = summary.match(pattern)
+      if (match) {
+        const name = match[1].trim()
+        // Filter out generic names
+        if (name.length > 2 && name.length < 50 && !name.toLowerCase().includes('meeting') && !name.toLowerCase().includes('google')) {
+          return name
+        }
+      }
+    }
+  }
+
+  return null
+}
+
+/**
  * Convert Fathom transcript entries to a single string
  */
 export function formatTranscript(entries: FathomTranscriptEntry[]): string {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
-import { listRecordings, formatTranscript, calculateDuration, getRecordingId, getSummaryText } from '@/lib/fathom'
+import { listRecordings, formatTranscript, calculateDuration, getRecordingId, getSummaryText, extractContactName } from '@/lib/fathom'
 import { analyzeCall } from '@/lib/claude'
 import { sendCallSummaryNotification } from '@/lib/highlevel'
 
@@ -109,9 +109,17 @@ export async function GET(request: NextRequest) {
             }
 
             // Find contact (first external attendee who isn't the closer)
+            const closerEmailSet = new Set(
+              Array.from(closersByEmail.keys())
+            )
             const contact = recording.calendar_invitees?.find(
               (a) => a.is_external || !closersByEmail.has(a.email.toLowerCase())
             )
+
+            // Extract client name from multiple sources
+            const contactName = extractContactName(recording, closerEmailSet)
+              || contact?.name
+              || null
 
             // Build transcript string
             const transcript = recording.transcript && Array.isArray(recording.transcript)
@@ -130,7 +138,7 @@ export async function GET(request: NextRequest) {
               .from('calls')
               .insert({
                 closer_id: closerId,
-                contact_name: contact?.name || recording.title || recording.meeting_title,
+                contact_name: contactName || 'Sin nombre',
                 contact_email: contact?.email || null,
                 fathom_call_id: fathomId,
                 call_date: recording.created_at,
@@ -180,7 +188,14 @@ export async function GET(request: NextRequest) {
                   raw_analysis: analysis,
                 })
 
-                await supabase.from('calls').update({ status: 'analyzed' }).eq('id', call.id)
+                // Update contact name if Claude found it and current name is generic
+                const currentName = contactName || 'Sin nombre'
+                const claudeName = analysis.contact_name as string | null
+                if (claudeName && (currentName === 'Sin nombre' || currentName === 'Impromptu Google Meet Meeting' || currentName.includes('Meeting'))) {
+                  await supabase.from('calls').update({ status: 'analyzed', contact_name: claudeName }).eq('id', call.id)
+                } else {
+                  await supabase.from('calls').update({ status: 'analyzed' }).eq('id', call.id)
+                }
 
                 // Send notification via HighLevel
                 const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ruarte-report.vercel.app'
