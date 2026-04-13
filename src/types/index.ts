@@ -91,6 +91,23 @@ export interface AnalysisRequest {
   contact_name?: string;
 }
 
+// Lead type (ManyChat subscribers que solicitaron agenda)
+export interface Lead {
+  id: string;
+  manychat_subscriber_id: string | null;
+  ig_username: string | null;
+  name: string | null;
+  first_angle: string | null;
+  all_angles: string[];
+  last_angle: string | null;
+  total_angles: number;
+  manychat_joined_at: string | null;
+  agenda_requested_at: string;
+  time_to_agenda_hours: number | null;
+  status: 'nuevo' | 'agendado' | 'contactado' | 'cerrado' | 'perdido';
+  created_at: string;
+}
+
 // Fathom webhook payload (based on typical Fathom webhook structure)
 export interface FathomWebhookPayload {
   call_id: string;

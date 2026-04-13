@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Phone,
   Users,
+  UserCheck,
   Settings,
   LogOut,
   Upload,
@@ -20,6 +21,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/calls', label: 'Llamadas', icon: Phone },
   { href: '/dashboard/closers', label: 'Closers', icon: Users },
+  { href: '/dashboard/leads', label: 'Leads', icon: UserCheck },
   { href: '/dashboard/import', label: 'Importar', icon: Upload },
   { href: '/dashboard/settings', label: 'Configuración', icon: Settings },
 ]
