@@ -15,6 +15,7 @@ export interface Call {
   contact_email: string | null;
   contact_phone: string | null;
   fathom_call_id: string | null;
+  fathom_url: string | null;
   call_date: string;
   duration_minutes: number | null;
   transcript: string | null;

@@ -2,7 +2,7 @@
 
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Phone, User, Clock, Calendar, Copy, ExternalLink, Trash2 } from 'lucide-react'
+import { Phone, User, Clock, Calendar, Copy, ExternalLink, Trash2, Video } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import type { Call } from '@/types'
 import { cn } from '@/lib/utils'
@@ -90,6 +90,17 @@ export function CallDetail({ call, isAdmin = false }: { call: Call; isAdmin?: bo
             <ExternalLink className="h-4 w-4" />
             Ver resumen
           </a>
+          {call.fathom_url && (
+            <a
+              href={call.fathom_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 md:px-4 py-2 bg-purple-600 hover:bg-purple-700 text-sm text-white rounded-lg transition-colors"
+            >
+              <Video className="h-4 w-4" />
+              Ver en Fathom
+            </a>
+          )}
           {isAdmin && (
             <button
               onClick={async () => {

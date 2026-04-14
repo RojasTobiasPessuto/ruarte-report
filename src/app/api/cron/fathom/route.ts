@@ -141,6 +141,7 @@ export async function GET(request: NextRequest) {
                 contact_name: contactName || 'Sin nombre',
                 contact_email: contact?.email || null,
                 fathom_call_id: fathomId,
+                fathom_url: recording.share_url || recording.url || null,
                 call_date: recording.created_at,
                 duration_minutes: duration,
                 transcript,
