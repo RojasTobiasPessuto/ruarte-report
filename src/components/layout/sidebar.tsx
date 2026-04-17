@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   LayoutDashboard,
   Phone,
@@ -14,36 +14,59 @@ import {
   Upload,
   Menu,
   X,
+  Kanban,
+  Wallet,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { Role } from '@/types'
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: false },
-  { href: '/dashboard/calls', label: 'Llamadas', icon: Phone, adminOnly: false },
-  { href: '/dashboard/closers', label: 'Closers', icon: Users, adminOnly: false },
-  { href: '/dashboard/leads', label: 'Leads', icon: UserCheck, adminOnly: true },
-  { href: '/dashboard/import', label: 'Importar', icon: Upload, adminOnly: true },
-  { href: '/dashboard/settings', label: 'Configuración', icon: Settings, adminOnly: false },
+type PermissionKey = keyof Role
+
+interface NavItem {
+  href: string
+  label: string
+  icon: typeof LayoutDashboard
+  requiredPermission?: PermissionKey
+  adminOnly?: boolean
+}
+
+const navItems: NavItem[] = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/calls', label: 'Llamadas', icon: Phone },
+  { href: '/dashboard/pipeline', label: 'Pipeline', icon: Kanban },
+  { href: '/dashboard/closers', label: 'Closers', icon: Users },
+  { href: '/dashboard/leads', label: 'Leads', icon: UserCheck, requiredPermission: 'can_view_leads' },
+  { href: '/dashboard/payments', label: 'Pagos', icon: Wallet, requiredPermission: 'can_view_all_payments' },
+  { href: '/dashboard/import', label: 'Importar', icon: Upload, requiredPermission: 'can_import' },
+  { href: '/dashboard/settings', label: 'Configuración', icon: Settings, adminOnly: true },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState(false)
+  const [role, setRole] = useState<Role | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
 
-  useState(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) {
-        supabase.from('app_users').select('role').eq('id', data.user.id).single().then(({ data: appUser }) => {
-          setIsAdmin(appUser?.role === 'admin')
-        })
-      }
-    })
-  })
+  useEffect(() => {
+    fetch('/api/me')
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (!data) return
+        setRole(data.role)
+        setIsAdmin(data.is_admin)
+      })
+      .catch(() => {})
+  }, [])
 
-  const filteredNavItems = navItems.filter(item => !item.adminOnly || isAdmin)
+  const filteredNavItems = navItems.filter((item) => {
+    if (isAdmin) return true
+    if (item.adminOnly) return false
+    if (!item.requiredPermission) return true
+    if (!role) return false
+    const value = role[item.requiredPermission]
+    return typeof value === 'boolean' ? value : false
+  })
 
   const handleLogout = async () => {
     const supabase = createClient()
