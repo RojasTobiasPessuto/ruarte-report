@@ -1,0 +1,179 @@
+@startuml Ruarte Report - Diagrama de Clases
+
+skinparam backgroundColor #1a1a2e
+skinparam classBackgroundColor #16213e
+skinparam classBorderColor #0f3460
+skinparam classHeaderBackgroundColor #0f3460
+skinparam classFontColor #e8e8e8
+skinparam classAttributeFontColor #a8a8a8
+skinparam arrowColor #e94560
+skinparam stereotypeFontColor #e94560
+
+title **Ruarte Report - Diagrama de Clases**
+
+class Role {
+  + id : UUID <<PK>>
+  + name : text <<UNIQUE>>
+  + description : text
+  .. Permisos globales ..
+  + can_view_all : boolean
+  + can_manage_users : boolean
+  + can_manage_closers : boolean
+  + can_view_leads : boolean
+  + can_manage_leads : boolean
+  + can_import : boolean
+  .. Permisos pipeline ..
+  + can_view_all_opportunities : boolean
+  + can_fill_post_agenda : boolean
+  .. Permisos ventas/pagos ..
+  + can_create_payment : boolean
+  + can_edit_payment : boolean
+  + can_view_all_payments : boolean
+  .. Permisos llamadas ..
+  + can_view_all_calls : boolean
+}
+
+class AppUser {
+  + id : UUID <<PK>>
+  + email : text <<UNIQUE>>
+  + role_id : UUID <<FK Role>>
+  + closer_id : UUID <<FK Closer>>
+  + created_at : timestamptz
+}
+
+class Closer {
+  + id : UUID <<PK>>
+  + name : text
+  + email : text
+  + ghl_user_id : text
+  + fathom_email : text
+  + active : boolean
+}
+
+class Contact {
+  + id : UUID <<PK>>
+  + manychat_subscriber_id : text
+  + ghl_contact_id : text
+  + ig_username : text
+  + name : text
+  + email : text
+  + phone : text
+}
+
+class Lead {
+  + id : UUID <<PK>>
+  + contact_id : UUID <<FK>>
+  + manychat_subscriber_id : text
+  + ig_username : text
+  + name : text
+  + first_angle : text
+  + all_angles : jsonb
+  + last_angle : text
+  + total_angles : integer
+  + manychat_joined_at : timestamptz
+  + agenda_requested_at : timestamptz
+  + time_to_agenda_hours : numeric
+  + status : {nuevo, agendado, contactado, cerrado, perdido}
+}
+
+class Call {
+  + id : UUID <<PK>>
+  + contact_id : UUID <<FK>>
+  + closer_id : UUID <<FK>>
+  + contact_name : text
+  + contact_email : text
+  + fathom_call_id : text
+  + fathom_url : text
+  + call_date : timestamptz
+  + duration_minutes : integer
+  + transcript : text
+  + fathom_summary : text
+  + status : {pending, analyzed, notified, error}
+}
+
+class CallAnalysis {
+  + id : UUID <<PK>>
+  + call_id : UUID <<FK, UNIQUE>>
+  + summary : text
+  + result : {closed, not_closed, follow_up, not_qualified}
+  + sentiment_score : integer
+  + call_quality_score : integer
+  + objections : jsonb
+  + strengths : jsonb
+  + improvements : jsonb
+}
+
+class Opportunity {
+  + id : UUID <<PK>>
+  .. Vinculos ..
+  + contact_id : UUID <<FK>>
+  + ghl_opportunity_id : text <<UNIQUE>>
+  + lead_id : UUID <<FK>>
+  + call_id : UUID <<FK>>
+  + closer_id : UUID <<FK>>
+  .. Pipeline ..
+  + pipeline_stage : text
+  + ghl_pipeline_stage_id : text
+  .. Post-Agenda ..
+  + estado_cita : text
+  + programa : text
+  + situacion : text
+  + descripcion_llamada : text
+  + volumen_real : numeric
+  + fecha_llamada : timestamptz
+  + fecha_seguimiento : timestamptz
+  .. Metadata ..
+  + form_completed : boolean
+  + source : text
+  + respuesta_calendario : text
+  + synced_at : timestamptz
+}
+
+class Sale {
+  + id : UUID <<PK>>
+  + opportunity_id : UUID <<FK>>
+  + payment_type_id : UUID <<FK PaymentType>>
+  + forma_pago : {Fee, Pago Completo, Pago Dividido, Pago Programado, Deposito}
+  + revenue : numeric
+  + monto_restante : numeric
+  + cantidad_cuotas : integer
+  + deposito_broker : numeric
+  + codigo_transaccion : text
+  + justificante_url : text
+  + completada : boolean
+  + created_at : timestamptz
+  + updated_at : timestamptz
+}
+
+class Payment {
+  + id : UUID <<PK>>
+  + sale_id : UUID <<FK>>
+  + nro_cuota : integer
+  + monto : numeric
+  + fecha_pago : date
+  + fecha_proximo_pago : date
+  + pagado : boolean
+  + created_at : timestamptz
+}
+
+class PaymentType {
+  + id : UUID <<PK>>
+  + name : text <<UNIQUE>>
+  + active : boolean
+}
+
+Role "1" <-- "0..*" AppUser : role_id
+AppUser "0..1" --> "0..1" Closer : closer_id
+Contact "1" <-- "0..*" Lead : contact_id
+Contact "1" <-- "0..*" Call : contact_id
+Contact "1" <-- "0..*" Opportunity : contact_id
+Closer "1" --> "0..*" Call : closer_id
+Closer "1" --> "0..*" Opportunity : closer_id
+Lead "0..1" <-- "0..*" Opportunity : lead_id
+Call "0..1" <-- "0..*" Opportunity : call_id
+Call "1" --> "0..1" CallAnalysis : call_id
+Opportunity "1" --> "0..*" Sale : opportunity_id
+Sale "1" --> "0..*" Payment : sale_id
+PaymentType "1" <-- "0..*" Sale : payment_type_id
+
+@enduml
