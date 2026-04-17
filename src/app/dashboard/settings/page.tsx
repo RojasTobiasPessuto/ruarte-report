@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Header } from '@/components/layout/header'
 import { Plus, Trash2, UserPlus, Users, Shield } from 'lucide-react'
-import type { Closer, AppUser } from '@/types'
+import type { Closer, AppUser, Role } from '@/types'
 
 export default function SettingsPage() {
   const [closers, setClosers] = useState<Closer[]>([])
   const [users, setUsers] = useState<AppUser[]>([])
+  const [roles, setRoles] = useState<Role[]>([])
   const [isAdmin, setIsAdmin] = useState(false)
   const [newCloserName, setNewCloserName] = useState('')
   const [newCloserEmail, setNewCloserEmail] = useState('')
@@ -50,7 +51,30 @@ export default function SettingsPage() {
         .order('email')
 
       setUsers(usersData || [])
+
+      const { data: rolesData } = await supabase
+        .from('roles')
+        .select('*')
+        .order('name')
+
+      setRoles(rolesData || [])
     }
+  }
+
+  async function updateUser(userId: string, updates: { role_id?: string | null; closer_id?: string | null }) {
+    const res = await fetch(`/api/admin/users/${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    })
+    if (res.ok) {
+      setMessage('Usuario actualizado')
+      loadData()
+    } else {
+      const data = await res.json().catch(() => ({}))
+      setMessage(data.error || 'Error al actualizar')
+    }
+    setTimeout(() => setMessage(''), 3000)
   }
 
   async function addCloser(e: React.FormEvent) {
@@ -262,31 +286,70 @@ export default function SettingsPage() {
             </form>
 
             <div className="space-y-2">
-              {users.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center justify-between px-4 py-3 bg-gray-800/50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-white">{user.email}</span>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full ${
-                        user.role === 'admin'
-                          ? 'bg-indigo-400/10 text-indigo-400'
-                          : 'bg-gray-400/10 text-gray-400'
-                      }`}
-                    >
-                      {user.role}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => deleteItem('user', user.id)}
-                    className="text-xs text-red-400 hover:text-red-300 transition-colors p-1 rounded"
+              {users.map((user) => {
+                const currentRole = roles.find((r) => r.id === user.role_id)
+                const currentCloser = closers.find((c) => c.id === user.closer_id)
+                const roleColors: Record<string, string> = {
+                  admin: 'bg-indigo-400/10 text-indigo-400 border-indigo-400/20',
+                  manager: 'bg-purple-400/10 text-purple-400 border-purple-400/20',
+                  closer: 'bg-green-400/10 text-green-400 border-green-400/20',
+                  setter: 'bg-amber-400/10 text-amber-400 border-amber-400/20',
+                }
+                const roleBadge = currentRole?.name
+                  ? roleColors[currentRole.name] || 'bg-gray-400/10 text-gray-400'
+                  : 'bg-gray-400/10 text-gray-400'
+
+                return (
+                  <div
+                    key={user.id}
+                    className="flex flex-wrap items-center gap-3 px-4 py-3 bg-gray-800/50 rounded-lg"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
+                    <div className="flex-1 min-w-[180px]">
+                      <p className="text-sm text-white">{user.email}</p>
+                      {currentRole && (
+                        <span className={`inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full border ${roleBadge}`}>
+                          {currentRole.name}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="text-[10px] text-gray-500 uppercase tracking-widest">Role</label>
+                      <select
+                        value={user.role_id || ''}
+                        onChange={(e) => updateUser(user.id, { role_id: e.target.value || null })}
+                        className="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+                      >
+                        <option value="">Sin rol</option>
+                        {roles.map((r) => (
+                          <option key={r.id} value={r.id}>{r.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="text-[10px] text-gray-500 uppercase tracking-widest">Closer</label>
+                      <select
+                        value={user.closer_id || ''}
+                        onChange={(e) => updateUser(user.id, { closer_id: e.target.value || null })}
+                        className="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+                      >
+                        <option value="">Ninguno</option>
+                        {closers.filter((c) => c.active).map((c) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <button
+                      onClick={() => deleteItem('user', user.id)}
+                      className="text-xs text-red-400 hover:text-red-300 transition-colors p-1 rounded"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
