@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { requireAuth, hasPermission, isAdmin } from '@/lib/permissions'
+import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/header'
 import { PipelineBoard } from '@/components/pipeline/pipeline-board'
 import type { Opportunity } from '@/types'
@@ -24,6 +25,13 @@ export default async function PipelinePage({
   searchParams: Promise<{ closer?: string; stage?: string }>
 }) {
   const ctx = await requireAuth()
+
+  // Solo admin, closer (con can_fill_post_agenda) pueden entrar
+  // Manager no entra (no tiene can_fill_post_agenda)
+  if (!isAdmin(ctx) && !hasPermission(ctx, 'can_fill_post_agenda')) {
+    redirect('/dashboard')
+  }
+
   const params = await searchParams
   const supabase = await createServerSupabaseClient()
 

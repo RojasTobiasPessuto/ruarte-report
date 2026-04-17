@@ -33,7 +33,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/calls', label: 'Llamadas', icon: Phone },
-  { href: '/dashboard/pipeline', label: 'Pipeline', icon: Kanban },
+  { href: '/dashboard/pipeline', label: 'Pipeline', icon: Kanban, requiredPermission: 'can_fill_post_agenda' },
   { href: '/dashboard/closers', label: 'Closers', icon: Users },
   { href: '/dashboard/leads', label: 'Leads', icon: UserCheck, requiredPermission: 'can_view_leads' },
   { href: '/dashboard/payments', label: 'Pagos', icon: Wallet, requiredPermission: 'can_view_all_payments' },

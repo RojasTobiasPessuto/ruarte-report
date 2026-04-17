@@ -14,6 +14,12 @@ export default async function OpportunityDetailPage({
 }) {
   const { id } = await params
   const ctx = await requireAuth()
+
+  // Solo admin y closer pueden entrar al pipeline detail
+  if (!isAdmin(ctx) && !hasPermission(ctx, 'can_fill_post_agenda')) {
+    redirect('/dashboard')
+  }
+
   const supabase = await createServerSupabaseClient()
 
   const { data: opportunity } = await supabase
