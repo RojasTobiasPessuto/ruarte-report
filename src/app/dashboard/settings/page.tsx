@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Header } from '@/components/layout/header'
-import { Plus, Trash2, UserPlus, Users, Shield } from 'lucide-react'
+import { Plus, Trash2, UserPlus, Users, Shield, RefreshCw, Play, Database } from 'lucide-react'
 import type { Closer, AppUser, Role } from '@/types'
 
 export default function SettingsPage() {
@@ -18,12 +18,24 @@ export default function SettingsPage() {
   const [newUserRole, setNewUserRole] = useState<'admin' | 'viewer'>('viewer')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [syncStatus, setSyncStatus] = useState<{
+    cursor: string | null
+    current_stage: string
+    total_processed_cycle: number
+    last_completed_at: string | null
+    total_opportunities_in_db: number
+  } | null>(null)
+  const [syncLoading, setSyncLoading] = useState(false)
 
   const supabase = createClient()
 
   useEffect(() => {
     loadData()
   }, [])
+
+  useEffect(() => {
+    if (isAdmin) loadSyncStatus()
+  }, [isAdmin])
 
   async function loadData() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -59,6 +71,52 @@ export default function SettingsPage() {
 
       setRoles(rolesData || [])
     }
+  }
+
+  async function loadSyncStatus() {
+    const res = await fetch('/api/admin/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'status' }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      setSyncStatus(data)
+    }
+  }
+
+  async function resetSync() {
+    if (!confirm('¿Resetear cursor? El próximo cron arrancará desde la primera etapa.')) return
+    setSyncLoading(true)
+    const res = await fetch('/api/admin/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'reset' }),
+    })
+    const data = await res.json()
+    setMessage(data.message || 'Cursor reseteado')
+    setSyncLoading(false)
+    loadSyncStatus()
+    setTimeout(() => setMessage(''), 3000)
+  }
+
+  async function runSync() {
+    setSyncLoading(true)
+    setMessage('Ejecutando sync...')
+    const res = await fetch('/api/admin/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'run' }),
+    })
+    const data = await res.json()
+    if (res.ok) {
+      setMessage(`Sync ejecutado: ${data.result?.message || 'OK'}`)
+    } else {
+      setMessage(data.error || 'Error')
+    }
+    setSyncLoading(false)
+    loadSyncStatus()
+    setTimeout(() => setMessage(''), 5000)
   }
 
   async function updateUser(userId: string, updates: { role_id?: string | null; closer_id?: string | null }) {
@@ -241,6 +299,72 @@ export default function SettingsPage() {
             )}
           </div>
         </div>
+
+        {/* Sync GHL (admin only) */}
+        {isAdmin && (
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <Database className="h-5 w-5 text-indigo-400" />
+              <h3 className="text-lg font-semibold text-white">Sincronización GHL</h3>
+            </div>
+
+            {syncStatus && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div className="bg-gray-800/50 rounded-lg p-3">
+                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Total en DB</p>
+                  <p className="text-lg font-bold text-indigo-400 mt-1">{syncStatus.total_opportunities_in_db}</p>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-3">
+                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Etapa actual</p>
+                  <p className="text-sm text-white mt-1">{syncStatus.current_stage}</p>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-3">
+                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Procesadas (ciclo)</p>
+                  <p className="text-lg font-bold text-amber-400 mt-1">{syncStatus.total_processed_cycle}</p>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-3">
+                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Último ciclo</p>
+                  <p className="text-xs text-white mt-1">
+                    {syncStatus.last_completed_at
+                      ? new Date(syncStatus.last_completed_at).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+                      : 'Nunca'}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={runSync}
+                disabled={syncLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm rounded-lg"
+              >
+                <Play className="h-4 w-4" />
+                Ejecutar sync ahora
+              </button>
+              <button
+                onClick={resetSync}
+                disabled={syncLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600/20 hover:bg-red-600/40 disabled:opacity-50 text-red-400 text-sm rounded-lg border border-red-500/20"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Resetear cursor
+              </button>
+              <button
+                onClick={loadSyncStatus}
+                disabled={syncLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-white text-sm rounded-lg"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Refrescar estado
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 mt-4">
+              El cron se ejecuta automáticamente cada 2 min. Cada ejecución procesa 25 oportunidades del pipeline Agendas.
+            </p>
+          </div>
+        )}
 
         {/* Users (admin only) */}
         {isAdmin && (

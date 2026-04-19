@@ -1,0 +1,88 @@
+/**
+ * POST /api/admin/sync
+ * Acciones admin para el cron de GHL:
+ *  - action: "reset" → borra cursor, arranca desde 0
+ *  - action: "run" → ejecuta el cron inmediatamente
+ *  - action: "status" → devuelve el estado actual del sync
+ */
+
+import { NextRequest, NextResponse } from 'next/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
+import { getCurrentUser, isAdmin } from '@/lib/permissions'
+import { GHL_STAGE_IDS, GHL_STAGE_NAMES } from '@/lib/ghl'
+
+const SYNC_KEY = 'ghl_opportunities'
+
+const STAGES_TO_SYNC = [
+  GHL_STAGE_IDS.postLlamada,
+  GHL_STAGE_IDS.seguimiento,
+  GHL_STAGE_IDS.compro,
+  GHL_STAGE_IDS.noCompro,
+  GHL_STAGE_IDS.cancelado,
+  GHL_STAGE_IDS.noAsistio,
+]
+
+export async function POST(request: NextRequest) {
+  const ctx = await getCurrentUser()
+  if (!ctx) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  if (!isAdmin(ctx)) {
+    return NextResponse.json({ error: 'Solo administradores' }, { status: 403 })
+  }
+
+  const body = await request.json().catch(() => ({}))
+  const action = body.action as string
+
+  const supabase = await createServiceRoleClient()
+
+  if (action === 'reset') {
+    // Borrar cursor
+    await supabase.from('sync_state').delete().eq('key', SYNC_KEY)
+    return NextResponse.json({ message: 'Cursor reseteado. Próxima ejecución del cron arrancará desde Post Llamada.' })
+  }
+
+  if (action === 'run') {
+    // Llamar al cron internamente
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const cronUrl = `${appUrl}/api/cron/ghl`
+
+    try {
+      const response = await fetch(cronUrl, {
+        headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
+      })
+      const data = await response.json()
+      return NextResponse.json({ message: 'Sync ejecutado', result: data })
+    } catch (err) {
+      return NextResponse.json({ error: 'Error ejecutando sync', details: String(err) }, { status: 500 })
+    }
+  }
+
+  if (action === 'status') {
+    const { data: state } = await supabase
+      .from('sync_state')
+      .select('*')
+      .eq('key', SYNC_KEY)
+      .maybeSingle()
+
+    let currentStageName = 'No iniciado'
+    if (state?.cursor_value) {
+      const stageIndex = parseInt(state.cursor_value.split('|')[0]) || 0
+      const stageId = STAGES_TO_SYNC[stageIndex]
+      currentStageName = GHL_STAGE_NAMES[stageId] || 'Desconocido'
+    }
+
+    const { count: totalOpps } = await supabase
+      .from('opportunities')
+      .select('*', { count: 'exact', head: true })
+
+    return NextResponse.json({
+      cursor: state?.cursor_value || null,
+      current_stage: currentStageName,
+      total_processed_cycle: state?.total_processed || 0,
+      last_completed_at: state?.last_completed_at || null,
+      updated_at: state?.updated_at || null,
+      total_opportunities_in_db: totalOpps || 0,
+    })
+  }
+
+  return NextResponse.json({ error: 'Acción inválida. Usá: reset, run, status' }, { status: 400 })
+}
