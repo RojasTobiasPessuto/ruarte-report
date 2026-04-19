@@ -1,29 +1,25 @@
 /**
- * Cron job que sincroniza oportunidades del pipeline "Agendas" de GHL.
- * Corre cada 15 min vía cron-job.org.
- * - Lee oportunidades de GHL
- * - Busca/crea Contact (unifica identidad)
- * - Vincula con Lead (ManyChat) y Call (Fathom) si existen
- * - Crea/actualiza Opportunity en DB
+ * Cron job paginado que sincroniza el pipeline "Agendas" de GHL.
+ * Procesa 100 oportunidades por ejecución usando cursor en sync_state.
+ * - Si hay cursor guardado, continúa desde ahí
+ * - Si no hay más páginas, reinicia y completa un ciclo nuevo
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import {
-  getAllOpportunities,
+  searchOpportunities,
   getCustomFieldValue,
   GHL_FIELD_IDS,
   GHL_STAGE_NAMES,
-  type GHLOpportunity,
 } from '@/lib/ghl'
+
+const SYNC_KEY = 'ghl_opportunities'
+const BATCH_SIZE = 100
 
 interface ContactRow {
   id: string
   ghl_contact_id: string | null
-  email: string | null
-  phone: string | null
-  ig_username: string | null
-  manychat_subscriber_id: string | null
 }
 
 async function findOrCreateContact(
@@ -36,7 +32,6 @@ async function findOrCreateContact(
     ig_username: string | null
   }
 ): Promise<string | null> {
-  // Buscar por ghl_contact_id primero
   let { data: existing } = await supabase
     .from('contacts')
     .select('*')
@@ -45,38 +40,22 @@ async function findOrCreateContact(
 
   if (existing) return (existing as ContactRow).id
 
-  // Buscar por email
   if (data.email) {
-    const result = await supabase
-      .from('contacts')
-      .select('*')
-      .eq('email', data.email)
-      .maybeSingle()
+    const result = await supabase.from('contacts').select('*').eq('email', data.email).maybeSingle()
     existing = result.data
   }
 
-  // Buscar por phone
   if (!existing && data.phone) {
-    const result = await supabase
-      .from('contacts')
-      .select('*')
-      .eq('phone', data.phone)
-      .maybeSingle()
+    const result = await supabase.from('contacts').select('*').eq('phone', data.phone).maybeSingle()
     existing = result.data
   }
 
-  // Buscar por ig_username
   if (!existing && data.ig_username) {
-    const result = await supabase
-      .from('contacts')
-      .select('*')
-      .eq('ig_username', data.ig_username)
-      .maybeSingle()
+    const result = await supabase.from('contacts').select('*').eq('ig_username', data.ig_username).maybeSingle()
     existing = result.data
   }
 
   if (existing) {
-    // Actualizar ghl_contact_id si no lo tenía
     const row = existing as ContactRow
     if (!row.ghl_contact_id) {
       await supabase
@@ -87,7 +66,6 @@ async function findOrCreateContact(
     return row.id
   }
 
-  // Crear nuevo
   const { data: created, error } = await supabase
     .from('contacts')
     .insert({
@@ -112,11 +90,7 @@ async function findLeadByContact(
   supabase: Awaited<ReturnType<typeof createServiceRoleClient>>,
   contactId: string
 ): Promise<string | null> {
-  const { data } = await supabase
-    .from('leads')
-    .select('id')
-    .eq('contact_id', contactId)
-    .maybeSingle()
+  const { data } = await supabase.from('leads').select('id').eq('contact_id', contactId).maybeSingle()
   return data?.id || null
 }
 
@@ -140,7 +114,6 @@ async function findCallByContact(
 
 export async function GET(request: NextRequest) {
   try {
-    // Auth check via CRON_SECRET
     const authHeader = request.headers.get('authorization')
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -148,17 +121,34 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createServiceRoleClient()
 
-    // Get all closers with ghl_user_id
+    // Read current cursor from sync_state
+    const { data: state } = await supabase
+      .from('sync_state')
+      .select('*')
+      .eq('key', SYNC_KEY)
+      .maybeSingle()
+
+    const startAfter = state?.cursor_value ? parseInt(state.cursor_value) : undefined
+    const startAfterId = state?.cursor_id || undefined
+    const totalProcessedBefore = state?.total_processed || 0
+
+    // Fetch one batch (100 opportunities)
+    console.log(`Fetching batch from cursor: ${startAfter}/${startAfterId || 'START'}`)
+    const res = await searchOpportunities({
+      limit: BATCH_SIZE,
+      startAfter,
+      startAfterId,
+    })
+
+    const opportunities = res.opportunities
+    console.log(`  Got ${opportunities.length} opportunities (total in GHL: ${res.meta.total})`)
+
+    // Get closers map
     const { data: closers } = await supabase.from('closers').select('id, ghl_user_id')
     const closersByGhlUserId = new Map<string, string>()
     for (const c of closers || []) {
       if (c.ghl_user_id) closersByGhlUserId.set(c.ghl_user_id, c.id)
     }
-
-    // Fetch all opportunities from GHL
-    console.log('Fetching opportunities from GHL...')
-    const opportunities = await getAllOpportunities()
-    console.log(`  Fetched ${opportunities.length} opportunities`)
 
     let created = 0
     let updated = 0
@@ -166,7 +156,6 @@ export async function GET(request: NextRequest) {
 
     for (const opp of opportunities) {
       try {
-        // 1. Find or create Contact
         const igUsername = opp.contact?.tags?.find((t) => t.startsWith('ig:'))?.replace('ig:', '') || null
 
         const contactId = await findOrCreateContact(supabase, {
@@ -182,16 +171,10 @@ export async function GET(request: NextRequest) {
           continue
         }
 
-        // 2. Match closer by ghl_user_id
         const closerId = opp.assignedTo ? closersByGhlUserId.get(opp.assignedTo) || null : null
-
-        // 3. Find Lead of same contact
         const leadId = await findLeadByContact(supabase, contactId)
-
-        // 4. Find Call of same contact + closer
         const callId = await findCallByContact(supabase, contactId, closerId)
 
-        // 5. Extract custom fields
         const cf = opp.customFields || []
         const estadoCita = getCustomFieldValue(cf, GHL_FIELD_IDS.estadoCita) as string | null
         const programa = getCustomFieldValue(cf, GHL_FIELD_IDS.programa) as string | null
@@ -201,7 +184,6 @@ export async function GET(request: NextRequest) {
         const seguimientoMs = getCustomFieldValue(cf, GHL_FIELD_IDS.seguimiento) as number | null
         const respuestaCalendar = getCustomFieldValue(cf, GHL_FIELD_IDS.respuestaCalendar) as string | null
 
-        // Legacy custom fields
         const legacyFormaPago = getCustomFieldValue(cf, GHL_FIELD_IDS.formaPago) as string | null
         const legacyTipoPago = getCustomFieldValue(cf, GHL_FIELD_IDS.tipoPago) as string | null
         const legacyRevenue = getCustomFieldValue(cf, GHL_FIELD_IDS.revenue) as number | null
@@ -243,47 +225,69 @@ export async function GET(request: NextRequest) {
           updated_at: new Date().toISOString(),
         }
 
-        // Upsert by ghl_opportunity_id
-        const { data: existing } = await supabase
+        const { data: existingOpp } = await supabase
           .from('opportunities')
           .select('id')
           .eq('ghl_opportunity_id', opp.id)
           .maybeSingle()
 
-        if (existing) {
-          const { error } = await supabase
-            .from('opportunities')
-            .update(oppData)
-            .eq('id', existing.id)
+        if (existingOpp) {
+          const { error } = await supabase.from('opportunities').update(oppData).eq('id', existingOpp.id)
           if (error) {
-            console.error('Update error:', error)
+            console.error('Update error:', error.message)
             errors++
-          } else {
-            updated++
-          }
+          } else updated++
         } else {
-          const { error } = await supabase
-            .from('opportunities')
-            .insert(oppData)
+          const { error } = await supabase.from('opportunities').insert(oppData)
           if (error) {
-            console.error('Insert error:', error)
+            console.error('Insert error:', error.message)
             errors++
-          } else {
-            created++
-          }
+          } else created++
         }
       } catch (e) {
-        console.error('Error processing opportunity:', e)
+        console.error('Opportunity error:', e)
         errors++
       }
     }
 
+    // Update cursor / complete cycle
+    const hasMore = !!res.meta.nextPageUrl && opportunities.length > 0
+    const newTotalProcessed = totalProcessedBefore + opportunities.length
+
+    if (hasMore && res.meta.startAfter && res.meta.startAfterId) {
+      // Guardar cursor para próxima ejecución
+      await supabase
+        .from('sync_state')
+        .upsert({
+          key: SYNC_KEY,
+          cursor_value: String(res.meta.startAfter),
+          cursor_id: res.meta.startAfterId,
+          total_processed: newTotalProcessed,
+          updated_at: new Date().toISOString(),
+        })
+    } else {
+      // Ciclo completo: resetear cursor
+      await supabase
+        .from('sync_state')
+        .upsert({
+          key: SYNC_KEY,
+          cursor_value: null,
+          cursor_id: null,
+          total_processed: 0,
+          last_completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+    }
+
     return NextResponse.json({
-      message: 'GHL sync completed',
-      total: opportunities.length,
+      message: hasMore ? 'Batch processed, continue next cycle' : 'Full sync completed',
+      batch_size: opportunities.length,
+      total_in_ghl: res.meta.total,
+      total_processed_cycle: newTotalProcessed,
       created,
       updated,
       errors,
+      has_more: hasMore,
     })
   } catch (error) {
     console.error('GHL sync error:', error)
