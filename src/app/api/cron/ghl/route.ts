@@ -16,7 +16,7 @@ import {
 } from '@/lib/ghl'
 
 const SYNC_KEY = 'ghl_opportunities'
-const BATCH_SIZE = 100
+const BATCH_SIZE = 25
 
 // Solo sincronizar estas etapas (ignoramos Agendado Nuevo, Agendado Confirmado y ReAgendado)
 const STAGES_TO_SYNC = [
