@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/header'
 import { PipelineBoard } from '@/components/pipeline/pipeline-board'
 import type { Opportunity } from '@/types'
+import { Kanban, Phone, TrendingUp, CheckCircle, XCircle, Clock } from 'lucide-react'
 
 const STAGES = [
   'Agendado (Nuevo)',
@@ -90,10 +91,30 @@ export default async function PipelinePage({
     else byStage['Agendado (Nuevo)'].push(opp)
   }
 
+  // Stats
+  const allOpps = (opportunities || []) as Opportunity[]
+  const total = allOpps.length
+  const postLlamada = byStage['Post Llamada']?.length || 0
+  const seguimiento = byStage['Seguimiento']?.length || 0
+  const compro = byStage['Compro']?.length || 0
+  const noCompro = byStage['No Compro']?.length || 0
+  const cancelado = (byStage['Cancelado']?.length || 0) + (byStage['No Asistio']?.length || 0)
+  const conversionRate = (compro + noCompro) > 0 ? (compro / (compro + noCompro)) * 100 : 0
+
   return (
     <div>
       <Header title="Pipeline" />
       <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
+          <StatCard label="Total" value={total} icon={Kanban} color="text-indigo-400" bg="from-indigo-500/10 to-purple-500/5" />
+          <StatCard label="Post Llamada" value={postLlamada} icon={Phone} color="text-orange-400" bg="from-orange-500/10 to-red-500/5" />
+          <StatCard label="Seguimiento" value={seguimiento} icon={Clock} color="text-yellow-400" bg="from-yellow-500/10 to-amber-500/5" />
+          <StatCard label="Compro" value={compro} icon={CheckCircle} color="text-emerald-400" bg="from-emerald-500/10 to-green-500/5" />
+          <StatCard label="No Compro" value={noCompro} icon={XCircle} color="text-red-400" bg="from-red-500/10 to-rose-500/5" />
+          <StatCard label="Tasa Cierre" value={`${conversionRate.toFixed(1)}%`} icon={TrendingUp} color="text-purple-400" bg="from-purple-500/10 to-pink-500/5" />
+        </div>
+
         {/* Filter bar (admin only) */}
         {viewAllOpps && closers && closers.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 md:gap-3">
@@ -121,6 +142,24 @@ export default async function PipelinePage({
 
         <PipelineBoard byStage={byStage} stages={STAGES} />
       </div>
+    </div>
+  )
+}
+
+function StatCard({ label, value, icon: Icon, color, bg }: {
+  label: string
+  value: number | string
+  icon: React.ComponentType<{ className?: string }>
+  color: string
+  bg: string
+}) {
+  return (
+    <div className={`bg-gradient-to-br ${bg} border border-gray-800/50 rounded-xl p-3 md:p-5 card-hover`}>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs text-gray-400 font-medium">{label}</span>
+        <Icon className={`h-4 w-4 ${color}`} />
+      </div>
+      <p className={`text-2xl font-bold ${color}`}>{value}</p>
     </div>
   )
 }
