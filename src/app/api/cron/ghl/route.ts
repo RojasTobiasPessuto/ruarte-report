@@ -12,10 +12,21 @@ import {
   getCustomFieldValue,
   GHL_FIELD_IDS,
   GHL_STAGE_NAMES,
+  GHL_STAGE_IDS,
 } from '@/lib/ghl'
 
 const SYNC_KEY = 'ghl_opportunities'
 const BATCH_SIZE = 100
+
+// Solo sincronizar estas etapas (ignoramos Agendado Nuevo, Agendado Confirmado y ReAgendado)
+const STAGES_TO_SYNC = [
+  GHL_STAGE_IDS.postLlamada,
+  GHL_STAGE_IDS.seguimiento,
+  GHL_STAGE_IDS.compro,
+  GHL_STAGE_IDS.noCompro,
+  GHL_STAGE_IDS.cancelado,
+  GHL_STAGE_IDS.noAsistio,
+]
 
 interface ContactRow {
   id: string
@@ -128,20 +139,34 @@ export async function GET(request: NextRequest) {
       .eq('key', SYNC_KEY)
       .maybeSingle()
 
-    const startAfter = state?.cursor_value ? parseInt(state.cursor_value) : undefined
-    const startAfterId = state?.cursor_id || undefined
-    const totalProcessedBefore = state?.total_processed || 0
+    // Parse cursor: formato "stageIndex|startAfter|startAfterId"
+    // stageIndex = índice en STAGES_TO_SYNC array
+    let stageIndex = 0
+    let startAfter: number | undefined
+    let startAfterId: string | undefined
 
-    // Fetch one batch (100 opportunities)
-    console.log(`Fetching batch from cursor: ${startAfter}/${startAfterId || 'START'}`)
+    if (state?.cursor_value) {
+      const parts = state.cursor_value.split('|')
+      stageIndex = parseInt(parts[0]) || 0
+      if (parts[1]) startAfter = parseInt(parts[1])
+      if (state.cursor_id) startAfterId = state.cursor_id
+    }
+
+    const totalProcessedBefore = state?.total_processed || 0
+    const currentStageId = STAGES_TO_SYNC[stageIndex]
+    const currentStageName = GHL_STAGE_NAMES[currentStageId]
+
+    console.log(`Fetching stage "${currentStageName}" (${stageIndex + 1}/${STAGES_TO_SYNC.length}), cursor: ${startAfter || 'START'}`)
+
     const res = await searchOpportunities({
+      pipelineStageId: currentStageId,
       limit: BATCH_SIZE,
       startAfter,
       startAfterId,
     })
 
     const opportunities = res.opportunities
-    console.log(`  Got ${opportunities.length} opportunities (total in GHL: ${res.meta.total})`)
+    console.log(`  Got ${opportunities.length} opportunities from "${currentStageName}"`)
 
     // Get closers map
     const { data: closers } = await supabase.from('closers').select('id, ghl_user_id')
@@ -250,44 +275,60 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Update cursor / complete cycle
-    const hasMore = !!res.meta.nextPageUrl && opportunities.length > 0
+    // Cursor logic: 3 casos
+    // 1) La etapa tiene más páginas → guardar cursor en misma etapa
+    // 2) La etapa terminó y hay más etapas → pasar a siguiente etapa, cursor null
+    // 3) Todas las etapas terminadas → resetear todo
+    const stageHasMore = !!res.meta.nextPageUrl && opportunities.length > 0
+    const hasNextStage = stageIndex + 1 < STAGES_TO_SYNC.length
     const newTotalProcessed = totalProcessedBefore + opportunities.length
 
-    if (hasMore && res.meta.startAfter && res.meta.startAfterId) {
-      // Guardar cursor para próxima ejecución
-      await supabase
-        .from('sync_state')
-        .upsert({
-          key: SYNC_KEY,
-          cursor_value: String(res.meta.startAfter),
-          cursor_id: res.meta.startAfterId,
-          total_processed: newTotalProcessed,
-          updated_at: new Date().toISOString(),
-        })
+    let nextMessage: string
+    if (stageHasMore && res.meta.startAfter && res.meta.startAfterId) {
+      // Caso 1: misma etapa, próxima página
+      await supabase.from('sync_state').upsert({
+        key: SYNC_KEY,
+        cursor_value: `${stageIndex}|${res.meta.startAfter}`,
+        cursor_id: res.meta.startAfterId,
+        total_processed: newTotalProcessed,
+        updated_at: new Date().toISOString(),
+      })
+      nextMessage = `Stage "${currentStageName}" has more pages, continuing in next cycle`
+    } else if (hasNextStage) {
+      // Caso 2: pasar a siguiente etapa
+      await supabase.from('sync_state').upsert({
+        key: SYNC_KEY,
+        cursor_value: `${stageIndex + 1}`,
+        cursor_id: null,
+        total_processed: newTotalProcessed,
+        updated_at: new Date().toISOString(),
+      })
+      nextMessage = `Stage "${currentStageName}" completed, next: "${GHL_STAGE_NAMES[STAGES_TO_SYNC[stageIndex + 1]]}"`
     } else {
-      // Ciclo completo: resetear cursor
-      await supabase
-        .from('sync_state')
-        .upsert({
-          key: SYNC_KEY,
-          cursor_value: null,
-          cursor_id: null,
-          total_processed: 0,
-          last_completed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
+      // Caso 3: todas las etapas completadas
+      await supabase.from('sync_state').upsert({
+        key: SYNC_KEY,
+        cursor_value: null,
+        cursor_id: null,
+        total_processed: 0,
+        last_completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      nextMessage = 'All stages synced. Cycle complete.'
     }
 
     return NextResponse.json({
-      message: hasMore ? 'Batch processed, continue next cycle' : 'Full sync completed',
+      message: nextMessage,
+      stage: currentStageName,
+      stage_index: `${stageIndex + 1}/${STAGES_TO_SYNC.length}`,
       batch_size: opportunities.length,
-      total_in_ghl: res.meta.total,
+      total_in_stage: res.meta.total,
       total_processed_cycle: newTotalProcessed,
       created,
       updated,
       errors,
-      has_more: hasMore,
+      stage_has_more: stageHasMore,
+      has_next_stage: hasNextStage,
     })
   } catch (error) {
     console.error('GHL sync error:', error)
