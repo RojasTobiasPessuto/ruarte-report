@@ -42,7 +42,43 @@ export async function POST(request: NextRequest) {
   }
 
   if (action === 'run') {
-    // Ejecutar la sync directamente sin HTTP self-call
+    // Ejecutar hasta 8 batches consecutivos (máx ~40s, bajo el límite de Vercel)
+    try {
+      const MAX_BATCHES = 8
+      const results = []
+      let totalCreated = 0
+      let totalUpdated = 0
+      let totalErrors = 0
+      let totalProcessed = 0
+
+      for (let i = 0; i < MAX_BATCHES; i++) {
+        const result = await runGhlSyncBatch()
+        results.push(result)
+        totalCreated += result.created
+        totalUpdated += result.updated
+        totalErrors += result.errors
+        totalProcessed += result.batch_size
+
+        // Si completó el ciclo o no hay más, cortar
+        if (!result.stage_has_more && !result.has_next_stage) break
+      }
+
+      return NextResponse.json({
+        message: `Ejecutados ${results.length} batches`,
+        total_created: totalCreated,
+        total_updated: totalUpdated,
+        total_errors: totalErrors,
+        total_processed: totalProcessed,
+        last_result: results[results.length - 1],
+      })
+    } catch (err) {
+      console.error('Manual sync error:', err)
+      return NextResponse.json({ error: 'Error ejecutando sync', details: String(err) }, { status: 500 })
+    }
+  }
+
+  if (action === 'run_single') {
+    // Un solo batch (más rápido pero menos oportunidades)
     try {
       const result = await runGhlSyncBatch()
       return NextResponse.json({ message: 'Sync ejecutado', result })

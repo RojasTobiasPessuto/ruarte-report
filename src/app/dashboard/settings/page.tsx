@@ -102,7 +102,7 @@ export default function SettingsPage() {
 
   async function runSync() {
     setSyncLoading(true)
-    setMessage('Ejecutando sync...')
+    setMessage('Ejecutando sync (puede tardar hasta 40s)...')
     const res = await fetch('/api/admin/sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -110,13 +110,15 @@ export default function SettingsPage() {
     })
     const data = await res.json()
     if (res.ok) {
-      setMessage(`Sync ejecutado: ${data.result?.message || 'OK'}`)
+      setMessage(
+        `Sync: +${data.total_created || 0} creadas, ${data.total_updated || 0} actualizadas, ${data.total_processed || 0} procesadas en ${data.message || ''}`
+      )
     } else {
       setMessage(data.error || 'Error')
     }
     setSyncLoading(false)
     loadSyncStatus()
-    setTimeout(() => setMessage(''), 5000)
+    setTimeout(() => setMessage(''), 8000)
   }
 
   async function updateUser(userId: string, updates: { role_id?: string | null; closer_id?: string | null }) {
