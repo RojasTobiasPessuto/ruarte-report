@@ -73,6 +73,22 @@ export default function SettingsPage() {
     }
   }
 
+  async function backfillSales() {
+    if (!confirm('¿Crear Sales+Payments desde los datos legacy de oportunidades en Compro? Solo procesa las que aún no tienen Sales.')) return
+    setSyncLoading(true)
+    setMessage('Procesando backfill...')
+    const res = await fetch('/api/admin/backfill-sales', { method: 'POST' })
+    const data = await res.json()
+    if (res.ok) {
+      const errInfo = data.error_samples ? ` · Errores: ${data.error_samples.join(' | ')}` : ''
+      setMessage(`Backfill: ${data.sales_created} ventas, ${data.payments_created} pagos creados de ${data.total_opportunities_in_compro} en Compro (${data.skipped} omitidas)${errInfo}`)
+    } else {
+      setMessage(data.error || 'Error')
+    }
+    setSyncLoading(false)
+    setTimeout(() => setMessage(''), 10000)
+  }
+
   async function loadSyncStatus() {
     const res = await fetch('/api/admin/sync', {
       method: 'POST',
@@ -362,6 +378,14 @@ export default function SettingsPage() {
               >
                 <RefreshCw className="h-4 w-4" />
                 Refrescar estado
+              </button>
+              <button
+                onClick={backfillSales}
+                disabled={syncLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600/20 hover:bg-emerald-600/40 disabled:opacity-50 text-emerald-400 text-sm rounded-lg border border-emerald-500/20"
+              >
+                <Database className="h-4 w-4" />
+                Backfill ventas legacy
               </button>
             </div>
 
