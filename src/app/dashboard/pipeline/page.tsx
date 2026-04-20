@@ -9,10 +9,7 @@ import type { Opportunity } from '@/types'
 import { Kanban, Phone, TrendingUp, CheckCircle, XCircle, Clock } from 'lucide-react'
 
 const STAGES = [
-  'Agendado (Nuevo)',
-  'Agendado (Confirmado)',
   'Post Llamada',
-  'ReAgendado',
   'Seguimiento',
   'Compro',
   'No Compro',
@@ -82,13 +79,13 @@ export default async function PipelinePage({
     ? await supabase.from('closers').select('id, name').eq('active', true).order('name')
     : { data: [] }
 
-  // Group by stage
+  // Group by stage (solo las etapas que mostramos)
   const byStage: Record<string, Opportunity[]> = {}
   for (const stage of STAGES) byStage[stage] = []
   for (const opp of (opportunities || []) as Opportunity[]) {
-    const stage = opp.pipeline_stage || 'Agendado (Nuevo)'
-    if (byStage[stage]) byStage[stage].push(opp)
-    else byStage['Agendado (Nuevo)'].push(opp)
+    const stage = opp.pipeline_stage
+    if (stage && byStage[stage]) byStage[stage].push(opp)
+    // Si la etapa no está en STAGES (ej: Agendado Nuevo), se ignora
   }
 
   // Stats
