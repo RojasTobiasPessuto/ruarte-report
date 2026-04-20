@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { getCurrentUser, isAdmin } from '@/lib/permissions'
 import { GHL_STAGE_IDS, GHL_STAGE_NAMES } from '@/lib/ghl'
+import { runGhlSyncBatch } from '@/lib/ghl-sync'
 
 const SYNC_KEY = 'ghl_opportunities'
 
@@ -41,17 +42,12 @@ export async function POST(request: NextRequest) {
   }
 
   if (action === 'run') {
-    // Llamar al cron internamente
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    const cronUrl = `${appUrl}/api/cron/ghl`
-
+    // Ejecutar la sync directamente sin HTTP self-call
     try {
-      const response = await fetch(cronUrl, {
-        headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
-      })
-      const data = await response.json()
-      return NextResponse.json({ message: 'Sync ejecutado', result: data })
+      const result = await runGhlSyncBatch()
+      return NextResponse.json({ message: 'Sync ejecutado', result })
     } catch (err) {
+      console.error('Manual sync error:', err)
       return NextResponse.json({ error: 'Error ejecutando sync', details: String(err) }, { status: 500 })
     }
   }
