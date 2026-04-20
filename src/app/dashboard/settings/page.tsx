@@ -110,8 +110,11 @@ export default function SettingsPage() {
     })
     const data = await res.json()
     if (res.ok) {
+      const errorsInfo = data.total_errors > 0
+        ? ` · ${data.total_errors} ERRORES${data.last_result?.error_samples ? ': ' + data.last_result.error_samples.join(' | ') : ''}`
+        : ''
       setMessage(
-        `Sync: +${data.total_created || 0} creadas, ${data.total_updated || 0} actualizadas, ${data.total_processed || 0} procesadas en ${data.message || ''}`
+        `Sync: +${data.total_created || 0} creadas, ${data.total_updated || 0} actualizadas${errorsInfo}`
       )
     } else {
       setMessage(data.error || 'Error')

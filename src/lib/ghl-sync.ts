@@ -129,6 +129,7 @@ export interface SyncResult {
   created: number
   updated: number
   errors: number
+  error_samples?: string[]
   stage_has_more: boolean
   has_next_stage: boolean
 }
@@ -175,6 +176,7 @@ export async function runGhlSyncBatch(): Promise<SyncResult> {
   let created = 0
   let updated = 0
   let errors = 0
+  const errorSamples: string[] = []
 
   for (const opp of opportunities) {
     try {
@@ -242,7 +244,9 @@ export async function runGhlSyncBatch(): Promise<SyncResult> {
         legacy_deposito_broker: legacyDeposito,
         legacy_monto_restante: legacyMontoRestante,
         legacy_codigo_transaccion: legacyCodigoTrans,
-        legacy_cantidad_cuotas: legacyCantidadCuotas ? parseInt(legacyCantidadCuotas) : null,
+        legacy_cantidad_cuotas: legacyCantidadCuotas && !isNaN(parseInt(legacyCantidadCuotas))
+          ? parseInt(legacyCantidadCuotas)
+          : null,
         synced_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }
@@ -256,18 +260,21 @@ export async function runGhlSyncBatch(): Promise<SyncResult> {
       if (existingOpp) {
         const { error } = await supabase.from('opportunities').update(oppData).eq('id', existingOpp.id)
         if (error) {
-          console.error('Update error:', error.message)
+          console.error(`Update error [${opp.id}]:`, error.message)
+          if (errorSamples.length < 3) errorSamples.push(`Update ${opp.name}: ${error.message}`)
           errors++
         } else updated++
       } else {
         const { error } = await supabase.from('opportunities').insert(oppData)
         if (error) {
-          console.error('Insert error:', error.message)
+          console.error(`Insert error [${opp.id}]:`, error.message)
+          if (errorSamples.length < 3) errorSamples.push(`Insert ${opp.name}: ${error.message}`)
           errors++
         } else created++
       }
     } catch (e) {
       console.error('Opportunity error:', e)
+      if (errorSamples.length < 3) errorSamples.push(`Exception: ${e instanceof Error ? e.message : String(e)}`)
       errors++
     }
   }
@@ -317,6 +324,7 @@ export async function runGhlSyncBatch(): Promise<SyncResult> {
     created,
     updated,
     errors,
+    error_samples: errorSamples.length > 0 ? errorSamples : undefined,
     stage_has_more: stageHasMore,
     has_next_stage: hasNextStage,
   }
