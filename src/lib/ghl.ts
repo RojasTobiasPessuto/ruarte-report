@@ -230,6 +230,46 @@ export function getCustomFieldValue(
 }
 
 /**
+ * Parsea una fecha en formato español de GHL a ISO 8601.
+ * Ejemplos:
+ *   "23 de abril de 2026 / 14:00" → "2026-04-23T14:00:00.000Z"
+ *   "1 de mayo de 2026 / 9:30"    → "2026-05-01T09:30:00.000Z"
+ * Devuelve null si no matchea el formato.
+ */
+export function parseSpanishDate(input: string | null | undefined): string | null {
+  if (!input || typeof input !== 'string') return null
+
+  const MONTHS: Record<string, number> = {
+    enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+    julio: 6, agosto: 7, septiembre: 8, setiembre: 8,
+    octubre: 9, noviembre: 10, diciembre: 11,
+  }
+
+  // "DIA de MES de AÑO / HH:MM"
+  const regex = /(\d{1,2})\s+de\s+([a-zA-Záéíóúñ]+)\s+de\s+(\d{4})(?:\s*\/\s*(\d{1,2}):(\d{2}))?/i
+  const match = input.trim().match(regex)
+  if (!match) return null
+
+  const day = parseInt(match[1])
+  const monthName = match[2].toLowerCase()
+  const year = parseInt(match[3])
+  const hour = match[4] ? parseInt(match[4]) : 0
+  const minute = match[5] ? parseInt(match[5]) : 0
+
+  const month = MONTHS[monthName]
+  if (month === undefined) return null
+  if (day < 1 || day > 31 || year < 2000 || year > 2100) return null
+
+  try {
+    const date = new Date(Date.UTC(year, month, day, hour, minute, 0))
+    if (isNaN(date.getTime())) return null
+    return date.toISOString()
+  } catch {
+    return null
+  }
+}
+
+/**
  * Extrae el IG username del contacto si viene en attributions o tags.
  */
 export function extractIgUsername(opp: GHLOpportunity): string | null {

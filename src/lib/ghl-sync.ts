@@ -7,6 +7,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 import {
   searchOpportunities,
   getCustomFieldValue,
+  parseSpanishDate,
   GHL_FIELD_IDS,
   GHL_STAGE_NAMES,
   GHL_STAGE_IDS,
@@ -233,7 +234,7 @@ export async function runGhlSyncBatch(): Promise<SyncResult> {
         programa,
         situacion,
         descripcion_llamada: descripcion,
-        fecha_llamada: fechaLlamada ? fechaLlamada : null,
+        fecha_llamada: parseSpanishDate(fechaLlamada),
         fecha_seguimiento: seguimientoMs ? new Date(seguimientoMs).toISOString() : null,
         respuesta_calendario: respuestaCalendar,
         source: opp.source,
