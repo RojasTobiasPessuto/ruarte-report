@@ -98,15 +98,21 @@ export async function POST(
   // Sync with GHL
   if (sale.opportunity?.ghl_opportunity_id) {
     try {
-      await updateOpportunity(sale.opportunity.ghl_opportunity_id, {
-        customFields: [
-          { id: GHL_FIELD_IDS.cash, field_value: monto },
-          { id: GHL_FIELD_IDS.nroCuota, field_value: computedNroCuota },
-          { id: GHL_FIELD_IDS.fechaPago, field_value: fecha_pago },
-          { id: GHL_FIELD_IDS.fechaProximoPago, field_value: fecha_proximo_pago || '' },
-          { id: GHL_FIELD_IDS.montoRestante, field_value: Math.max(0, montoRestante) },
-        ],
-      })
+      const customFields: Array<{ id: string; field_value: unknown }> = [
+        { id: GHL_FIELD_IDS.cash, field_value: monto },
+        { id: GHL_FIELD_IDS.nroCuota, field_value: computedNroCuota },
+        { id: GHL_FIELD_IDS.fechaPago, field_value: fecha_pago },
+        { id: GHL_FIELD_IDS.fechaProximoPago, field_value: fecha_proximo_pago || '' },
+        { id: GHL_FIELD_IDS.montoRestante, field_value: Math.max(0, montoRestante) },
+      ]
+      // Pasar el justificante al custom field FILE_UPLOAD de GHL
+      if (justificante_url) {
+        customFields.push({
+          id: GHL_FIELD_IDS.justificante,
+          field_value: [{ url: justificante_url }],
+        })
+      }
+      await updateOpportunity(sale.opportunity.ghl_opportunity_id, { customFields })
     } catch (err) {
       console.error('GHL sync error (non-fatal):', err)
     }

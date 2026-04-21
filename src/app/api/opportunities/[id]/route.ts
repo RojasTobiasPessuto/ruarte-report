@@ -236,6 +236,19 @@ export async function PATCH(
       if (programa) customFields.push({ id: GHL_FIELD_IDS.programa, field_value: programa })
       if (situacion) customFields.push({ id: GHL_FIELD_IDS.situacion, field_value: situacion })
       if (descripcion_llamada) customFields.push({ id: GHL_FIELD_IDS.descripcion, field_value: descripcion_llamada })
+      // Sale fields a GHL
+      if (saleInput?.forma_pago) customFields.push({ id: GHL_FIELD_IDS.formaPago, field_value: saleInput.forma_pago })
+      if (saleInput?.revenue !== undefined) customFields.push({ id: GHL_FIELD_IDS.revenue, field_value: saleInput.revenue })
+      if (saleInput?.cash !== undefined) customFields.push({ id: GHL_FIELD_IDS.cash, field_value: saleInput.cash })
+      if (saleInput?.deposito_broker !== undefined) customFields.push({ id: GHL_FIELD_IDS.depositoBroker, field_value: saleInput.deposito_broker })
+      if (saleInput?.cantidad_cuotas !== undefined) customFields.push({ id: GHL_FIELD_IDS.cantidadCuotas, field_value: String(saleInput.cantidad_cuotas) })
+      // Justificante: pasar URL al custom field FILE_UPLOAD de GHL
+      if (saleInput?.justificante_url) {
+        customFields.push({
+          id: GHL_FIELD_IDS.justificante,
+          field_value: [{ url: saleInput.justificante_url }],
+        })
+      }
 
       const stageId = targetStage ? GHL_STAGE_IDS_BY_NAME[targetStage] : undefined
 
