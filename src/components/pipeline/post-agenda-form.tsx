@@ -72,7 +72,15 @@ export function PostAgendaForm({
   const [depositoBroker, setDepositoBroker] = useState(existingSale?.deposito_broker?.toString() || '')
   const [cantidadCuotas, setCantidadCuotas] = useState(existingSale?.cantidad_cuotas?.toString() || '')
   const [fechaProximoPago, setFechaProximoPago] = useState(firstPayment?.fecha_proximo_pago || '')
-  const [justificanteUrls, setJustificanteUrls] = useState<string[] | null>(firstPayment?.justificante_urls || null)
+  // Defensive: aceptar tanto array como string legacy
+  const initialJustificantes: string[] | null = (() => {
+    const v = firstPayment?.justificante_urls
+    if (!v) return null
+    if (Array.isArray(v)) return v
+    if (typeof v === 'string') return [v]
+    return null
+  })()
+  const [justificanteUrls, setJustificanteUrls] = useState<string[] | null>(initialJustificantes)
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')

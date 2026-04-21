@@ -16,7 +16,8 @@ export function JustificanteUpload({
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
 
-  const urls = value || []
+  // Defensive: soportar string legacy
+  const urls: string[] = Array.isArray(value) ? value : value ? [value as unknown as string] : []
 
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
