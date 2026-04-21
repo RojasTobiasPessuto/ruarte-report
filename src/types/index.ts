@@ -270,7 +270,7 @@ export interface Payment {
   fecha_pago: string | null;
   fecha_proximo_pago: string | null;
   pagado: boolean;
-  justificante_url: string | null;
+  justificante_urls: string[] | null;
   created_at: string;
 }
 

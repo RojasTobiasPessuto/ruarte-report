@@ -48,7 +48,7 @@ interface SaleInput {
   deposito_broker?: number
   cantidad_cuotas: number
   fecha_proximo_pago: string | null
-  justificante_url?: string | null
+  justificante_urls?: string[] | null
 }
 
 export async function PATCH(
@@ -204,7 +204,7 @@ export async function PATCH(
           .update({
             monto: cashAmount,
             fecha_proximo_pago: saleInput.fecha_proximo_pago || null,
-            justificante_url: saleInput.justificante_url ?? existingFirstPayment.justificante_url ?? null,
+            justificante_urls: saleInput.justificante_urls ?? existingFirstPayment.justificante_urls ?? null,
             pagado: true,
           })
           .eq('id', existingFirstPayment.id)
@@ -218,7 +218,7 @@ export async function PATCH(
             monto: cashAmount,
             fecha_pago: new Date().toISOString().slice(0, 10),
             fecha_proximo_pago: saleInput.fecha_proximo_pago || null,
-            justificante_url: saleInput.justificante_url || null,
+            justificante_urls: saleInput.justificante_urls || null,
             pagado: true,
           })
           .select('id')
@@ -242,11 +242,11 @@ export async function PATCH(
       if (saleInput?.cash !== undefined) customFields.push({ id: GHL_FIELD_IDS.cash, field_value: saleInput.cash })
       if (saleInput?.deposito_broker !== undefined) customFields.push({ id: GHL_FIELD_IDS.depositoBroker, field_value: saleInput.deposito_broker })
       if (saleInput?.cantidad_cuotas !== undefined) customFields.push({ id: GHL_FIELD_IDS.cantidadCuotas, field_value: String(saleInput.cantidad_cuotas) })
-      // Justificante: pasar URL al custom field FILE_UPLOAD de GHL
-      if (saleInput?.justificante_url) {
+      // Justificantes: pasar URLs al custom field FILE_UPLOAD de GHL (acepta múltiples)
+      if (saleInput?.justificante_urls && saleInput.justificante_urls.length > 0) {
         customFields.push({
           id: GHL_FIELD_IDS.justificante,
-          field_value: [{ url: saleInput.justificante_url }],
+          field_value: saleInput.justificante_urls.map((url) => ({ url })),
         })
       }
 

@@ -45,12 +45,12 @@ export async function POST(
   }
 
   const body = await request.json()
-  const { monto, fecha_pago, fecha_proximo_pago, nro_cuota, justificante_url } = body as {
+  const { monto, fecha_pago, fecha_proximo_pago, nro_cuota, justificante_urls } = body as {
     monto: number
     fecha_pago: string
     fecha_proximo_pago?: string | null
     nro_cuota?: number
-    justificante_url?: string | null
+    justificante_urls?: string[] | null
   }
 
   if (!monto || monto <= 0) {
@@ -72,7 +72,7 @@ export async function POST(
       monto,
       fecha_pago,
       fecha_proximo_pago: fecha_proximo_pago || null,
-      justificante_url: justificante_url || null,
+      justificante_urls: justificante_urls || null,
       pagado: true,
     })
     .select('*')
@@ -105,11 +105,11 @@ export async function POST(
         { id: GHL_FIELD_IDS.fechaProximoPago, field_value: fecha_proximo_pago || '' },
         { id: GHL_FIELD_IDS.montoRestante, field_value: Math.max(0, montoRestante) },
       ]
-      // Pasar el justificante al custom field FILE_UPLOAD de GHL
-      if (justificante_url) {
+      // Pasar los justificantes al custom field FILE_UPLOAD de GHL (múltiples)
+      if (justificante_urls && justificante_urls.length > 0) {
         customFields.push({
           id: GHL_FIELD_IDS.justificante,
-          field_value: [{ url: justificante_url }],
+          field_value: justificante_urls.map((url) => ({ url })),
         })
       }
       await updateOpportunity(sale.opportunity.ghl_opportunity_id, { customFields })
