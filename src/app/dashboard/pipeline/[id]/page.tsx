@@ -72,9 +72,12 @@ export default async function OpportunityDetailPage({
     .eq('active', true)
     .order('name')
 
-  const canFillForm = hasPermission(ctx, 'can_fill_post_agenda') || isAdmin(ctx)
-  const canCreatePayment = hasPermission(ctx, 'can_create_payment') || isAdmin(ctx)
-  const canEditPayment = hasPermission(ctx, 'can_edit_payment') || isAdmin(ctx)
+  const userIsAdmin = isAdmin(ctx)
+  // Closer solo puede llenar form si la etapa es "Post Llamada"; admin siempre
+  const canFillForm = userIsAdmin
+    || (hasPermission(ctx, 'can_fill_post_agenda') && opp.pipeline_stage === 'Post Llamada')
+  const canCreatePayment = hasPermission(ctx, 'can_create_payment') || userIsAdmin
+  const canEditPayment = hasPermission(ctx, 'can_edit_payment') || userIsAdmin
 
   return (
     <div>
