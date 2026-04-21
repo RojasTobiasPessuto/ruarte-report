@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { Opportunity, PaymentType, EstadoCita, Programa, Situacion, FormaPago } from '@/types'
+import type { Opportunity, PaymentType, Sale, EstadoCita, Programa, Situacion, FormaPago } from '@/types'
 
 const ESTADO_CITA_OPTIONS: EstadoCita[] = ['Nueva', 'Confirmada', 'Cancelada', 'Asistido', 'No Asistido']
 const PROGRAMA_OPTIONS: Programa[] = ['Mastermind', 'Formación', 'Programa PLUS', 'LITE', 'PAMM - Manejo de Portafolio', 'No Califica']
@@ -43,11 +43,13 @@ function showRevenueCash(formaPago: FormaPago | '') {
 export function PostAgendaForm({
   opportunity,
   paymentTypes,
+  existingSale,
   onClose,
   onSaved,
 }: {
   opportunity: Opportunity
   paymentTypes: PaymentType[]
+  existingSale?: Sale | null
   onClose: () => void
   onSaved: () => void
 }) {
@@ -60,15 +62,16 @@ export function PostAgendaForm({
     opportunity.fecha_seguimiento ? opportunity.fecha_seguimiento.slice(0, 10) : ''
   )
 
-  // Sale fields
-  const [formaPago, setFormaPago] = useState<FormaPago | ''>('')
-  const [tipoPagoId, setTipoPagoId] = useState('')
-  const [revenue, setRevenue] = useState('')
-  const [cash, setCash] = useState('')
-  const [depositoBroker, setDepositoBroker] = useState('')
-  const [cantidadCuotas, setCantidadCuotas] = useState('')
-  const [fechaProximoPago, setFechaProximoPago] = useState('')
-  const [codigoTransaccion, setCodigoTransaccion] = useState('')
+  // Sale fields — pre-cargados si hay una sale existente
+  const firstPayment = existingSale?.payments?.[0]
+  const [formaPago, setFormaPago] = useState<FormaPago | ''>((existingSale?.forma_pago as FormaPago) || '')
+  const [tipoPagoId, setTipoPagoId] = useState(existingSale?.payment_type_id || '')
+  const [revenue, setRevenue] = useState(existingSale?.revenue?.toString() || '')
+  const [cash, setCash] = useState(firstPayment?.monto?.toString() || '')
+  const [depositoBroker, setDepositoBroker] = useState(existingSale?.deposito_broker?.toString() || '')
+  const [cantidadCuotas, setCantidadCuotas] = useState(existingSale?.cantidad_cuotas?.toString() || '')
+  const [fechaProximoPago, setFechaProximoPago] = useState(firstPayment?.fecha_proximo_pago || '')
+  const [codigoTransaccion, setCodigoTransaccion] = useState(existingSale?.codigo_transaccion || '')
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')

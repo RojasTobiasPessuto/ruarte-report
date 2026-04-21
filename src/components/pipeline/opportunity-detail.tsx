@@ -95,22 +95,21 @@ export function OpportunityDetail({
             </div>
           </div>
 
-          {canFillForm && isPostLlamada && !opportunity.form_completed && (
+          {canFillForm && (
             <button
               onClick={() => setShowForm(!showForm)}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg flex items-center gap-2"
+              className={`px-4 py-2 text-white text-sm rounded-lg flex items-center gap-2 ${
+                !opportunity.form_completed && isPostLlamada
+                  ? 'bg-indigo-600 hover:bg-indigo-700'
+                  : 'bg-gray-800 hover:bg-gray-700'
+              }`}
             >
               <FileText className="h-4 w-4" />
-              {showForm ? 'Cerrar formulario' : 'Completar Post-Agenda'}
-            </button>
-          )}
-          {canFillForm && opportunity.form_completed && (
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg flex items-center gap-2"
-            >
-              <FileText className="h-4 w-4" />
-              {showForm ? 'Cerrar' : 'Editar Post-Agenda'}
+              {showForm
+                ? 'Cerrar'
+                : opportunity.form_completed || !isPostLlamada
+                  ? 'Editar Post-Agenda'
+                  : 'Completar Post-Agenda'}
             </button>
           )}
         </div>
@@ -174,6 +173,7 @@ export function OpportunityDetail({
         <PostAgendaForm
           opportunity={opportunity}
           paymentTypes={paymentTypes}
+          existingSale={sales[0] || null}
           onClose={() => setShowForm(false)}
           onSaved={() => {
             setShowForm(false)

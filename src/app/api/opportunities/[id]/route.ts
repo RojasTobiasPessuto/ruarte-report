@@ -144,38 +144,76 @@ export async function PATCH(
       completada: saleInput.forma_pago === 'Pago Completo' || saleInput.forma_pago === 'Deposito',
     }
 
-    const { data: newSale, error: saleError } = await supabase
+    // Buscar si ya existe una sale para esta oportunidad (editar en lugar de crear)
+    const { data: existingSale } = await supabase
       .from('sales')
-      .insert(saleData)
-      .select('*')
-      .single()
+      .select('*, payments(*)')
+      .eq('opportunity_id', id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
 
-    if (saleError) {
-      console.error('Error creating sale:', saleError)
-      return NextResponse.json({ error: 'Error al crear venta', details: saleError.message }, { status: 500 })
-    }
-
-    createdSale = newSale as Sale
-
-    // Create first Payment if not Deposito/Pago Programado
-    const shouldCreatePayment = ['Pago Completo', 'Pago Dividido', 'Fee'].includes(saleInput.forma_pago)
-    const cashAmount = Number(saleInput.cash) || 0
-
-    if (shouldCreatePayment && cashAmount > 0 && createdSale) {
-      const { data: newPayment } = await supabase
-        .from('payments')
-        .insert({
-          sale_id: createdSale.id,
-          nro_cuota: 1,
-          monto: cashAmount,
-          fecha_pago: new Date().toISOString().slice(0, 10),
-          fecha_proximo_pago: saleInput.fecha_proximo_pago || null,
-          pagado: true,
-        })
-        .select('id')
+    if (existingSale) {
+      // Update existente
+      const { data: updatedSale, error: updError } = await supabase
+        .from('sales')
+        .update({ ...saleData, updated_at: new Date().toISOString() })
+        .eq('id', existingSale.id)
+        .select('*')
         .single()
 
-      createdPaymentId = newPayment?.id || null
+      if (updError) {
+        console.error('Error updating sale:', updError)
+        return NextResponse.json({ error: 'Error al actualizar venta', details: updError.message }, { status: 500 })
+      }
+      createdSale = updatedSale as Sale
+    } else {
+      // Create nueva
+      const { data: newSale, error: saleError } = await supabase
+        .from('sales')
+        .insert(saleData)
+        .select('*')
+        .single()
+
+      if (saleError) {
+        console.error('Error creating sale:', saleError)
+        return NextResponse.json({ error: 'Error al crear venta', details: saleError.message }, { status: 500 })
+      }
+      createdSale = newSale as Sale
+    }
+
+    // Manejar primer Payment: si existe y es el mismo monto, no crear otro
+    const shouldCreatePayment = ['Pago Completo', 'Pago Dividido', 'Fee'].includes(saleInput.forma_pago)
+    const cashAmount = Number(saleInput.cash) || 0
+    const existingFirstPayment = existingSale?.payments?.find((p: { nro_cuota: number }) => p.nro_cuota === 1)
+
+    if (shouldCreatePayment && cashAmount > 0 && createdSale) {
+      if (existingFirstPayment) {
+        // Update el payment #1 existente
+        await supabase
+          .from('payments')
+          .update({
+            monto: cashAmount,
+            fecha_proximo_pago: saleInput.fecha_proximo_pago || null,
+            pagado: true,
+          })
+          .eq('id', existingFirstPayment.id)
+        createdPaymentId = existingFirstPayment.id
+      } else {
+        const { data: newPayment } = await supabase
+          .from('payments')
+          .insert({
+            sale_id: createdSale.id,
+            nro_cuota: 1,
+            monto: cashAmount,
+            fecha_pago: new Date().toISOString().slice(0, 10),
+            fecha_proximo_pago: saleInput.fecha_proximo_pago || null,
+            pagado: true,
+          })
+          .select('id')
+          .single()
+        createdPaymentId = newPayment?.id || null
+      }
     }
   }
 
