@@ -5,6 +5,7 @@ import { requireAuth, hasPermission, isAdmin } from '@/lib/permissions'
 import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/header'
 import { PipelineBoard } from '@/components/pipeline/pipeline-board'
+import { PipelineSearch } from '@/components/pipeline/pipeline-search'
 import type { Opportunity } from '@/types'
 import { Kanban, Phone, TrendingUp, CheckCircle, XCircle, Clock } from 'lucide-react'
 
@@ -20,7 +21,7 @@ const STAGES = [
 export default async function PipelinePage({
   searchParams,
 }: {
-  searchParams: Promise<{ closer?: string; stage?: string }>
+  searchParams: Promise<{ closer?: string; stage?: string; q?: string }>
 }) {
   const ctx = await requireAuth()
 
@@ -72,6 +73,12 @@ export default async function PipelinePage({
     query = query.eq('pipeline_stage', params.stage)
   }
 
+  // Buscador por nombre o email
+  if (params.q && params.q.trim()) {
+    const q = params.q.trim()
+    query = query.or(`contact_name.ilike.%${q}%,contact_email.ilike.%${q}%`)
+  }
+
   const { data: opportunities } = await query
 
   // Get closers for filter dropdown (admin only)
@@ -112,30 +119,33 @@ export default async function PipelinePage({
           <StatCard label="Tasa Cierre" value={`${conversionRate.toFixed(1)}%`} icon={TrendingUp} color="text-purple-400" bg="from-purple-500/10 to-pink-500/5" />
         </div>
 
-        {/* Filter bar (admin only) */}
-        {viewAllOpps && closers && closers.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 md:gap-3">
-            <a
-              href="/dashboard/pipeline"
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-                !params.closer ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              Todos
-            </a>
-            {closers.map((c) => (
+        {/* Search + Filter bar */}
+        <div className="flex flex-wrap items-center gap-2 md:gap-3">
+          <PipelineSearch />
+          {viewAllOpps && closers && closers.length > 0 && (
+            <>
               <a
-                key={c.id}
-                href={`/dashboard/pipeline?closer=${c.id}`}
+                href="/dashboard/pipeline"
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-                  params.closer === c.id ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  !params.closer ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
               >
-                {c.name}
+                Todos
               </a>
-            ))}
-          </div>
-        )}
+              {closers.map((c) => (
+                <a
+                  key={c.id}
+                  href={`/dashboard/pipeline?closer=${c.id}`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                    params.closer === c.id ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  {c.name}
+                </a>
+              ))}
+            </>
+          )}
+        </div>
 
         <PipelineBoard byStage={byStage} stages={STAGES} />
       </div>
