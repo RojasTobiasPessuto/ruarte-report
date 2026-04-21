@@ -193,11 +193,13 @@ export async function updateOpportunity(
     status?: 'open' | 'won' | 'lost' | 'abandoned'
     customFields?: Array<{ id: string; key?: string; field_value: unknown }>
   }
-): Promise<boolean> {
+): Promise<{ success: boolean; status?: number; error?: string; body?: unknown }> {
   const body: Record<string, unknown> = {}
   if (updates.pipelineStageId) body.pipelineStageId = updates.pipelineStageId
   if (updates.status) body.status = updates.status
   if (updates.customFields) body.customFields = updates.customFields
+
+  console.log(`[GHL] PUT opportunity ${opportunityId}:`, JSON.stringify(body).substring(0, 500))
 
   const response = await fetch(`${GHL_API_BASE}/opportunities/${opportunityId}`, {
     method: 'PUT',
@@ -205,13 +207,17 @@ export async function updateOpportunity(
     body: JSON.stringify(body),
   })
 
+  const responseText = await response.text()
+  let parsedBody: unknown
+  try { parsedBody = JSON.parse(responseText) } catch { parsedBody = responseText }
+
   if (!response.ok) {
-    const text = await response.text()
-    console.error(`GHL update opportunity error ${response.status}:`, text.substring(0, 300))
-    return false
+    console.error(`[GHL] Update error ${response.status}:`, responseText.substring(0, 500))
+    return { success: false, status: response.status, error: responseText.substring(0, 500), body: parsedBody }
   }
 
-  return true
+  console.log(`[GHL] Update success for ${opportunityId}`)
+  return { success: true, status: response.status, body: parsedBody }
 }
 
 /**

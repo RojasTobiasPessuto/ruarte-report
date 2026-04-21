@@ -112,7 +112,16 @@ export async function POST(
           field_value: justificante_urls.map((url) => ({ url })),
         })
       }
-      await updateOpportunity(sale.opportunity.ghl_opportunity_id, { customFields })
+      const ghlResult = await updateOpportunity(sale.opportunity.ghl_opportunity_id, { customFields })
+      if (!ghlResult.success) {
+        console.error('GHL sync failed:', ghlResult.status, ghlResult.error)
+        // Include in response for visibility
+        return NextResponse.json({
+          message: 'Pago creado pero falló sync con GHL',
+          payment: newPayment,
+          ghl_error: { status: ghlResult.status, body: ghlResult.body },
+        }, { status: 207 })
+      }
     } catch (err) {
       console.error('GHL sync error (non-fatal):', err)
     }
