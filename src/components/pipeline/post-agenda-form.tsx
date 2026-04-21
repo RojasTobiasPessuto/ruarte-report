@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { Opportunity, PaymentType, Sale, EstadoCita, Programa, Situacion, FormaPago } from '@/types'
+import { JustificanteUpload } from './justificante-upload'
 
 const ESTADO_CITA_OPTIONS: EstadoCita[] = ['Nueva', 'Confirmada', 'Cancelada', 'Asistido', 'No Asistido']
 const PROGRAMA_OPTIONS: Programa[] = ['Mastermind', 'Formación', 'Programa PLUS', 'LITE', 'PAMM - Manejo de Portafolio', 'No Califica']
@@ -71,7 +72,7 @@ export function PostAgendaForm({
   const [depositoBroker, setDepositoBroker] = useState(existingSale?.deposito_broker?.toString() || '')
   const [cantidadCuotas, setCantidadCuotas] = useState(existingSale?.cantidad_cuotas?.toString() || '')
   const [fechaProximoPago, setFechaProximoPago] = useState(firstPayment?.fecha_proximo_pago || '')
-  const [codigoTransaccion, setCodigoTransaccion] = useState(existingSale?.codigo_transaccion || '')
+  const [justificanteUrl, setJustificanteUrl] = useState<string | null>(firstPayment?.justificante_url || null)
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -102,7 +103,7 @@ export function PostAgendaForm({
           cash: cash ? parseFloat(cash) : 0,
           cantidad_cuotas: cantidadCuotas ? parseInt(cantidadCuotas) : 0,
           fecha_proximo_pago: fechaProximoPago || null,
-          codigo_transaccion: codigoTransaccion || null,
+          justificante_url: justificanteUrl,
         }
       } else if (showBrokerOnly) {
         body.sale = {
@@ -111,6 +112,7 @@ export function PostAgendaForm({
           revenue: 0,
           cash: 0,
           deposito_broker: depositoBroker ? parseFloat(depositoBroker) : 0,
+          justificante_url: justificanteUrl,
         }
       }
 
@@ -260,13 +262,8 @@ export function PostAgendaForm({
               </>
             )}
 
-            <Field label="Código Transacción">
-              <input
-                type="text"
-                value={codigoTransaccion}
-                onChange={(e) => setCodigoTransaccion(e.target.value)}
-                className="input"
-              />
+            <Field label="Justificante (Primer pago)">
+              <JustificanteUpload value={justificanteUrl} onChange={setJustificanteUrl} />
             </Field>
           </div>
         </div>
@@ -285,6 +282,9 @@ export function PostAgendaForm({
                 placeholder="0"
                 className="input"
               />
+            </Field>
+            <Field label="Justificante">
+              <JustificanteUpload value={justificanteUrl} onChange={setJustificanteUrl} />
             </Field>
           </div>
         </div>

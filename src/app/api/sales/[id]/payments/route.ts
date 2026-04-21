@@ -45,11 +45,12 @@ export async function POST(
   }
 
   const body = await request.json()
-  const { monto, fecha_pago, fecha_proximo_pago, nro_cuota } = body as {
+  const { monto, fecha_pago, fecha_proximo_pago, nro_cuota, justificante_url } = body as {
     monto: number
     fecha_pago: string
     fecha_proximo_pago?: string | null
     nro_cuota?: number
+    justificante_url?: string | null
   }
 
   if (!monto || monto <= 0) {
@@ -71,6 +72,7 @@ export async function POST(
       monto,
       fecha_pago,
       fecha_proximo_pago: fecha_proximo_pago || null,
+      justificante_url: justificante_url || null,
       pagado: true,
     })
     .select('*')

@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Plus, Check, Trash2, Calendar, DollarSign, Edit3 } from 'lucide-react'
+import { Plus, Check, Trash2, Calendar, FileText } from 'lucide-react'
 import type { Sale, PaymentType, Payment } from '@/types'
 import { cn } from '@/lib/utils'
+import { JustificanteUpload } from './justificante-upload'
 
 export function SaleCard({
   sale,
@@ -139,6 +140,17 @@ function PaymentRow({ payment, canEdit, onUpdate }: { payment: Payment; canEdit:
           {format(new Date(payment.fecha_pago), "d MMM", { locale: es })}
         </span>
       )}
+      {payment.justificante_url && (
+        <a
+          href={payment.justificante_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-indigo-400 hover:text-indigo-300"
+          title="Ver justificante"
+        >
+          <FileText className="h-3.5 w-3.5" />
+        </a>
+      )}
       {payment.pagado ? (
         <span className="text-[10px] bg-green-400/10 text-green-400 px-2 py-0.5 rounded-full">Pagado</span>
       ) : (
@@ -166,6 +178,7 @@ function AddPaymentForm({ saleId, nextCuota, onClose, onSaved }: {
   const [monto, setMonto] = useState('')
   const [fechaPago, setFechaPago] = useState(new Date().toISOString().slice(0, 10))
   const [fechaProxPago, setFechaProxPago] = useState('')
+  const [justificanteUrl, setJustificanteUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -182,6 +195,7 @@ function AddPaymentForm({ saleId, nextCuota, onClose, onSaved }: {
         fecha_pago: fechaPago,
         fecha_proximo_pago: fechaProxPago || null,
         nro_cuota: nextCuota,
+        justificante_url: justificanteUrl,
       }),
     })
 
@@ -221,6 +235,10 @@ function AddPaymentForm({ saleId, nextCuota, onClose, onSaved }: {
           placeholder="Próximo pago"
           className="px-3 py-2 bg-gray-900 border border-gray-700 rounded text-sm text-white"
         />
+      </div>
+      <div>
+        <label className="text-[10px] text-gray-500 uppercase tracking-widest block mb-1">Justificante</label>
+        <JustificanteUpload value={justificanteUrl} onChange={setJustificanteUrl} compact />
       </div>
       {error && <p className="text-xs text-red-400">{error}</p>}
       <div className="flex gap-2 justify-end">

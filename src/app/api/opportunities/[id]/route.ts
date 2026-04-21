@@ -48,7 +48,7 @@ interface SaleInput {
   deposito_broker?: number
   cantidad_cuotas: number
   fecha_proximo_pago: string | null
-  codigo_transaccion: string | null
+  justificante_url?: string | null
 }
 
 export async function PATCH(
@@ -149,7 +149,7 @@ export async function PATCH(
       revenue: Number(saleInput.revenue) || 0,
       cantidad_cuotas: Number(saleInput.cantidad_cuotas) || 0,
       deposito_broker: Number(saleInput.deposito_broker) || 0,
-      codigo_transaccion: saleInput.codigo_transaccion || null,
+      codigo_transaccion: null,
       completada: saleInput.forma_pago === 'Pago Completo' || saleInput.forma_pago === 'Deposito',
     }
 
@@ -204,6 +204,7 @@ export async function PATCH(
           .update({
             monto: cashAmount,
             fecha_proximo_pago: saleInput.fecha_proximo_pago || null,
+            justificante_url: saleInput.justificante_url ?? existingFirstPayment.justificante_url ?? null,
             pagado: true,
           })
           .eq('id', existingFirstPayment.id)
@@ -217,6 +218,7 @@ export async function PATCH(
             monto: cashAmount,
             fecha_pago: new Date().toISOString().slice(0, 10),
             fecha_proximo_pago: saleInput.fecha_proximo_pago || null,
+            justificante_url: saleInput.justificante_url || null,
             pagado: true,
           })
           .select('id')
