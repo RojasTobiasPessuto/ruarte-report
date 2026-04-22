@@ -79,11 +79,12 @@ export async function PATCH(
 
   // Admin puede editar cualquier oportunidad en cualquier etapa.
   // Closer y Manager solo pueden editar post-agenda de oportunidades de SU closer asignado,
-  // y solo cuando la etapa es "Post Llamada".
+  // y solo cuando la etapa es "Post Llamada" o "Seguimiento".
+  const EDITABLE_STAGES_FOR_NON_ADMIN = ['Post Llamada', 'Seguimiento']
   if (!userIsAdmin) {
-    if (opp.pipeline_stage !== 'Post Llamada') {
+    if (!EDITABLE_STAGES_FOR_NON_ADMIN.includes(opp.pipeline_stage)) {
       return NextResponse.json({
-        error: 'Solo se puede editar el Post-Agenda cuando la oportunidad está en etapa "Post Llamada". Contactá al administrador.',
+        error: 'Solo se puede editar el Post-Agenda cuando la oportunidad está en etapa "Post Llamada" o "Seguimiento". Contactá al administrador.',
       }, { status: 403 })
     }
     if (!ctx.appUser.closer_id || opp.closer_id !== ctx.appUser.closer_id) {

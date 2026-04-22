@@ -75,9 +75,10 @@ export default async function OpportunityDetailPage({
   const userIsAdmin = isAdmin(ctx)
   // La oportunidad pertenece al closer del usuario (null para admins, que pueden editar cualquier cosa)
   const isOwnOpp = !!ctx.appUser.closer_id && opp.closer_id === ctx.appUser.closer_id
-  // Admin edita cualquier oportunidad. Closer/Manager solo las de su closer asignado y solo en Post Llamada.
+  // Admin edita cualquier oportunidad. Closer/Manager solo las de su closer asignado en "Post Llamada" o "Seguimiento".
+  const EDITABLE_STAGES = ['Post Llamada', 'Seguimiento']
   const canFillForm = userIsAdmin
-    || (hasPermission(ctx, 'can_fill_post_agenda') && opp.pipeline_stage === 'Post Llamada' && isOwnOpp)
+    || (hasPermission(ctx, 'can_fill_post_agenda') && EDITABLE_STAGES.includes(opp.pipeline_stage || '') && isOwnOpp)
   // Pagos: admin cualquier venta; otros solo las de su closer.
   const canCreatePayment = userIsAdmin || (hasPermission(ctx, 'can_create_payment') && isOwnOpp)
   const canEditPayment = userIsAdmin || (hasPermission(ctx, 'can_edit_payment') && isOwnOpp)
