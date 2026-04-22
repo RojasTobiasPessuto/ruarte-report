@@ -141,7 +141,7 @@ export function OpportunityDetail({
               <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest flex items-center gap-1">
                 <DollarSign className="h-3 w-3" /> Volumen Real
               </span>
-              <p className="text-sm text-white mt-1">${Number(opportunity.volumen_real).toLocaleString()}</p>
+              <p className="text-sm text-white mt-1">${Number(opportunity.volumen_real).toLocaleString('es-AR')}</p>
             </div>
           )}
         </div>

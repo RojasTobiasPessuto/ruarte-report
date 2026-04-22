@@ -42,9 +42,9 @@ export default async function PaymentsPage() {
       <div className="p-4 md:p-8 space-y-4 md:space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          <StatCard label="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} color="text-white" icon={Wallet} iconColor="text-indigo-400" />
-          <StatCard label="Cobrado" value={`$${totalCobrado.toLocaleString()}`} color="text-green-400" icon={CheckCircle} iconColor="text-green-400" />
-          <StatCard label="Restante" value={`$${totalRestante.toLocaleString()}`} color="text-amber-400" icon={AlertCircle} iconColor="text-amber-400" />
+          <StatCard label="Total Revenue" value={`$${totalRevenue.toLocaleString('es-AR')}`} color="text-white" icon={Wallet} iconColor="text-indigo-400" />
+          <StatCard label="Cobrado" value={`$${totalCobrado.toLocaleString('es-AR')}`} color="text-green-400" icon={CheckCircle} iconColor="text-green-400" />
+          <StatCard label="Restante" value={`$${totalRestante.toLocaleString('es-AR')}`} color="text-amber-400" icon={AlertCircle} iconColor="text-amber-400" />
           <StatCard label="Ventas" value={`${completadas.length}/${sales.length}`} color="text-purple-400" icon={CheckCircle} iconColor="text-purple-400" />
         </div>
 
@@ -111,9 +111,9 @@ function SaleRow({ sale, pending }: { sale: any; pending?: boolean }) {
         </p>
       </div>
       <div className="text-right">
-        <p className="text-sm font-semibold text-white">${Number(sale.revenue).toLocaleString()}</p>
+        <p className="text-sm font-semibold text-white">${Number(sale.revenue).toLocaleString('es-AR')}</p>
         {pending ? (
-          <p className="text-xs text-amber-400">Restante: ${Number(sale.montoRestante).toLocaleString()}</p>
+          <p className="text-xs text-amber-400">Restante: ${Number(sale.montoRestante).toLocaleString('es-AR')}</p>
         ) : (
           <p className="text-xs text-green-400">Completada</p>
         )}

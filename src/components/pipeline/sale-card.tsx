@@ -68,7 +68,7 @@ export function SaleCard({
       {sale.deposito_broker > 0 && (
         <div className="mb-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
           <span className="text-xs text-purple-400">Depósito en Broker: </span>
-          <span className="text-sm font-semibold text-white">${Number(sale.deposito_broker).toLocaleString()}</span>
+          <span className="text-sm font-semibold text-white">${Number(sale.deposito_broker).toLocaleString('es-AR')}</span>
         </div>
       )}
 
@@ -108,7 +108,7 @@ function NumberBox({ label, value, accent, plain }: { label: string; value: numb
     <div className="bg-gray-800/50 rounded-lg p-2.5">
       <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">{label}</p>
       <p className={cn('text-sm font-semibold mt-0.5', accent)}>
-        {plain ? value : `$${Number(value).toLocaleString()}`}
+        {plain ? value : `$${Number(value).toLocaleString('es-AR')}`}
       </p>
     </div>
   )
@@ -132,7 +132,7 @@ function PaymentRow({ payment, canEdit, onUpdate }: { payment: Payment; canEdit:
     <div className="flex items-center gap-3 px-3 py-2 bg-gray-800/40 rounded-lg text-xs">
       <span className="text-gray-500 w-8">#{payment.nro_cuota}</span>
       <span className={cn('flex-1 font-medium', payment.pagado ? 'text-green-400' : 'text-gray-400')}>
-        ${Number(payment.monto).toLocaleString()}
+        ${Number(payment.monto).toLocaleString('es-AR')}
       </span>
       {payment.fecha_pago && (
         <span className="text-gray-500 flex items-center gap-1">
