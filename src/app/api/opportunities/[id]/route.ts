@@ -247,13 +247,8 @@ export async function PATCH(
       if (saleInput?.cash !== undefined) customFields.push({ id: GHL_FIELD_IDS.cash, field_value: saleInput.cash })
       if (saleInput?.deposito_broker !== undefined) customFields.push({ id: GHL_FIELD_IDS.depositoBroker, field_value: saleInput.deposito_broker })
       if (saleInput?.cantidad_cuotas !== undefined) customFields.push({ id: GHL_FIELD_IDS.cantidadCuotas, field_value: String(saleInput.cantidad_cuotas) })
-      // FILE_UPLOAD en GHL: probar array de strings (URLs)
-      if (saleInput?.justificante_urls && saleInput.justificante_urls.length > 0) {
-        customFields.push({
-          id: GHL_FIELD_IDS.justificante,
-          field_value: saleInput.justificante_urls,
-        })
-      }
+      // Justificante: NO se sincroniza con GHL (solo en la app)
+      // Los archivos quedan en Supabase Storage y se muestran en la app
 
       const stageId = targetStage ? GHL_STAGE_IDS_BY_NAME[targetStage] : undefined
 
