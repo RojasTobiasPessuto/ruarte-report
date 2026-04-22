@@ -65,12 +65,32 @@ export function PostAgendaForm({
 
   // Sale fields — pre-cargados si hay una sale existente
   const firstPayment = existingSale?.payments?.[0]
-  const [formaPago, setFormaPago] = useState<FormaPago | ''>((existingSale?.forma_pago as FormaPago) || '')
-  const [tipoPagoId, setTipoPagoId] = useState(existingSale?.payment_type_id || '')
-  const [revenue, setRevenue] = useState(existingSale?.revenue?.toString() || '')
-  const [cash, setCash] = useState(firstPayment?.monto?.toString() || '')
-  const [depositoBroker, setDepositoBroker] = useState(existingSale?.deposito_broker?.toString() || '')
-  const [cantidadCuotas, setCantidadCuotas] = useState(existingSale?.cantidad_cuotas?.toString() || '')
+  const [formaPago, setFormaPago] = useState<FormaPago | ''>(
+    (existingSale?.forma_pago as FormaPago) || (opportunity.legacy_forma_pago as FormaPago) || ''
+  )
+  // Fallback: si sale no tiene payment_type_id, matchear por legacy_tipo_pago contra el catálogo
+  const initialTipoPagoId = (() => {
+    if (existingSale?.payment_type_id) return existingSale.payment_type_id
+    const legacy = opportunity.legacy_tipo_pago
+    if (legacy) {
+      const match = paymentTypes.find((pt) => pt.name.toLowerCase() === legacy.toLowerCase())
+      if (match) return match.id
+    }
+    return ''
+  })()
+  const [tipoPagoId, setTipoPagoId] = useState(initialTipoPagoId)
+  const [revenue, setRevenue] = useState(
+    existingSale?.revenue?.toString() || opportunity.legacy_revenue?.toString() || ''
+  )
+  const [cash, setCash] = useState(
+    firstPayment?.monto?.toString() || opportunity.legacy_cash?.toString() || ''
+  )
+  const [depositoBroker, setDepositoBroker] = useState(
+    existingSale?.deposito_broker?.toString() || opportunity.legacy_deposito_broker?.toString() || ''
+  )
+  const [cantidadCuotas, setCantidadCuotas] = useState(
+    existingSale?.cantidad_cuotas?.toString() || opportunity.legacy_cantidad_cuotas?.toString() || ''
+  )
   const [fechaProximoPago, setFechaProximoPago] = useState(firstPayment?.fecha_proximo_pago || '')
   // Defensive: aceptar tanto array como string legacy
   const initialJustificantes: string[] | null = (() => {
@@ -175,7 +195,7 @@ export function PostAgendaForm({
           value={descripcion}
           onChange={(e) => setDescripcion(e.target.value)}
           rows={3}
-          className="input w-full"
+          className="w-full px-3 py-2 bg-gray-900/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 resize-y"
         />
       </Field>
 
