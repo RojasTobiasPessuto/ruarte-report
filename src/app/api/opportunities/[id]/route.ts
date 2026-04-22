@@ -111,16 +111,21 @@ export async function PATCH(
   // Calculate target stage
   const targetStage = getTargetStage(situacion || null, estado_cita || null)
 
+  // Solo actualizar campos que vengan con valor (evita sobrescribir con null)
   const updateData: Record<string, unknown> = {
-    estado_cita,
-    programa,
-    situacion,
-    descripcion_llamada,
-    volumen_real,
-    fecha_seguimiento,
     form_completed: true,
     updated_at: new Date().toISOString(),
   }
+  if (estado_cita) updateData.estado_cita = estado_cita
+  if (programa) updateData.programa = programa
+  if (situacion) updateData.situacion = situacion
+  if (descripcion_llamada !== undefined && descripcion_llamada !== null && descripcion_llamada !== '') {
+    updateData.descripcion_llamada = descripcion_llamada
+  }
+  if (volumen_real !== undefined && volumen_real !== null) {
+    updateData.volumen_real = volumen_real
+  }
+  if (fecha_seguimiento) updateData.fecha_seguimiento = fecha_seguimiento
 
   if (targetStage) {
     updateData.pipeline_stage = targetStage

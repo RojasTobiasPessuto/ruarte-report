@@ -54,23 +54,6 @@ export function PostAgendaForm({
   onClose: () => void
   onSaved: () => void
 }) {
-  // Debug: log what's in opportunity
-  if (typeof window !== 'undefined') {
-    console.log('[PostAgendaForm] opportunity:', {
-      estado_cita: opportunity.estado_cita,
-      programa: opportunity.programa,
-      situacion: opportunity.situacion,
-      descripcion: opportunity.descripcion_llamada,
-      volumen_real: opportunity.volumen_real,
-    })
-    console.log('[PostAgendaForm] existingSale:', existingSale ? {
-      id: existingSale.id,
-      forma_pago: existingSale.forma_pago,
-      revenue: existingSale.revenue,
-      payments_count: existingSale.payments?.length || 0,
-    } : null)
-  }
-
   const [estadoCita, setEstadoCita] = useState<EstadoCita | ''>((opportunity.estado_cita as EstadoCita) || '')
   const [programa, setPrograma] = useState<Programa | ''>((opportunity.programa as Programa) || '')
   const [situacion, setSituacion] = useState<Situacion | ''>((opportunity.situacion as Situacion) || '')
