@@ -222,6 +222,7 @@ export async function runGhlSyncBatch(): Promise<SyncResult> {
         contact_id: contactId,
         ghl_opportunity_id: opp.id,
         ghl_contact_id: opp.contactId,
+        ghl_assigned_to: opp.assignedTo || null,
         lead_id: leadId,
         call_id: callId,
         closer_id: closerId,
