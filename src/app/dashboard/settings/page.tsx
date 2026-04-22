@@ -129,8 +129,10 @@ export default function SettingsPage() {
       const errorsInfo = data.total_errors > 0
         ? ` · ${data.total_errors} ERRORES${data.last_result?.error_samples ? ': ' + data.last_result.error_samples.join(' | ') : ''}`
         : ''
+      const orphansInfo = data.last_result?.orphans_cleaned ? ` · ${data.last_result.orphans_cleaned} huérfanas eliminadas` : ''
+      const lastMsg = data.last_result?.message ? ` · ${data.last_result.message}` : ''
       setMessage(
-        `Sync: +${data.total_created || 0} creadas, ${data.total_updated || 0} actualizadas${errorsInfo}`
+        `Sync: +${data.total_created || 0} creadas, ${data.total_updated || 0} actualizadas, ${data.total_processed || 0} procesadas${orphansInfo}${errorsInfo}${lastMsg}`
       )
     } else {
       setMessage(data.error || 'Error')
