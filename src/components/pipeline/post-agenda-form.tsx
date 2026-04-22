@@ -165,7 +165,7 @@ export function PostAgendaForm({
             value={volumenReal}
             onChange={(e) => setVolumenReal(e.target.value)}
             placeholder="0"
-            className="input"
+            className="w-full px-3 py-2 bg-gray-900/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50"
           />
         </Field>
       </div>
@@ -186,7 +186,7 @@ export function PostAgendaForm({
             type="date"
             value={fechaSeguimiento}
             onChange={(e) => setFechaSeguimiento(e.target.value)}
-            className="input"
+            className="w-full px-3 py-2 bg-gray-900/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50"
           />
         </Field>
       )}
@@ -207,7 +207,7 @@ export function PostAgendaForm({
               <select
                 value={tipoPagoId}
                 onChange={(e) => setTipoPagoId(e.target.value)}
-                className="input"
+                className="w-full px-3 py-2 bg-gray-900/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50"
               >
                 <option value="">Seleccionar...</option>
                 {paymentTypes.map((pt) => (
@@ -227,7 +227,7 @@ export function PostAgendaForm({
                       if (formaPago === 'Pago Completo') setCash(e.target.value)
                     }}
                     placeholder="0"
-                    className="input"
+                    className="w-full px-3 py-2 bg-gray-900/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50"
                   />
                 </Field>
                 {formaPago !== 'Pago Programado' && (
@@ -237,7 +237,7 @@ export function PostAgendaForm({
                       value={cash}
                       onChange={(e) => setCash(e.target.value)}
                       placeholder="0"
-                      className="input"
+                      className="w-full px-3 py-2 bg-gray-900/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50"
                       readOnly={formaPago === 'Pago Completo'}
                     />
                   </Field>
@@ -251,7 +251,7 @@ export function PostAgendaForm({
                   <select
                     value={cantidadCuotas}
                     onChange={(e) => setCantidadCuotas(e.target.value)}
-                    className="input"
+                    className="w-full px-3 py-2 bg-gray-900/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50"
                   >
                     <option value="">Seleccionar...</option>
                     {[1, 2, 3, 4, 5, 6, 7].map((n) => (
@@ -264,7 +264,7 @@ export function PostAgendaForm({
                     type="date"
                     value={fechaProximoPago}
                     onChange={(e) => setFechaProximoPago(e.target.value)}
-                    className="input"
+                    className="w-full px-3 py-2 bg-gray-900/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50"
                   />
                 </Field>
               </>
@@ -288,7 +288,7 @@ export function PostAgendaForm({
                 value={depositoBroker}
                 onChange={(e) => setDepositoBroker(e.target.value)}
                 placeholder="0"
-                className="input"
+                className="w-full px-3 py-2 bg-gray-900/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50"
               />
             </Field>
             <Field label="Justificante">
@@ -321,22 +321,6 @@ export function PostAgendaForm({
         </button>
       </div>
 
-      <style jsx>{`
-        :global(.input) {
-          width: 100%;
-          padding: 0.5rem 0.75rem;
-          background: rgba(17, 24, 39, 0.8);
-          border: 1px solid rgba(55, 65, 81, 0.5);
-          border-radius: 0.5rem;
-          color: white;
-          font-size: 0.875rem;
-        }
-        :global(.input:focus) {
-          outline: none;
-          border-color: rgba(99, 102, 241, 0.5);
-          box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-        }
-      `}</style>
     </form>
   )
 }
@@ -352,7 +336,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function Select({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className="input">
+    <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full px-3 py-2 bg-gray-900/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50">
       <option value="">Seleccionar...</option>
       {options.map((opt) => (
         <option key={opt} value={opt}>{opt}</option>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { Plus, Check, Trash2, Calendar, FileText } from 'lucide-react'
@@ -181,8 +181,12 @@ function AddPaymentForm({ saleId, nextCuota, onClose, onSaved }: {
   onSaved: () => void
 }) {
   const [monto, setMonto] = useState('')
-  const [fechaPago, setFechaPago] = useState(new Date().toISOString().slice(0, 10))
+  const [fechaPago, setFechaPago] = useState('')
   const [fechaProxPago, setFechaProxPago] = useState('')
+
+  useEffect(() => {
+    setFechaPago(new Date().toISOString().slice(0, 10))
+  }, [])
   const [justificanteUrls, setJustificanteUrls] = useState<string[] | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
