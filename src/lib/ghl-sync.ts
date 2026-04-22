@@ -133,6 +133,7 @@ export interface SyncResult {
   error_samples?: string[]
   stage_has_more: boolean
   has_next_stage: boolean
+  orphans_cleaned?: number
 }
 
 export async function runGhlSyncBatch(): Promise<SyncResult> {
@@ -158,6 +159,13 @@ export async function runGhlSyncBatch(): Promise<SyncResult> {
   const totalProcessedBefore = state?.total_processed || 0
   const currentStageId = STAGES_TO_SYNC[stageIndex]
   const currentStageName = GHL_STAGE_NAMES[currentStageId]
+
+  // Si es el primer batch del ciclo (no había cursor antes), guardar timestamp
+  const isFirstBatchOfCycle = !state?.cursor_value
+  let cycleStartedAt: string = state?.cycle_started_at as string
+  if (isFirstBatchOfCycle || !cycleStartedAt) {
+    cycleStartedAt = new Date().toISOString()
+  }
 
   const res = await searchOpportunities({
     pipelineStageId: currentStageId,
@@ -286,12 +294,15 @@ export async function runGhlSyncBatch(): Promise<SyncResult> {
   const newTotalProcessed = totalProcessedBefore + opportunities.length
 
   let nextMessage: string
+  let orphansCleaned = 0
+
   if (stageHasMore && res.meta.startAfter && res.meta.startAfterId) {
     await supabase.from('sync_state').upsert({
       key: SYNC_KEY,
       cursor_value: `${stageIndex}|${res.meta.startAfter}`,
       cursor_id: res.meta.startAfterId,
       total_processed: newTotalProcessed,
+      cycle_started_at: cycleStartedAt,
       updated_at: new Date().toISOString(),
     })
     nextMessage = `Stage "${currentStageName}" tiene más páginas`
@@ -301,19 +312,43 @@ export async function runGhlSyncBatch(): Promise<SyncResult> {
       cursor_value: `${stageIndex + 1}`,
       cursor_id: null,
       total_processed: newTotalProcessed,
+      cycle_started_at: cycleStartedAt,
       updated_at: new Date().toISOString(),
     })
     nextMessage = `"${currentStageName}" completada. Siguiente: "${GHL_STAGE_NAMES[STAGES_TO_SYNC[stageIndex + 1]]}"`
   } else {
+    // Ciclo completo: limpiar oportunidades huérfanas
+    // (las que no se actualizaron durante este ciclo = no están más en GHL en las etapas trackeadas)
+    if (cycleStartedAt) {
+      const { data: deletedOpps, error: deleteError } = await supabase
+        .from('opportunities')
+        .delete()
+        .not('ghl_opportunity_id', 'is', null)
+        .lt('synced_at', cycleStartedAt)
+        .select('id')
+
+      if (!deleteError && deletedOpps) {
+        orphansCleaned = deletedOpps.length
+        if (orphansCleaned > 0) {
+          console.log(`[GHL Sync] Cleaned ${orphansCleaned} orphan opportunities (synced_at < ${cycleStartedAt})`)
+        }
+      } else if (deleteError) {
+        console.error('[GHL Sync] Error cleaning orphans:', deleteError.message)
+      }
+    }
+
     await supabase.from('sync_state').upsert({
       key: SYNC_KEY,
       cursor_value: null,
       cursor_id: null,
       total_processed: 0,
+      cycle_started_at: null,
       last_completed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
-    nextMessage = 'Ciclo completo. Todas las etapas sincronizadas.'
+    nextMessage = orphansCleaned > 0
+      ? `Ciclo completo. ${orphansCleaned} huérfanas limpiadas.`
+      : 'Ciclo completo. Todas las etapas sincronizadas.'
   }
 
   return {
@@ -323,6 +358,7 @@ export async function runGhlSyncBatch(): Promise<SyncResult> {
     batch_size: opportunities.length,
     total_in_stage: res.meta.total,
     total_processed_cycle: newTotalProcessed,
+    orphans_cleaned: orphansCleaned > 0 ? orphansCleaned : undefined,
     created,
     updated,
     errors,
