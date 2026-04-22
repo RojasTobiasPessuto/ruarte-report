@@ -1,6 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { requireAuth, isAdmin, hasPermission } from '@/lib/permissions'
+import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/header'
 import { StatsCards } from '@/components/dashboard/stats-cards'
 import { CloserComparison } from '@/components/dashboard/closer-comparison'
@@ -158,6 +160,11 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ range?: string; from?: string; to?: string }>
 }) {
+  const ctx = await requireAuth()
+  // Solo admin y roles con can_view_all pueden ver el dashboard (closer solo pipeline)
+  if (!isAdmin(ctx) && !hasPermission(ctx, 'can_view_all')) {
+    redirect('/dashboard/pipeline')
+  }
   const params = await searchParams
   const { from, to } = getDateRange(params)
   const { stats, closerComparison, trendData, objectionsData, recentCalls } =

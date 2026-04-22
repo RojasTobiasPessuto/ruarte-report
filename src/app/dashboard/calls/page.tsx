@@ -1,6 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { requireAuth, isAdmin, hasPermission } from '@/lib/permissions'
+import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/header'
 import { CallsTable } from '@/components/dashboard/calls-table'
 import { CallsFilters } from '@/components/calls/calls-filters'
@@ -19,6 +21,10 @@ export default async function CallsPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
+  const ctx = await requireAuth()
+  if (!isAdmin(ctx) && !hasPermission(ctx, 'can_view_all_calls')) {
+    redirect('/dashboard/pipeline')
+  }
   const params = await searchParams
   const supabase = await createServerSupabaseClient()
 

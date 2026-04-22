@@ -1,6 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { requireAuth, isAdmin, hasPermission } from '@/lib/permissions'
+import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/header'
 import Link from 'next/link'
 import { Users, TrendingUp, Phone, Star } from 'lucide-react'
@@ -8,6 +10,10 @@ import type { Closer, Call } from '@/types'
 import { cn } from '@/lib/utils'
 
 export default async function ClosersPage() {
+  const ctx = await requireAuth()
+  if (!isAdmin(ctx) && !hasPermission(ctx, 'can_view_all')) {
+    redirect('/dashboard/pipeline')
+  }
   const supabase = await createServerSupabaseClient()
 
   const { data: closers } = await supabase
