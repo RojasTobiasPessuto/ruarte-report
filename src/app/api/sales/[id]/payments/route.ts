@@ -38,10 +38,15 @@ export async function POST(
 
   if (!sale) return NextResponse.json({ error: 'Venta no encontrada' }, { status: 404 })
 
-  // Verify ownership
-  const canViewAll = isAdmin(ctx) || hasPermission(ctx, 'can_view_all_opportunities')
-  if (!canViewAll && sale.opportunity?.closer_id !== ctx.appUser.closer_id) {
-    return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
+  // Admin puede crear pagos en cualquier venta.
+  // Closer/Manager solo pueden crear pagos en ventas de su closer asignado.
+  const userIsAdmin = isAdmin(ctx)
+  if (!userIsAdmin) {
+    if (!ctx.appUser.closer_id || sale.opportunity?.closer_id !== ctx.appUser.closer_id) {
+      return NextResponse.json({
+        error: 'Solo podés agregar pagos a las ventas de las oportunidades asignadas a tu closer.',
+      }, { status: 403 })
+    }
   }
 
   const body = await request.json()

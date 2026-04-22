@@ -77,16 +77,20 @@ export async function PATCH(
 
   if (!opp) return NextResponse.json({ error: 'No encontrada' }, { status: 404 })
 
-  const canViewAll = userIsAdmin || hasPermission(ctx, 'can_view_all_opportunities')
-  if (!canViewAll && opp.closer_id !== ctx.appUser.closer_id) {
-    return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
-  }
-
-  // Closer solo puede editar si la oportunidad está en Post Llamada. Admin siempre.
-  if (!userIsAdmin && opp.pipeline_stage !== 'Post Llamada') {
-    return NextResponse.json({
-      error: 'Los closers solo pueden editar el Post-Agenda cuando la oportunidad está en etapa "Post Llamada". Contactá al administrador.',
-    }, { status: 403 })
+  // Admin puede editar cualquier oportunidad en cualquier etapa.
+  // Closer y Manager solo pueden editar post-agenda de oportunidades de SU closer asignado,
+  // y solo cuando la etapa es "Post Llamada".
+  if (!userIsAdmin) {
+    if (opp.pipeline_stage !== 'Post Llamada') {
+      return NextResponse.json({
+        error: 'Solo se puede editar el Post-Agenda cuando la oportunidad está en etapa "Post Llamada". Contactá al administrador.',
+      }, { status: 403 })
+    }
+    if (!ctx.appUser.closer_id || opp.closer_id !== ctx.appUser.closer_id) {
+      return NextResponse.json({
+        error: 'Solo podés editar el Post-Agenda de las oportunidades asignadas a tu closer.',
+      }, { status: 403 })
+    }
   }
 
   const body = await request.json()
