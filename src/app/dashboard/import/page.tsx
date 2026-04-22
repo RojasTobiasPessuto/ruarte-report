@@ -90,21 +90,31 @@ export default function ImportPage() {
         {/* Instructions */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-white mb-3">Instrucciones</h3>
-          <ol className="text-sm text-gray-400 space-y-2 list-decimal list-inside">
-            <li>
-              Descargá los Google Docs desde Google Drive
-              (seleccioná todos → click derecho → Descargar)
-            </li>
-            <li>Descomprimí el .zip si es necesario</li>
-            <li>
-              Seleccioná todos los archivos <code className="text-indigo-400">.docx</code> o <code className="text-indigo-400">.txt</code> abajo
-            </li>
-            <li>
-              Los archivos deben contener el análisis estructurado con bloques 1-6 y puntuación global
-            </li>
-          </ol>
-          <div className="mt-3 text-xs text-gray-500">
-            Formato de nombre soportado: <code className="text-gray-400">DD_MM_YYYY Llamada Closer con Lead_ Nombre.docx</code>
+          <p className="text-sm text-gray-400 mb-3">
+            Seleccioná archivos <code className="text-indigo-400">.docx</code> o <code className="text-indigo-400">.txt</code>. El sistema detecta automáticamente dos formatos:
+          </p>
+
+          <div className="space-y-3 text-sm">
+            <div className="border border-gray-800 rounded-lg p-3">
+              <p className="text-white font-medium mb-1">📊 Análisis histórico</p>
+              <p className="text-xs text-gray-400 mb-1">
+                Nombre: <code className="text-gray-400">DD_MM_YYYY Llamada Closer con Lead_ Nombre.docx</code>
+              </p>
+              <p className="text-xs text-gray-500">
+                El contenido es el análisis estructurado (bloques 1-6 + puntuación). Crea call + análisis.
+              </p>
+            </div>
+
+            <div className="border border-gray-800 rounded-lg p-3">
+              <p className="text-white font-medium mb-1">🎙️ Transcript de Fathom</p>
+              <p className="text-xs text-gray-400 mb-1">
+                Nombre: <code className="text-gray-400">Closer - Contacto.txt</code> o <code className="text-gray-400">email@closer.com - Contacto.txt</code>
+              </p>
+              <p className="text-xs text-gray-500">
+                El contenido es el transcript crudo. Solo crea el call (el análisis lo hace Claude después).
+                El closer se matchea por nombre o por email del closer/app_user.
+              </p>
+            </div>
           </div>
         </div>
 

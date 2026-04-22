@@ -37,41 +37,58 @@ export interface ParsedBlock {
 }
 
 /**
- * Parse the filename to extract date, closer name, and contact name.
- * Format: "29/01/2026 Llamada Closer con Lead:  Pao"
+ * Parse the filename to extract date, closer name/email, and contact name.
+ *
+ * Formatos soportados:
+ *  1. Análisis histórico: "29/01/2026 Llamada {CloserName} con Lead: {ContactName}"
+ *  2. Transcript Fathom:  "{CloserNameOrEmail} - {ContactName}[ - extra].txt"
+ *
+ * El campo `format`:
+ *  - 'analysis'   → contenido es un análisis estructurado (creará call + call_analyses)
+ *  - 'transcript' → contenido es un transcript crudo (solo creará call)
  */
 export function parseFilename(filename: string): {
   date: string
   closerName: string
   contactName: string
+  format: 'analysis' | 'transcript'
 } {
   // Remove file extension
   const name = filename.replace(/\.(txt|doc|docx)$/i, '').trim()
 
-  // Extract date - supports both DD/MM/YYYY and DD_MM_YYYY formats
+  // Intento 1: formato histórico con fecha + "Llamada ... con Lead:"
   const dateMatch = name.match(/^(\d{1,2})[/_](\d{1,2})[/_](\d{4})/)
-  let date = new Date().toISOString()
-  if (dateMatch) {
-    const [, day, month, year] = dateMatch
-    date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T12:00:00Z`).toISOString()
-  }
-
-  // Extract closer name and contact name
-  // Supports multiple formats:
-  // "Llamada {CloserName} con Lead: {ContactName}"
-  // "Llamada {CloserName} con Lead_ {ContactName}" (Google Drive download format)
-  // "Llamada Closer con Lead: {ContactName}" (generic closer name)
-  // "Llamada Closer con Lead_ {ContactName}" (generic closer name, Drive format)
   const nameMatch = name.match(/Llamada\s+(.+?)\s+con\s+Lead[_:]\s*(.+)/i)
-  let closerName = 'Desconocido'
-  let contactName = 'Desconocido'
 
-  if (nameMatch) {
-    closerName = nameMatch[1].trim()
-    contactName = nameMatch[2].trim()
+  if (dateMatch && nameMatch) {
+    const [, day, month, year] = dateMatch
+    const date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T12:00:00Z`).toISOString()
+    return {
+      date,
+      closerName: nameMatch[1].trim(),
+      contactName: nameMatch[2].trim(),
+      format: 'analysis',
+    }
   }
 
-  return { date, closerName, contactName }
+  // Intento 2: formato transcript "{closer} - {contact}[ - extra]"
+  const parts = name.split(' - ').map((p) => p.trim()).filter(Boolean)
+  if (parts.length >= 2) {
+    return {
+      date: new Date().toISOString(),
+      closerName: parts[0],
+      contactName: parts[1],
+      format: 'transcript',
+    }
+  }
+
+  // Fallback
+  return {
+    date: new Date().toISOString(),
+    closerName: 'Desconocido',
+    contactName: 'Desconocido',
+    format: 'transcript',
+  }
 }
 
 /**

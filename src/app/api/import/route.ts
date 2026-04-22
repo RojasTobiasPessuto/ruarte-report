@@ -39,14 +39,24 @@ export async function POST(request: NextRequest) {
       details: [] as Array<{ filename: string; status: string; error?: string }>,
     }
 
-    // Get existing closers
+    // Get existing closers (por nombre y email)
     const { data: existingClosers } = await serviceClient
       .from('closers')
-      .select('*')
+      .select('id, name, email')
 
     const closerMap = new Map<string, string>()
+    const closerByEmail = new Map<string, string>()
     for (const closer of existingClosers || []) {
       closerMap.set(closer.name.toLowerCase(), closer.id)
+      if (closer.email) closerByEmail.set(closer.email.toLowerCase(), closer.id)
+    }
+
+    // Para matchear closer por email de app_user (ej: arriagadainaki@gmail.com → closer IÑAKI)
+    const { data: appUsers } = await serviceClient
+      .from('app_users')
+      .select('email, closer_id')
+    for (const u of appUsers || []) {
+      if (u.email && u.closer_id) closerByEmail.set(u.email.toLowerCase(), u.closer_id)
     }
 
     for (const file of uploadedFiles) {
@@ -75,75 +85,108 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        // Parse filename
-        const { date, closerName, contactName } = parseFilename(filename)
+        // Parse filename (detecta formato automáticamente)
+        const { date, closerName, contactName, format } = parseFilename(filename)
 
-        // Try to find closer name from document content if filename says "Closer"
-        let resolvedCloserName = closerName
-        if (closerName.toLowerCase() === 'closer' || closerName.toLowerCase() === 'desconocido') {
-          // Try to extract closer name from content
-          const closerInContent = textContent.match(/(?:closer|vendedor|asesor)[:\s]+([A-ZÁÉÍÓÚÑa-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑa-záéíóúñ]+)?)/i)
-          if (closerInContent) {
-            resolvedCloserName = closerInContent[1].trim()
+        // Resolver closer: si el identificador parece email, buscar por email;
+        // si no, buscar por nombre con fallback a match parcial.
+        let closerId: string | undefined
+        const closerKey = closerName.toLowerCase().trim()
+
+        if (closerKey.includes('@')) {
+          closerId = closerByEmail.get(closerKey)
+        } else {
+          // Exact name match
+          closerId = closerMap.get(closerKey)
+          // Si filename dice "Closer"/"Desconocido", buscar en el contenido
+          let resolvedCloserName = closerName
+          if (!closerId && (closerKey === 'closer' || closerKey === 'desconocido')) {
+            const closerInContent = textContent.match(/(?:closer|vendedor|asesor)[:\s]+([A-ZÁÉÍÓÚÑa-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑa-záéíóúñ]+)?)/i)
+            if (closerInContent) resolvedCloserName = closerInContent[1].trim()
+          }
+          if (!closerId) {
+            const resolvedLower = resolvedCloserName.toLowerCase()
+            closerMap.forEach((existingId, existingName) => {
+              if (closerId) return
+              if (
+                existingName.startsWith(resolvedLower) ||
+                existingName.includes(resolvedLower) ||
+                resolvedLower.includes(existingName.split(' ')[0])
+              ) {
+                closerId = existingId
+              }
+            })
           }
         }
 
-        // Find closer by exact name or partial match (e.g., "Hernan" matches "Hernan Grando")
-        let closerId: string | undefined = closerMap.get(resolvedCloserName.toLowerCase())
+        // ─── Formato TRANSCRIPT (nuevo): solo crea call con transcript, sin analysis ───
+        if (format === 'transcript') {
+          // Deduplicar por contact_name + closer_id
+          const dupQuery = serviceClient
+            .from('calls')
+            .select('id')
+            .eq('contact_name', contactName)
+          const { data: existing } = closerId
+            ? await dupQuery.eq('closer_id', closerId).maybeSingle()
+            : await dupQuery.is('closer_id', null).maybeSingle()
+
+          if (existing) {
+            results.skipped++
+            results.details.push({ filename, status: 'skipped', error: 'Ya existe un call con ese contacto y closer' })
+            continue
+          }
+
+          const { error: callError } = await serviceClient.from('calls').insert({
+            closer_id: closerId || null,
+            contact_name: contactName,
+            call_date: date,
+            transcript: textContent,
+            fathom_summary: textContent.substring(0, 5000),
+            status: 'pending',
+          })
+
+          if (callError) {
+            results.errors++
+            results.details.push({ filename, status: 'error', error: callError.message })
+            continue
+          }
+
+          results.success++
+          results.details.push({ filename, status: 'success' })
+          continue
+        }
+
+        // ─── Formato ANALYSIS (histórico): crea call + call_analyses ───
+        // Si no se encontró closer, default a "Hernan Grando" (compatibilidad histórica)
         if (!closerId) {
-          // Try partial match: check if any existing closer name starts with or contains the resolved name
-          const resolvedLower = resolvedCloserName.toLowerCase()
           closerMap.forEach((existingId, existingName) => {
-            if (closerId) return
-            if (
-              existingName.startsWith(resolvedLower) ||
-              existingName.includes(resolvedLower) ||
-              resolvedLower.includes(existingName.split(' ')[0])
-            ) {
-              closerId = existingId
-            }
+            if (!closerId && existingName.includes('hernan')) closerId = existingId
           })
         }
 
-        // Default to "Hernan Grando" if no closer found (don't create new closers)
-        if (!closerId) {
-          closerMap.forEach((existingId, existingName) => {
-            if (closerId) return
-            if (existingName.includes('hernan')) {
-              closerId = existingId
-            }
-          })
-        }
-
-        // Parse content
         const parsed = parseDocContent(textContent)
         const fullParsed = {
           ...parsed,
           date,
-          closerName: resolvedCloserName,
+          closerName,
           contactName,
           rawContent: textContent,
         }
 
-        // Check if call already exists (by date + contact name)
-        const { data: existing } = await serviceClient
+        // Deduplicar por date + contact_name (formato histórico tiene fecha real)
+        const { data: existingAnalysis } = await serviceClient
           .from('calls')
           .select('id')
           .eq('contact_name', contactName)
           .eq('call_date', date)
-          .single()
+          .maybeSingle()
 
-        if (existing) {
+        if (existingAnalysis) {
           results.skipped++
-          results.details.push({
-            filename,
-            status: 'skipped',
-            error: 'Llamada ya existe',
-          })
+          results.details.push({ filename, status: 'skipped', error: 'Llamada ya existe' })
           continue
         }
 
-        // Insert call
         const { data: call, error: callError } = await serviceClient
           .from('calls')
           .insert({
@@ -167,14 +210,10 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        // Insert analysis
         const analysisData = toCallAnalysis(fullParsed)
         const { error: analysisError } = await serviceClient
           .from('call_analyses')
-          .insert({
-            call_id: call.id,
-            ...analysisData,
-          })
+          .insert({ call_id: call.id, ...analysisData })
 
         if (analysisError) {
           results.errors++
@@ -187,10 +226,7 @@ export async function POST(request: NextRequest) {
         }
 
         results.success++
-        results.details.push({
-          filename,
-          status: 'success',
-        })
+        results.details.push({ filename, status: 'success' })
       } catch (err) {
         results.errors++
         results.details.push({
