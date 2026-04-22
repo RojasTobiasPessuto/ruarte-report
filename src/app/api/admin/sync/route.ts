@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
       let totalUpdated = 0
       let totalErrors = 0
       let totalProcessed = 0
+      let totalOrphansCleaned = 0
 
       for (let i = 0; i < MAX_BATCHES; i++) {
         const result = await runGhlSyncBatch()
@@ -58,8 +59,9 @@ export async function POST(request: NextRequest) {
         totalUpdated += result.updated
         totalErrors += result.errors
         totalProcessed += result.batch_size
+        if (result.orphans_cleaned) totalOrphansCleaned += result.orphans_cleaned
 
-        // Si completó el ciclo o no hay más, cortar
+        // Si completó el ciclo, cortar
         if (!result.stage_has_more && !result.has_next_stage) break
       }
 
@@ -69,7 +71,16 @@ export async function POST(request: NextRequest) {
         total_updated: totalUpdated,
         total_errors: totalErrors,
         total_processed: totalProcessed,
+        total_orphans_cleaned: totalOrphansCleaned,
         last_result: results[results.length - 1],
+        all_results: results.map((r) => ({
+          stage: r.stage,
+          batch: r.batch_size,
+          created: r.created,
+          updated: r.updated,
+          errors: r.errors,
+          message: r.message,
+        })),
       })
     } catch (err) {
       console.error('Manual sync error:', err)
