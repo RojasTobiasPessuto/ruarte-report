@@ -19,10 +19,14 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createServiceRoleClient()
 
-    // Collect all Fathom API keys (support multiple closer accounts)
+    // Collect all Fathom API keys (support multiple closer accounts).
+    // Reads FATHOM_API_KEY (first closer) y FATHOM_API_KEY_2, _3, ... para los demás.
     const fathomKeys: string[] = []
     if (process.env.FATHOM_API_KEY) fathomKeys.push(process.env.FATHOM_API_KEY)
-    if (process.env.FATHOM_API_KEY_2) fathomKeys.push(process.env.FATHOM_API_KEY_2)
+    for (let i = 2; i <= 20; i++) {
+      const key = process.env[`FATHOM_API_KEY_${i}`]
+      if (key) fathomKeys.push(key)
+    }
 
     if (fathomKeys.length === 0) {
       return NextResponse.json({ error: 'No Fathom API keys configured' }, { status: 400 })
