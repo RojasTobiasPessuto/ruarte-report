@@ -14,7 +14,7 @@ import { formatAngleTag } from '@/lib/utils'
 import type { Lead } from '@/types'
 
 const HEADERS = [
-  'Fecha Agenda',
+  'Fecha que pidio Agenda',
   'Nombre',
   'IG',
   'Subscriber ID',
@@ -23,7 +23,6 @@ const HEADERS = [
   'Todos los Ángulos',
   'Cant. Ángulos',
   'Tiempo a Agenda (h)',
-  'Estado',
   'ManyChat Joined',
   'Registrado en Sistema',
 ]
@@ -78,7 +77,6 @@ export async function syncLeadsToSheet(): Promise<SyncResult> {
     (l.all_angles || []).map(formatAngleTag).join(', '),
     l.total_angles,
     l.time_to_agenda_hours ?? '',
-    l.status,
     formatDate(l.manychat_joined_at),
     formatDate(l.created_at),
   ])
