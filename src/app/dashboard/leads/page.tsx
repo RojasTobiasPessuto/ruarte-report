@@ -7,7 +7,7 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import Link from 'next/link'
 import type { Lead } from '@/types'
-import { cn } from '@/lib/utils'
+import { cn, formatAngleTag } from '@/lib/utils'
 import { Users, Calendar, TrendingUp, Clock, ExternalLink } from 'lucide-react'
 
 const statusLabels: Record<string, { label: string; className: string }> = {
@@ -162,7 +162,7 @@ export default async function LeadsPage({
                         <td className="px-4 md:px-6 py-4 text-xs">
                           {lead.first_angle ? (
                             <span className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-1 rounded-full">
-                              {lead.first_angle.replace('angulo_', '')}
+                              {formatAngleTag(lead.first_angle)}
                             </span>
                           ) : '—'}
                         </td>
@@ -170,7 +170,7 @@ export default async function LeadsPage({
                           <div className="flex flex-wrap gap-1 max-w-[200px]">
                             {angles.length > 0 ? angles.map((a: string, i: number) => (
                               <span key={i} className="text-[10px] bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded">
-                                {a.replace('angulo_', '')}
+                                {formatAngleTag(a)}
                               </span>
                             )) : '—'}
                           </div>
@@ -178,7 +178,7 @@ export default async function LeadsPage({
                         <td className="px-4 md:px-6 py-4 text-xs">
                           {lead.last_angle ? (
                             <span className="bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-1 rounded-full">
-                              {lead.last_angle.replace('angulo_', '')}
+                              {formatAngleTag(lead.last_angle)}
                             </span>
                           ) : '—'}
                         </td>

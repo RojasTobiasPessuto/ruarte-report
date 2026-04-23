@@ -9,7 +9,7 @@ import { notFound } from 'next/navigation'
 import type { Lead } from '@/types'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { cn } from '@/lib/utils'
+import { cn, formatAngleTag } from '@/lib/utils'
 
 const statusLabels: Record<string, { label: string; className: string }> = {
   nuevo: { label: 'Nuevo', className: 'bg-blue-400/10 text-blue-400 border-blue-400/20' },
@@ -134,7 +134,7 @@ export default async function LeadDetailPage({
                 >
                   {i === 0 && <span className="text-[10px] mr-1 opacity-60">1ro</span>}
                   {i === angles.length - 1 && i > 0 && <span className="text-[10px] mr-1 opacity-60">ult</span>}
-                  {angle.replace('angulo_', '')}
+                  {formatAngleTag(angle)}
                 </span>
               ))}
             </div>

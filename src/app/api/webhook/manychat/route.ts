@@ -55,9 +55,10 @@ export async function POST(request: NextRequest) {
     // GET tags from ManyChat API (not included in Full Contact Data)
     const allTags = await getSubscriberTags(String(subscriberId))
 
-    // Filter tags by "angulo_" prefix, keep order as they come
+    // Capturamos ángulos: cualquier tag que empiece con "ang" (case-insensitive).
+    // Esto cubre "Ang*", "ang_*", "angulo_*", etc.
     const angleTags = allTags
-      .filter((tag) => tag.name.toLowerCase().startsWith('angulo_'))
+      .filter((tag) => tag.name.toLowerCase().startsWith('ang'))
       .map((tag) => tag.name)
 
     const firstAngle = angleTags.length > 0 ? angleTags[0] : null
