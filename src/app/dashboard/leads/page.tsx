@@ -1,8 +1,9 @@
 export const dynamic = 'force-dynamic'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { requirePermission } from '@/lib/permissions'
+import { requirePermission, isAdmin } from '@/lib/permissions'
 import { Header } from '@/components/layout/header'
+import { RefreshAnglesButton } from '@/components/leads/refresh-angles-button'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import Link from 'next/link'
@@ -33,7 +34,8 @@ export default async function LeadsPage({
   const params = await searchParams
 
   // Requiere permiso can_view_leads
-  await requirePermission('can_view_leads')
+  const ctx = await requirePermission('can_view_leads')
+  const userIsAdmin = isAdmin(ctx)
 
   const supabase = await createServerSupabaseClient()
 
@@ -94,6 +96,13 @@ export default async function LeadsPage({
             <p className="text-2xl font-bold text-amber-400">{avgTime > 24 ? `${(avgTime / 24).toFixed(1)}d` : `${avgTime.toFixed(1)}h`}</p>
           </div>
         </div>
+
+        {/* Admin: refresh ángulos desde ManyChat */}
+        {userIsAdmin && (
+          <div className="flex justify-end">
+            <RefreshAnglesButton />
+          </div>
+        )}
 
         {/* Filters */}
         <div className="flex flex-wrap gap-2 md:gap-4">
