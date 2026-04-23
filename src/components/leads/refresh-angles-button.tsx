@@ -13,6 +13,8 @@ export function RefreshAnglesButton() {
     unchanged: number
     errors: number
     error_samples?: string[]
+    sheet_synced?: boolean
+    sheet_error?: string
   } | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -51,13 +53,24 @@ export function RefreshAnglesButton() {
       </button>
 
       {result && (
-        <div className="bg-gray-900/80 border border-gray-800/50 rounded-lg p-3 text-xs text-gray-300 min-w-[280px]">
+        <div className="bg-gray-900/80 border border-gray-800/50 rounded-lg p-3 text-xs text-gray-300 min-w-[280px] max-w-md">
           <div className="flex items-center gap-2 mb-1">
             <CheckCircle className="h-3.5 w-3.5 text-green-400" />
             <span>
               {result.updated} actualizados · {result.unchanged} sin cambios · {result.errors} errores · {result.total} total
             </span>
           </div>
+          {result.sheet_synced === true && (
+            <div className="flex items-center gap-2 text-[11px] text-emerald-400">
+              <CheckCircle className="h-3 w-3" /> Google Sheet actualizado
+            </div>
+          )}
+          {result.sheet_synced === false && result.sheet_error && (
+            <div className="flex items-start gap-2 text-[11px] text-red-400 break-words">
+              <AlertCircle className="h-3 w-3 flex-shrink-0 mt-0.5" />
+              <span>Sheet: {result.sheet_error}</span>
+            </div>
+          )}
           {result.error_samples && result.error_samples.length > 0 && (
             <div className="mt-1 text-[10px] text-red-400 space-y-0.5">
               {result.error_samples.map((s, i) => <div key={i}>• {s}</div>)}

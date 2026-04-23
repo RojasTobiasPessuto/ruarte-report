@@ -130,8 +130,44 @@ export async function writeRange(
 }
 
 /**
+ * Obtiene los nombres de todas las pestañas del Sheet.
+ */
+async function getSheetTabs(sheetId: string): Promise<string[]> {
+  const token = await getAccessToken()
+  const res = await fetch(
+    `${SHEETS_API}/${sheetId}?fields=sheets.properties.title`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+  if (!res.ok) {
+    throw new Error(`Sheets metadata error ${res.status}: ${(await res.text()).substring(0, 300)}`)
+  }
+  const data = await res.json() as { sheets?: { properties: { title: string } }[] }
+  return (data.sheets || []).map((s) => s.properties.title)
+}
+
+/**
+ * Crea una pestaña nueva en el Sheet.
+ */
+async function addSheetTab(sheetId: string, title: string): Promise<void> {
+  const token = await getAccessToken()
+  const res = await fetch(`${SHEETS_API}/${sheetId}:batchUpdate`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      requests: [{ addSheet: { properties: { title } } }],
+    }),
+  })
+  if (!res.ok) {
+    throw new Error(`Sheets addSheet error ${res.status}: ${(await res.text()).substring(0, 300)}`)
+  }
+}
+
+/**
  * Helper: reemplaza el contenido de una hoja con un dataset completo.
- * Primero limpia el rango y después escribe los datos nuevos.
+ * Si la pestaña no existe, la crea. Después limpia y escribe los datos.
  */
 export async function replaceSheetData(
   sheetId: string,
@@ -139,6 +175,10 @@ export async function replaceSheetData(
   headers: string[],
   rows: SheetValue[][]
 ): Promise<void> {
+  const tabs = await getSheetTabs(sheetId)
+  if (!tabs.includes(sheetName)) {
+    await addSheetTab(sheetId, sheetName)
+  }
   await clearRange(sheetId, `${sheetName}!A:ZZ`)
   await writeRange(sheetId, `${sheetName}!A1`, [headers, ...rows])
 }
