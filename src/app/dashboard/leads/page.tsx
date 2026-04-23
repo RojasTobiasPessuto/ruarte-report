@@ -4,7 +4,6 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { requirePermission, isAdmin } from '@/lib/permissions'
 import { Header } from '@/components/layout/header'
 import { RefreshAnglesButton } from '@/components/leads/refresh-angles-button'
-import { SyncSheetButton } from '@/components/leads/sync-sheet-button'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import Link from 'next/link'
@@ -100,9 +99,8 @@ export default async function LeadsPage({
 
         {/* Admin: acciones sobre leads */}
         {userIsAdmin && (
-          <div className="flex flex-wrap justify-end gap-3">
+          <div className="flex justify-end">
             <RefreshAnglesButton />
-            <SyncSheetButton />
           </div>
         )}
 

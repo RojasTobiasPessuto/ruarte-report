@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
+import { syncLeadsToSheet } from '@/lib/sync-leads-to-sheet'
 
 const MANYCHAT_API_BASE = 'https://api.manychat.com'
 const MANYCHAT_TOKEN = process.env.MANYCHAT_API_TOKEN
@@ -96,6 +97,9 @@ export async function POST(request: NextRequest) {
       time_to_agenda_hours: timeToAgendaHours,
     }
 
+    let leadId: string | null = null
+    let action: 'created' | 'updated' = 'created'
+
     if (existing) {
       const { error } = await supabase
         .from('leads')
@@ -106,22 +110,33 @@ export async function POST(request: NextRequest) {
         console.error('Error updating lead:', error)
         return NextResponse.json({ error: 'Failed to update lead' }, { status: 500 })
       }
+      leadId = existing.id
+      action = 'updated'
+    } else {
+      const { data: lead, error: insertError } = await supabase
+        .from('leads')
+        .insert({ ...leadData, status: 'nuevo' })
+        .select('id')
+        .single()
 
-      return NextResponse.json({ message: 'Lead updated', id: existing.id })
+      if (insertError) {
+        console.error('Error inserting lead:', insertError)
+        return NextResponse.json({ error: 'Failed to save lead' }, { status: 500 })
+      }
+      leadId = lead?.id || null
     }
 
-    const { data: lead, error: insertError } = await supabase
-      .from('leads')
-      .insert({ ...leadData, status: 'nuevo' })
-      .select('id')
-      .single()
-
-    if (insertError) {
-      console.error('Error inserting lead:', insertError)
-      return NextResponse.json({ error: 'Failed to save lead' }, { status: 500 })
+    // Push a Google Sheet (best-effort, no bloquea la respuesta al webhook si falla)
+    const syncResult = await syncLeadsToSheet()
+    if (!syncResult.ok && !syncResult.skipped) {
+      console.error('Sheets sync failed (non-fatal):', syncResult.error)
     }
 
-    return NextResponse.json({ message: 'Lead created', id: lead?.id })
+    return NextResponse.json({
+      message: `Lead ${action}`,
+      id: leadId,
+      sheet_synced: syncResult.ok,
+    })
   } catch (error) {
     console.error('ManyChat webhook error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -2,10 +2,12 @@
  * Cliente mínimo para Google Sheets API v4 usando auth vía Service Account (JWT).
  * No requiere dependencias externas — usa `crypto` nativo de Node.
  *
- * Env vars requeridas:
- *   GOOGLE_SHEETS_CLIENT_EMAIL  — email del service account
- *   GOOGLE_SHEETS_PRIVATE_KEY   — private key del service account (con \n escapados)
- *   GOOGLE_SHEETS_ID            — ID del Sheet (opcional, útil como default)
+ * Env vars (dos opciones, en orden de prioridad):
+ *   GOOGLE_SHEETS_CREDENTIALS_JSON — JSON completo del service account (más simple)
+ *   GOOGLE_SHEETS_CLIENT_EMAIL + GOOGLE_SHEETS_PRIVATE_KEY — por separado (legacy)
+ *
+ * También:
+ *   GOOGLE_SHEETS_ID — ID del Sheet destino
  */
 
 import { createSign } from 'crypto'
@@ -17,12 +19,27 @@ const SHEETS_API = 'https://sheets.googleapis.com/v4/spreadsheets'
 let cachedToken: { token: string; expires: number } | null = null
 
 function getCredentials() {
+  // Opción 1: JSON completo (más simple, solo pegás el contenido del archivo)
+  const jsonStr = process.env.GOOGLE_SHEETS_CREDENTIALS_JSON
+  if (jsonStr) {
+    try {
+      const creds = JSON.parse(jsonStr) as { client_email?: string; private_key?: string }
+      if (creds.client_email && creds.private_key) {
+        return { clientEmail: creds.client_email, privateKey: creds.private_key }
+      }
+    } catch (e) {
+      throw new Error(`GOOGLE_SHEETS_CREDENTIALS_JSON inválido: ${e instanceof Error ? e.message : String(e)}`)
+    }
+  }
+
+  // Opción 2: variables separadas
   const clientEmail = process.env.GOOGLE_SHEETS_CLIENT_EMAIL
   const privateKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n')
-  if (!clientEmail || !privateKey) {
-    throw new Error('Faltan GOOGLE_SHEETS_CLIENT_EMAIL o GOOGLE_SHEETS_PRIVATE_KEY en env vars')
+  if (clientEmail && privateKey) {
+    return { clientEmail, privateKey }
   }
-  return { clientEmail, privateKey }
+
+  throw new Error('Faltan credenciales de Google Sheets. Cargá GOOGLE_SHEETS_CREDENTIALS_JSON o GOOGLE_SHEETS_CLIENT_EMAIL + GOOGLE_SHEETS_PRIVATE_KEY')
 }
 
 async function getAccessToken(): Promise<string> {

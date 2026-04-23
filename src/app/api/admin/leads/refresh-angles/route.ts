@@ -7,6 +7,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { getCurrentUser, isAdmin } from '@/lib/permissions'
+import { syncLeadsToSheet } from '@/lib/sync-leads-to-sheet'
 
 const MANYCHAT_API_BASE = 'https://api.manychat.com'
 
@@ -96,11 +97,16 @@ export async function POST() {
     }
   }
 
+  // Push al Google Sheet después de refrescar
+  const syncResult = await syncLeadsToSheet()
+
   return NextResponse.json({
     total: leads.length,
     updated,
     unchanged,
     errors,
     error_samples: errorSamples.length > 0 ? errorSamples : undefined,
+    sheet_synced: syncResult.ok,
+    sheet_error: syncResult.ok || syncResult.skipped ? undefined : syncResult.error,
   })
 }
