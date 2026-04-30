@@ -25,6 +25,8 @@ export function PipelineList({
 }: {
   opportunities: Opportunity[]
 }) {
+  const getEmbedUrl = useEmbedUrl()
+
   if (opportunities.length === 0) {
     return (
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center">
