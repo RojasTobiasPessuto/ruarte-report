@@ -111,6 +111,12 @@ export default async function PipelinePage({
 
   const closersArray = (closers || []) as Closer[]
 
+  const userIsAdmin = isAdmin(ctx)
+  const canFillForm = userIsAdmin || hasPermission(ctx, 'can_fill_post_agenda')
+  const canCreatePayment = userIsAdmin || hasPermission(ctx, 'can_create_payment')
+  const canEditPayment = userIsAdmin || hasPermission(ctx, 'can_edit_payment')
+  const canChangeOwner = userIsAdmin || hasPermission(ctx, 'can_view_all_opportunities')
+
   // Stats para las tarjetas (basadas en todas las opps filtradas)
   const total = allOpps.length
   const postLlamada = allOpps.filter(o => o.pipeline_stage === 'Post Llamada').length
@@ -136,7 +142,14 @@ export default async function PipelinePage({
         {/* Filters */}
         <PipelineFilters closers={closersArray} viewAllOpps={viewAllOpps} />
 
-        <PipelineList opportunities={allOpps} />
+        <PipelineList 
+          opportunities={allOpps}
+          isAdmin={userIsAdmin}
+          canFillForm={canFillForm}
+          canCreatePayment={canCreatePayment}
+          canEditPayment={canEditPayment}
+          canChangeOwner={canChangeOwner}
+        />
       </div>
     </div>
   )
