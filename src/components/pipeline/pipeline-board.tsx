@@ -26,6 +26,8 @@ export function PipelineBoard({
   byStage: Record<string, Opportunity[]>
   stages: string[]
 }) {
+  const getEmbedUrl = useEmbedUrl()
+
   return (
     <div className="overflow-x-auto pb-4">
       <div className="flex gap-3 md:gap-4 min-w-max">
@@ -52,7 +54,7 @@ export function PipelineBoard({
                   opps.map((opp) => (
                     <Link
                       key={opp.id}
-                      href={`/dashboard/pipeline/${opp.id}`}
+                      href={getEmbedUrl(`/dashboard/pipeline/${opp.id}`)}
                       className="block bg-gray-900/80 hover:bg-gray-800 border border-gray-800 rounded-lg p-3 transition-colors"
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
@@ -107,5 +109,8 @@ export function PipelineBoard({
         })}
       </div>
     </div>
+  )
+}
+ </div>
   )
 }

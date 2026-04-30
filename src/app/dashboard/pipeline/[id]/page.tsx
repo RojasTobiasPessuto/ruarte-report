@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { requireAuth, hasPermission, isAdmin } from '@/lib/permissions'
 import { Header } from '@/components/layout/header'
 import { OpportunityDetail } from '@/components/pipeline/opportunity-detail'
+import { BackButton } from '@/components/layout/back-button'
 import { notFound, redirect } from 'next/navigation'
 import type { Opportunity, Sale, PaymentType } from '@/types'
 
@@ -93,6 +94,7 @@ export default async function OpportunityDetailPage({
     <div>
       <Header title={`Oportunidad — ${opp.contact_name || 'Sin nombre'}`} />
       <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+        <BackButton fallbackPath="/dashboard/pipeline" />
         <OpportunityDetail
           opportunity={opp}
           sales={sales}

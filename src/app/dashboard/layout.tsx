@@ -3,14 +3,14 @@
 import { Sidebar } from '@/components/layout/sidebar'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
+import { EmbedProvider, useIsEmbedded } from '@/components/layout/embed-context'
 
 function DashboardLayoutContent({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const searchParams = useSearchParams()
-  const isEmbedded = searchParams.get('embed') === 'true'
+  const isEmbedded = useIsEmbedded()
 
   return (
     <div className="min-h-screen bg-gray-950 lg:flex">
@@ -29,7 +29,9 @@ export default function DashboardLayout({
 }) {
   return (
     <Suspense fallback={<div className="min-h-screen bg-gray-950" />}>
-      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      <EmbedProvider>
+        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      </EmbedProvider>
     </Suspense>
   )
 }
