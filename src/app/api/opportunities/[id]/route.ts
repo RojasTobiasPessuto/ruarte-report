@@ -52,6 +52,90 @@ interface SaleInput {
   justificante_urls?: string[] | null
 }
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+
+  const ctx = await getCurrentUser()
+  if (!ctx) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+  const userIsAdmin = isAdmin(ctx)
+  if (!hasPermission(ctx, 'can_fill_post_agenda') && !userIsAdmin) {
+    return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
+  }
+
+  const supabase = await createServiceRoleClient()
+
+  // Get opportunity with relations
+  const { data: opportunity, error: oppError } = await supabase
+    .from('opportunities')
+    .select(`
+      *,
+      contact:contacts(*),
+      closer:closers(*),
+      lead:leads(*),
+      call:calls(*)
+    `)
+    .eq('id', id)
+    .single()
+
+  if (oppError || !opportunity) {
+    return NextResponse.json({ error: 'No encontrada' }, { status: 404 })
+  }
+
+  const opp = opportunity as Opportunity
+
+  // Check access: si no tiene can_view_all_opportunities, debe ser suyo
+  const viewAll = userIsAdmin || hasPermission(ctx, 'can_view_all_opportunities')
+  if (!viewAll) {
+    if (opp.closer_id !== ctx.appUser.closer_id) {
+      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
+    }
+  }
+
+  // Get sales of this opportunity
+  const { data: salesData } = await supabase
+    .from('sales')
+    .select(`
+      *,
+      payment_type:payment_types(*),
+      payments(*)
+    `)
+    .eq('opportunity_id', id)
+    .order('created_at', { ascending: false })
+
+  // Calculate monto_restante for each sale
+  const sales = ((salesData || []) as Sale[]).map((sale) => {
+    const paid = (sale.payments || [])
+      .filter((p) => p.pagado)
+      .reduce((sum, p) => sum + Number(p.monto), 0)
+    return { ...sale, monto_restante: Number(sale.revenue) - paid }
+  })
+
+  // Get payment types
+  const { data: paymentTypes } = await supabase
+    .from('payment_types')
+    .select('*')
+    .eq('active', true)
+    .order('name')
+
+  // Get closers
+  const { data: closers } = await supabase
+    .from('closers')
+    .select('*')
+    .eq('active', true)
+    .order('name')
+
+  return NextResponse.json({
+    opportunity: opp,
+    sales,
+    paymentTypes: paymentTypes || [],
+    closers: closers || [],
+  })
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
