@@ -116,6 +116,9 @@ function NumberBox({ label, value, accent, plain }: { label: string; value: numb
 
 function PaymentRow({ payment, canEdit, onUpdate }: { payment: Payment; canEdit: boolean; onUpdate: () => void }) {
   const [deleting, setDeleting] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editDate, setEditDate] = useState(payment.fecha_pago || '')
+  const [saving, setSaving] = useState(false)
 
   async function handleDelete() {
     if (!confirm(`¿Eliminar cuota #${payment.nro_cuota}?`)) return
@@ -128,18 +131,82 @@ function PaymentRow({ payment, canEdit, onUpdate }: { payment: Payment; canEdit:
     }
   }
 
+  async function handleSaveDate() {
+    if (!editDate || editDate === payment.fecha_pago) {
+      setIsEditing(false)
+      return
+    }
+
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/payments/${payment.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fecha_pago: editDate }),
+      })
+
+      if (!res.ok) throw new Error('Error al actualizar fecha')
+      setIsEditing(false)
+      onUpdate()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error al guardar')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="flex items-center gap-3 px-3 py-2 bg-gray-800/40 rounded-lg text-xs">
       <span className="text-gray-500 w-8">#{payment.nro_cuota}</span>
       <span className={cn('flex-1 font-medium', payment.pagado ? 'text-green-400' : 'text-gray-400')}>
         ${Number(payment.monto).toLocaleString('es-AR')}
       </span>
-      {payment.fecha_pago && (
-        <span className="text-gray-500 flex items-center gap-1">
-          <Calendar className="h-3 w-3" />
-          {format(new Date(payment.fecha_pago), "d MMM", { locale: es })}
-        </span>
-      )}
+      
+      <div className="flex items-center gap-2 min-w-[120px]">
+        <Calendar className="h-3 w-3 text-gray-500 shrink-0" />
+        {isEditing ? (
+          <div className="flex items-center gap-1">
+            <input
+              type="date"
+              value={editDate}
+              onChange={(e) => setEditDate(e.target.value)}
+              disabled={saving}
+              className="bg-gray-900 border border-indigo-500/50 rounded px-1.5 py-0.5 text-[10px] text-white focus:outline-none"
+            />
+            <button
+              onClick={handleSaveDate}
+              disabled={saving}
+              className="text-emerald-400 hover:text-emerald-300 disabled:opacity-50"
+            >
+              <Check className="h-3 w-3" />
+            </button>
+            <button
+              onClick={() => {
+                setIsEditing(false)
+                setEditDate(payment.fecha_pago || '')
+              }}
+              disabled={saving}
+              className="text-gray-500 hover:text-gray-300"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        ) : (
+          <span 
+            className={cn(
+              "text-gray-500",
+              canEdit && "hover:text-indigo-400 cursor-pointer transition-colors"
+            )}
+            onClick={() => canEdit && setIsEditing(true)}
+          >
+            {payment.fecha_pago 
+              ? format(new Date(payment.fecha_pago), "d MMM yyyy", { locale: es })
+              : 'Sin fecha'
+            }
+          </span>
+        )}
+      </div>
+
       {payment.justificante_urls && payment.justificante_urls.length > 0 && (
         <div className="flex items-center gap-1">
           {payment.justificante_urls.map((url, i) => (
@@ -161,11 +228,11 @@ function PaymentRow({ payment, canEdit, onUpdate }: { payment: Payment; canEdit:
       ) : (
         <span className="text-[10px] bg-amber-400/10 text-amber-400 px-2 py-0.5 rounded-full">Pendiente</span>
       )}
-      {canEdit && (
+      {canEdit && !isEditing && (
         <button
           onClick={handleDelete}
           disabled={deleting}
-          className="text-red-400 hover:text-red-300"
+          className="text-red-400 hover:text-red-300 ml-1"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
