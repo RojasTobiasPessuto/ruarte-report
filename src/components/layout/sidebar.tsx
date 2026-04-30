@@ -151,13 +151,9 @@ export function Sidebar() {
         </nav>
 
         <div className="p-3 border-t border-gray-800/50">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-red-400 hover:bg-red-400/5 transition-all duration-200 w-full"
-          >
-            <LogOut className="h-[18px] w-[18px]" />
-            Cerrar sesión
-          </button>
+          <p className="text-[10px] text-gray-600 text-center">
+            Ruarte Report v1.0
+          </p>
         </div>
       </aside>
     </>

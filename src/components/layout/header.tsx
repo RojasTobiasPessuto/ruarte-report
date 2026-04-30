@@ -2,13 +2,16 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { User } from 'lucide-react'
+import { User, LogOut } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useIsEmbedded } from './embed-context'
+import { cn } from '@/lib/utils'
 
 export function Header({ title }: { title: string }) {
   const [email, setEmail] = useState<string | null>(null)
   const isEmbedded = useIsEmbedded()
   const supabase = createClient()
+  const router = useRouter()
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -16,17 +19,39 @@ export function Header({ title }: { title: string }) {
     })
   }, [supabase.auth])
 
-  if (isEmbedded) return null
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
 
   return (
-    <header className="border-b border-gray-800/50 px-4 md:px-8 py-3 md:py-4 flex items-center justify-between bg-gray-950/50 backdrop-blur-sm sticky top-0 lg:top-auto z-30">
-      <h2 className="text-lg md:text-xl font-semibold text-white truncate">{title}</h2>
+    <header className={cn(
+      "border-b border-gray-800/50 px-4 md:px-8 py-3 md:py-4 flex items-center justify-between bg-gray-950/50 backdrop-blur-sm sticky top-0 lg:top-auto z-30",
+      isEmbedded && "py-2"
+    )}>
+      <h2 className={cn(
+        "text-lg md:text-xl font-semibold text-white truncate",
+        isEmbedded && "text-base"
+      )}>
+        {title}
+      </h2>
+      
       {email && (
-        <div className="hidden sm:flex items-center gap-2 text-sm text-gray-500">
-          <div className="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/20 flex items-center justify-center">
-            <User className="h-3.5 w-3.5 text-indigo-400" />
+        <div className="flex flex-col items-end gap-1">
+          <div className="flex items-center gap-2 text-sm text-gray-300">
+            <div className="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/20 flex items-center justify-center">
+              <User className="h-3.5 w-3.5 text-indigo-400" />
+            </div>
+            <span className="text-xs font-medium hidden sm:inline">{email}</span>
           </div>
-          <span className="text-xs">{email}</span>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 text-[10px] text-gray-500 hover:text-red-400 transition-colors"
+          >
+            <LogOut className="h-3 w-3" />
+            Cerrar sesión
+          </button>
         </div>
       )}
     </header>
