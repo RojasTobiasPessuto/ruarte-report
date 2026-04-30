@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Role } from '@/types'
+import { useEmbedUrl } from './embed-context'
 
 type PermissionKey = keyof Role
 
@@ -48,6 +49,7 @@ export function Sidebar() {
   const [open, setOpen] = useState(false)
   const [role, setRole] = useState<Role | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const getEmbedUrl = useEmbedUrl()
 
   useEffect(() => {
     fetch('/api/me')
@@ -157,11 +159,6 @@ export function Sidebar() {
             Cerrar sesión
           </button>
         </div>
-      </aside>
-    </>
-  )
-}
-iv>
       </aside>
     </>
   )
