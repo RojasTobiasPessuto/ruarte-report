@@ -6,6 +6,7 @@ import { es } from 'date-fns/locale'
 import type { Opportunity } from '@/types'
 import { cn } from '@/lib/utils'
 import { AtSign, Calendar, Phone } from 'lucide-react'
+import { useEmbedUrl } from '@/components/layout/embed-context'
 
 const STAGE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
   'Agendado (Nuevo)': { bg: 'bg-blue-500/5', border: 'border-blue-500/30', text: 'text-blue-400' },
@@ -109,8 +110,5 @@ export function PipelineBoard({
         })}
       </div>
     </div>
-  )
-}
- </div>
   )
 }
