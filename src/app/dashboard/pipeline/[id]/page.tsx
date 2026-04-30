@@ -72,6 +72,12 @@ export default async function OpportunityDetailPage({
     .eq('active', true)
     .order('name')
 
+  // Get all active closers for owner change (only for admins/managers)
+  const canChangeOwner = isAdmin(ctx) || hasPermission(ctx, 'can_view_all_opportunities')
+  const { data: closers } = canChangeOwner
+    ? await supabase.from('closers').select('*').eq('active', true).order('name')
+    : { data: [] }
+
   const userIsAdmin = isAdmin(ctx)
   // La oportunidad pertenece al closer del usuario (null para admins, que pueden editar cualquier cosa)
   const isOwnOpp = !!ctx.appUser.closer_id && opp.closer_id === ctx.appUser.closer_id
@@ -91,9 +97,11 @@ export default async function OpportunityDetailPage({
           opportunity={opp}
           sales={sales}
           paymentTypes={(paymentTypes || []) as PaymentType[]}
+          closers={(closers || [])}
           canFillForm={canFillForm}
           canCreatePayment={canCreatePayment}
           canEditPayment={canEditPayment}
+          canChangeOwner={canChangeOwner}
         />
       </div>
     </div>

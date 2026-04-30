@@ -191,12 +191,14 @@ export async function updateOpportunity(
   updates: {
     pipelineStageId?: string
     status?: 'open' | 'won' | 'lost' | 'abandoned'
+    assignedTo?: string
     customFields?: Array<{ id: string; key?: string; field_value: unknown }>
   }
 ): Promise<{ success: boolean; status?: number; error?: string; body?: unknown }> {
   const body: Record<string, unknown> = {}
   if (updates.pipelineStageId) body.pipelineStageId = updates.pipelineStageId
   if (updates.status) body.status = updates.status
+  if (updates.assignedTo !== undefined) body.assignedTo = updates.assignedTo
   if (updates.customFields) body.customFields = updates.customFields
 
   console.log(`[GHL] PUT opportunity ${opportunityId}:`, JSON.stringify(body).substring(0, 500))

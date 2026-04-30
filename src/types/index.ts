@@ -199,6 +199,7 @@ export interface Opportunity {
   contact_id: string | null;
   ghl_opportunity_id: string | null;
   ghl_contact_id: string | null;
+  ghl_assigned_to: string | null;
   lead_id: string | null;
   call_id: string | null;
   closer_id: string | null;

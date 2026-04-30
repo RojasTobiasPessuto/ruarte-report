@@ -102,6 +102,7 @@ export async function PATCH(
     descripcion_llamada,
     volumen_real,
     fecha_seguimiento,
+    closer_id,
     sale: saleInput,
   } = body as {
     estado_cita?: EstadoCita
@@ -110,6 +111,7 @@ export async function PATCH(
     descripcion_llamada?: string
     volumen_real?: number | null
     fecha_seguimiento?: string | null
+    closer_id?: string
     sale?: SaleInput
   }
 
@@ -118,9 +120,15 @@ export async function PATCH(
 
   // Solo actualizar campos que vengan con valor (evita sobrescribir con null)
   const updateData: Record<string, unknown> = {
-    form_completed: true,
     updated_at: new Date().toISOString(),
   }
+
+  // Si no es un post-agenda completo, no marcar como form_completed obligatoriamente
+  // pero si vienen campos de post-agenda, asumimos que se completó.
+  if (estado_cita || programa || situacion) {
+    updateData.form_completed = true
+  }
+
   if (estado_cita) updateData.estado_cita = estado_cita
   if (programa) updateData.programa = programa
   if (situacion) updateData.situacion = situacion
@@ -135,6 +143,27 @@ export async function PATCH(
   if (targetStage) {
     updateData.pipeline_stage = targetStage
     updateData.ghl_pipeline_stage_id = GHL_STAGE_IDS_BY_NAME[targetStage] || null
+  }
+
+  // Owner change logic
+  let newGhlAssignedTo: string | null = null
+  if (closer_id && closer_id !== opp.closer_id) {
+    if (!userIsAdmin && !hasPermission(ctx, 'can_view_all_opportunities')) {
+      return NextResponse.json({ error: 'No tenés permisos para cambiar el dueño de la oportunidad' }, { status: 403 })
+    }
+    updateData.closer_id = closer_id
+    
+    // Buscar el GHL User ID del nuevo closer
+    const { data: newCloser } = await supabase
+      .from('closers')
+      .select('ghl_user_id')
+      .eq('id', closer_id)
+      .single()
+    
+    if (newCloser?.ghl_user_id) {
+      newGhlAssignedTo = newCloser.ghl_user_id
+      updateData.ghl_assigned_to = newCloser.ghl_user_id
+    }
   }
 
   const { error: updateError } = await supabase
@@ -259,6 +288,7 @@ export async function PATCH(
 
       await updateOpportunity(opp.ghl_opportunity_id, {
         pipelineStageId: stageId,
+        assignedTo: newGhlAssignedTo || undefined,
         customFields: customFields.length > 0 ? customFields : undefined,
       })
     } catch (ghlErr) {

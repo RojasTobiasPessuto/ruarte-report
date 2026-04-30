@@ -6,11 +6,11 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
   User, Mail, Phone as PhoneIcon, AtSign, Calendar, Video,
-  DollarSign, Check, FileText,
+  DollarSign, Check, FileText, Loader2
 } from 'lucide-react'
 import type {
   Opportunity, Sale, PaymentType, Payment,
-  EstadoCita, Programa, Situacion, FormaPago,
+  EstadoCita, Programa, Situacion, FormaPago, Closer,
 } from '@/types'
 import { PostAgendaForm } from './post-agenda-form'
 import { SaleCard } from './sale-card'
@@ -20,18 +20,23 @@ export function OpportunityDetail({
   opportunity,
   sales,
   paymentTypes,
+  closers = [],
   canFillForm,
   canCreatePayment,
   canEditPayment,
+  canChangeOwner = false,
 }: {
   opportunity: Opportunity
   sales: Sale[]
   paymentTypes: PaymentType[]
+  closers?: Closer[]
   canFillForm: boolean
   canCreatePayment: boolean
   canEditPayment: boolean
+  canChangeOwner?: boolean
 }) {
   const [showForm, setShowForm] = useState(false)
+  const [isChangingOwner, setIsChangingOwner] = useState(false)
   const router = useRouter()
 
   const stageColor: Record<string, string> = {
@@ -48,6 +53,34 @@ export function OpportunityDetail({
 
   const stage = opportunity.pipeline_stage || 'Agendado (Nuevo)'
   const isPostLlamada = stage === 'Post Llamada'
+
+  async function handleOwnerChange(newCloserId: string) {
+    if (!newCloserId || newCloserId === opportunity.closer_id) return
+
+    if (!confirm('¿Estás seguro de que querés cambiar el dueño de esta oportunidad? Se sincronizará con GoHighLevel.')) {
+      return
+    }
+
+    setIsChangingOwner(true)
+    try {
+      const res = await fetch(`/api/opportunities/${opportunity.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ closer_id: newCloserId }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Error al cambiar el dueño')
+      }
+
+      router.refresh()
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Error al cambiar el dueño')
+    } finally {
+      setIsChangingOwner(false)
+    }
+  }
 
   return (
     <>
@@ -87,11 +120,33 @@ export function OpportunityDetail({
                   <AtSign className="h-3.5 w-3.5" /> @{opportunity.contact.ig_username}
                 </span>
               )}
-              {opportunity.closer && (
-                <span className="flex items-center gap-1">
-                  <User className="h-3.5 w-3.5" /> {opportunity.closer.name}
-                </span>
-              )}
+              
+              {/* Owner display/change */}
+              <div className="flex items-center gap-1.5">
+                <User className="h-3.5 w-3.5" />
+                {canChangeOwner ? (
+                  <div className="relative inline-block">
+                    <select
+                      value={opportunity.closer_id || ''}
+                      disabled={isChangingOwner}
+                      onChange={(e) => handleOwnerChange(e.target.value)}
+                      className="bg-transparent border-none text-indigo-400 focus:ring-0 p-0 text-sm cursor-pointer hover:text-indigo-300 disabled:opacity-50 appearance-none"
+                    >
+                      <option value="" disabled className="bg-gray-900 text-gray-400">Sin asignar</option>
+                      {closers.map(c => (
+                        <option key={c.id} value={c.id} className="bg-gray-900 text-white">
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    {isChangingOwner && (
+                      <Loader2 className="h-3 w-3 animate-spin inline-block ml-1" />
+                    )}
+                  </div>
+                ) : (
+                  <span>{opportunity.closer?.name || 'Sin asignar'}</span>
+                )}
+              </div>
             </div>
           </div>
 
