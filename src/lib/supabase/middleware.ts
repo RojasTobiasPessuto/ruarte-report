@@ -45,7 +45,11 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone()
+    const embed = request.nextUrl.searchParams.get('embed')
     url.pathname = '/login'
+    if (embed === 'true') {
+      url.searchParams.set('embed', 'true')
+    }
     return NextResponse.redirect(url)
   }
 

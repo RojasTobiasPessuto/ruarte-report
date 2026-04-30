@@ -1,16 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { TrendingUp, Phone, Zap } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isEmbedded = searchParams.get('embed') === 'true'
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,7 +31,8 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/dashboard')
+    const redirectPath = isEmbedded ? '/dashboard?embed=true' : '/dashboard'
+    router.push(redirectPath)
     router.refresh()
   }
 
@@ -42,49 +45,51 @@ export default function LoginPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Left side - Branding (hidden on mobile) */}
-      <div className="hidden lg:flex flex-1 flex-col justify-center px-16 relative z-10">
-        <div className="max-w-lg animate-fade-in-up">
-          <div className="mb-8">
-            <img src="/logo.png" alt="Ruarte Reports" className="h-14" />
-          </div>
+      {/* Left side - Branding (hidden on mobile or embedded) */}
+      {!isEmbedded && (
+        <div className="hidden lg:flex flex-1 flex-col justify-center px-16 relative z-10">
+          <div className="max-w-lg animate-fade-in-up">
+            <div className="mb-8">
+              <img src="/logo.png" alt="Ruarte Reports" className="h-14" />
+            </div>
 
-          <h2 className="text-4xl font-bold text-white leading-tight mb-6">
-            Transformá cada llamada en
-            <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent"> inteligencia de ventas</span>
-          </h2>
+            <h2 className="text-4xl font-bold text-white leading-tight mb-6">
+              Transformá cada llamada en
+              <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent"> inteligencia de ventas</span>
+            </h2>
 
-          <p className="text-lg text-gray-400 mb-10 leading-relaxed">
-            Análisis automático de tus llamadas con IA. Métricas de sentimiento,
-            objeciones, calidad y recomendaciones de mejora para cada closer.
-          </p>
+            <p className="text-lg text-gray-400 mb-10 leading-relaxed">
+              Análisis automático de tus llamadas con IA. Métricas de sentimiento,
+              objeciones, calidad y recomendaciones de mejora para cada closer.
+            </p>
 
-          <div className="space-y-4">
-            {[
-              { icon: Phone, text: 'Grabación y análisis automático de llamadas' },
-              { icon: TrendingUp, text: 'Métricas de cierre, sentimiento y calidad' },
-              { icon: Zap, text: 'Recomendaciones de mejora por IA en tiempo real' },
-            ].map((feature, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 text-gray-300 animate-fade-in-up"
-                style={{ animationDelay: `${0.2 + i * 0.15}s` }}
-              >
-                <div className="h-8 w-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center flex-shrink-0">
-                  <feature.icon className="h-4 w-4 text-indigo-400" />
+            <div className="space-y-4">
+              {[
+                { icon: Phone, text: 'Grabación y análisis automático de llamadas' },
+                { icon: TrendingUp, text: 'Métricas de cierre, sentimiento y calidad' },
+                { icon: Zap, text: 'Recomendaciones de mejora por IA en tiempo real' },
+              ].map((feature, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 text-gray-300 animate-fade-in-up"
+                  style={{ animationDelay: `${0.2 + i * 0.15}s` }}
+                >
+                  <div className="h-8 w-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                    <feature.icon className="h-4 w-4 text-indigo-400" />
+                  </div>
+                  <span className="text-sm">{feature.text}</span>
                 </div>
-                <span className="text-sm">{feature.text}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Right side - Login form */}
       <div className="flex-1 flex items-center justify-center px-4 relative z-10">
         <div className="w-full max-w-md animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-          {/* Mobile logo */}
-          <div className="lg:hidden text-center mb-8">
+          {/* Mobile logo or Embedded logo */}
+          <div className={`${!isEmbedded ? 'lg:hidden' : ''} text-center mb-8`}>
             <img src="/logo.png" alt="Ruarte Reports" className="h-12 mx-auto" />
           </div>
 
@@ -147,5 +152,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-950" />}>
+      <LoginForm />
+    </Suspense>
   )
 }
