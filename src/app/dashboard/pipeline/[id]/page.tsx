@@ -102,6 +102,7 @@ export default async function OpportunityDetailPage({
           canCreatePayment={canCreatePayment}
           canEditPayment={canEditPayment}
           canChangeOwner={canChangeOwner}
+          isAdmin={userIsAdmin}
         />
       </div>
     </div>

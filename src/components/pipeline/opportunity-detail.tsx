@@ -25,6 +25,7 @@ export function OpportunityDetail({
   canCreatePayment,
   canEditPayment,
   canChangeOwner = false,
+  isAdmin = false,
 }: {
   opportunity: Opportunity
   sales: Sale[]
@@ -34,6 +35,7 @@ export function OpportunityDetail({
   canCreatePayment: boolean
   canEditPayment: boolean
   canChangeOwner?: boolean
+  isAdmin?: boolean
 }) {
   const [showForm, setShowForm] = useState(false)
   const [isChangingOwner, setIsChangingOwner] = useState(false)
@@ -252,6 +254,7 @@ export function OpportunityDetail({
                 paymentTypes={paymentTypes}
                 canCreatePayment={canCreatePayment}
                 canEditPayment={canEditPayment}
+                isAdmin={isAdmin}
                 onUpdate={() => router.refresh()}
               />
             ))}

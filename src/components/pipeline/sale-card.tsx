@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Plus, Check, Trash2, Calendar, FileText } from 'lucide-react'
+import { Plus, Check, Trash2, Calendar, FileText, X } from 'lucide-react'
 import type { Sale, PaymentType, Payment } from '@/types'
 import { cn } from '@/lib/utils'
 import { JustificanteUpload } from './justificante-upload'
@@ -13,12 +13,14 @@ export function SaleCard({
   paymentTypes,
   canCreatePayment,
   canEditPayment,
+  isAdmin,
   onUpdate,
 }: {
   sale: Sale
   paymentTypes: PaymentType[]
   canCreatePayment: boolean
   canEditPayment: boolean
+  isAdmin: boolean
   onUpdate: () => void
 }) {
   const [showAddPayment, setShowAddPayment] = useState(false)
@@ -81,6 +83,7 @@ export function SaleCard({
               key={p.id}
               payment={p}
               canEdit={canEditPayment}
+              isAdmin={isAdmin}
               onUpdate={onUpdate}
             />
           ))}
@@ -114,7 +117,12 @@ function NumberBox({ label, value, accent, plain }: { label: string; value: numb
   )
 }
 
-function PaymentRow({ payment, canEdit, onUpdate }: { payment: Payment; canEdit: boolean; onUpdate: () => void }) {
+function PaymentRow({ payment, canEdit, isAdmin, onUpdate }: { 
+  payment: Payment; 
+  canEdit: boolean; 
+  isAdmin: boolean;
+  onUpdate: () => void 
+}) {
   const [deleting, setDeleting] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editDate, setEditDate] = useState(payment.fecha_pago || '')
@@ -195,9 +203,9 @@ function PaymentRow({ payment, canEdit, onUpdate }: { payment: Payment; canEdit:
           <span 
             className={cn(
               "text-gray-500",
-              canEdit && "hover:text-indigo-400 cursor-pointer transition-colors"
+              isAdmin && "hover:text-indigo-400 cursor-pointer transition-colors"
             )}
-            onClick={() => canEdit && setIsEditing(true)}
+            onClick={() => isAdmin && setIsEditing(true)}
           >
             {payment.fecha_pago 
               ? format(new Date(payment.fecha_pago), "d MMM yyyy", { locale: es })
