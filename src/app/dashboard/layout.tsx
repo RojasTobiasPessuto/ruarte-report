@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/layout/sidebar'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { EmbedProvider, useIsEmbedded } from '@/components/layout/embed-context'
+import { cn } from '@/lib/utils'
 
 function DashboardLayoutContent({
   children,
@@ -13,9 +14,15 @@ function DashboardLayoutContent({
   const isEmbedded = useIsEmbedded()
 
   return (
-    <div className="min-h-screen bg-gray-950 lg:flex">
+    <div className={cn(
+      "min-h-screen bg-gray-950",
+      !isEmbedded && "lg:flex"
+    )}>
       {!isEmbedded && <Sidebar />}
-      <main className={`flex-1 overflow-auto ${isEmbedded ? '' : 'pt-14 lg:pt-0'}`}>
+      <main className={cn(
+        "flex-1 overflow-auto",
+        !isEmbedded ? "pt-14 lg:pt-0" : "p-0"
+      )}>
         {children}
       </main>
     </div>
