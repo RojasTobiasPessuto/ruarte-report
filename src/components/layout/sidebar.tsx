@@ -16,6 +16,7 @@ import {
   X,
   List,
   Wallet,
+  DollarSign,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Role } from '@/types'
