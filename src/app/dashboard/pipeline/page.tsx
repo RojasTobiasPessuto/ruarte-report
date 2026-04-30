@@ -21,12 +21,19 @@ const STAGES = [
 export default async function PipelinePage({
   searchParams,
 }: {
-  searchParams: Promise<{ closer?: string; stage?: string; q?: string }>
+  searchParams: Promise<{ 
+    closer?: string; 
+    stage?: string; 
+    q?: string;
+    programa?: string;
+    form_completed?: string;
+    from?: string;
+    to?: string;
+  }>
 }) {
   const ctx = await requireAuth()
 
   // Solo admin, closer (con can_fill_post_agenda) pueden entrar
-  // Manager no entra (no tiene can_fill_post_agenda)
   if (!isAdmin(ctx) && !hasPermission(ctx, 'can_fill_post_agenda')) {
     redirect('/dashboard')
   }
@@ -50,10 +57,9 @@ export default async function PipelinePage({
   const viewAllOpps = isAdmin(ctx) || hasPermission(ctx, 'can_view_all_opportunities')
   if (!viewAllOpps) {
     if (!ctx.appUser.closer_id) {
-      // Usuario sin closer asignado no ve nada
       return (
         <div>
-          <Header title="Pipeline" />
+          <Header title="Oportunidades" />
           <div className="p-4 md:p-8">
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center">
               <p className="text-gray-400">
@@ -73,6 +79,21 @@ export default async function PipelinePage({
     query = query.eq('pipeline_stage', params.stage)
   }
 
+  if (params.programa) {
+    query = query.eq('programa', params.programa)
+  }
+
+  if (params.form_completed) {
+    query = query.eq('form_completed', params.form_completed === 'true')
+  }
+
+  if (params.from) {
+    query = query.gte('fecha_llamada', params.from)
+  }
+  if (params.to) {
+    query = query.lte('fecha_llamada', params.to)
+  }
+
   // Buscador por nombre o email
   if (params.q && params.q.trim()) {
     const q = params.q.trim()
@@ -82,7 +103,7 @@ export default async function PipelinePage({
   const { data: opportunities } = await query
   const allOpps = (opportunities || []) as Opportunity[]
 
-  // Get closers for filter dropdown (admin only)
+  // Get closers and other filter metadata
   const { data: closers } = viewAllOpps
     ? await supabase.from('closers').select('id, name').eq('active', true).order('name')
     : { data: [] }
@@ -93,12 +114,11 @@ export default async function PipelinePage({
   const seguimiento = allOpps.filter(o => o.pipeline_stage === 'Seguimiento').length
   const compro = allOpps.filter(o => o.pipeline_stage === 'Compro').length
   const noCompro = allOpps.filter(o => o.pipeline_stage === 'No Compro').length
-  const cancelado = allOpps.filter(o => o.pipeline_stage === 'Cancelado' || o.pipeline_stage === 'No Asistio').length
   const conversionRate = (compro + noCompro) > 0 ? (compro / (compro + noCompro)) * 100 : 0
 
   return (
     <div>
-      <Header title="Pipeline" />
+      <Header title="Oportunidades" />
       <div className="p-4 md:p-8 space-y-4 md:space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
@@ -110,37 +130,119 @@ export default async function PipelinePage({
           <StatCard label="Tasa Cierre" value={`${conversionRate.toFixed(1)}%`} icon={TrendingUp} color="text-purple-400" bg="from-purple-500/10 to-pink-500/5" />
         </div>
 
-        {/* Search + Filter bar */}
-        <div className="flex flex-wrap items-center gap-2 md:gap-3">
-          <PipelineSearch />
-          {viewAllOpps && closers && closers.length > 0 && (
-            <>
-              <a
-                href="/dashboard/pipeline"
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-                  !params.closer ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
+        {/* Filters */}
+        <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-4 space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <PipelineSearch />
+            
+            <FilterSelect 
+              param="stage" 
+              placeholder="Todas las etapas" 
+              options={STAGES.map(s => ({ label: s, value: s }))} 
+              currentValue={params.stage}
+            />
+
+            <FilterSelect 
+              param="programa" 
+              placeholder="Todos los programas" 
+              options={[
+                { label: 'Mastermind', value: 'Mastermind' },
+                { label: 'Formación', value: 'Formación' },
+                { label: 'Programa PLUS', value: 'Programa PLUS' },
+                { label: 'LITE', value: 'LITE' },
+                { label: 'PAMM', value: 'PAMM - Manejo de Portafolio' },
+              ]} 
+              currentValue={params.programa}
+            />
+
+            <FilterSelect 
+              param="form_completed" 
+              placeholder="Estado Formulario" 
+              options={[
+                { label: 'Completado', value: 'true' },
+                { label: 'Pendiente', value: 'false' },
+              ]} 
+              currentValue={params.form_completed}
+            />
+
+            {viewAllOpps && closers && closers.length > 0 && (
+              <FilterSelect 
+                param="closer" 
+                placeholder="Todos los Closers" 
+                options={closers.map(c => ({ label: c.name, value: c.id }))} 
+                currentValue={params.closer}
+              />
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500 text-xs uppercase font-medium">Llamada desde:</span>
+              <input 
+                type="date" 
+                defaultValue={params.from}
+                onChange={(e) => {
+                  const url = new URL(window.location.href)
+                  if (e.target.value) url.searchParams.set('from', e.target.value)
+                  else url.searchParams.delete('from')
+                  window.location.href = url.toString()
+                }}
+                className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-xs"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500 text-xs uppercase font-medium">Hasta:</span>
+              <input 
+                type="date" 
+                defaultValue={params.to}
+                onChange={(e) => {
+                  const url = new URL(window.location.href)
+                  if (e.target.value) url.searchParams.set('to', e.target.value)
+                  else url.searchParams.delete('to')
+                  window.location.href = url.toString()
+                }}
+                className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-xs"
+              />
+            </div>
+            {(params.closer || params.stage || params.programa || params.form_completed || params.from || params.to || params.q) && (
+              <a 
+                href="/dashboard/pipeline" 
+                className="text-indigo-400 hover:text-indigo-300 text-xs font-medium ml-auto"
               >
-                Todos
+                Limpiar filtros
               </a>
-              {closers.map((c) => (
-                <a
-                  key={c.id}
-                  href={`/dashboard/pipeline?closer=${c.id}`}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-                    params.closer === c.id ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  {c.name}
-                </a>
-              ))}
-            </>
-          )}
+            )}
+          </div>
         </div>
 
         <PipelineList opportunities={allOpps} />
       </div>
     </div>
+  )
+}
+
+function FilterSelect({ param, placeholder, options, currentValue }: { 
+  param: string, 
+  placeholder: string, 
+  options: { label: string, value: string }[],
+  currentValue?: string
+}) {
+  return (
+    <select
+      value={currentValue || ''}
+      onChange={(e) => {
+        const url = new URL(window.location.href)
+        if (e.target.value) url.searchParams.set(param, e.target.value)
+        else url.searchParams.delete(param)
+        window.location.href = url.toString()
+      }}
+      className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+    >
+      <option value="">{placeholder}</option>
+      {options.map(opt => (
+        <option key={opt.value} value={opt.value}>{opt.label}</option>
+      ))}
+    </select>
   )
 }
 

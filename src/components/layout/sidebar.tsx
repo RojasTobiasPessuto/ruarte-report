@@ -14,7 +14,7 @@ import {
   Upload,
   Menu,
   X,
-  Kanban,
+  List,
   Wallet,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -33,7 +33,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, requiredPermission: 'can_view_all' },
   { href: '/dashboard/calls', label: 'Llamadas', icon: Phone, requiredPermission: 'can_view_all_calls' },
-  { href: '/dashboard/pipeline', label: 'Pipeline', icon: Kanban, requiredPermission: 'can_fill_post_agenda' },
+  { href: '/dashboard/pipeline', label: 'Oportunidades', icon: List, requiredPermission: 'can_fill_post_agenda' },
   { href: '/dashboard/closers', label: 'Closers', icon: Users, requiredPermission: 'can_view_all' },
   { href: '/dashboard/leads', label: 'Leads', icon: UserCheck, requiredPermission: 'can_view_leads' },
   { href: '/dashboard/payments', label: 'Pagos', icon: Wallet, requiredPermission: 'can_view_all_payments' },
