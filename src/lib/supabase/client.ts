@@ -10,5 +10,10 @@ export function createClient() {
     )
   }
 
-  return createBrowserClient(supabaseUrl, supabaseKey)
+  return createBrowserClient(supabaseUrl, supabaseKey, {
+    cookieOptions: {
+      sameSite: 'none',
+      secure: true,
+    },
+  })
 }
