@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { User } from 'lucide-react'
+import { useIsEmbedded } from './embed-context'
 
 export function Header({ title }: { title: string }) {
   const [email, setEmail] = useState<string | null>(null)
+  const isEmbedded = useIsEmbedded()
   const supabase = createClient()
 
   useEffect(() => {
@@ -13,6 +15,8 @@ export function Header({ title }: { title: string }) {
       setEmail(data.user?.email ?? null)
     })
   }, [supabase.auth])
+
+  if (isEmbedded) return null
 
   return (
     <header className="border-b border-gray-800/50 px-4 md:px-8 py-3 md:py-4 flex items-center justify-between bg-gray-950/50 backdrop-blur-sm sticky top-0 lg:top-auto z-30">

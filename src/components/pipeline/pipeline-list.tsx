@@ -6,6 +6,7 @@ import { es } from 'date-fns/locale'
 import type { Opportunity } from '@/types'
 import { cn } from '@/lib/utils'
 import { AtSign, Calendar, ExternalLink, User, CheckCircle2, DollarSign } from 'lucide-react'
+import { useEmbedUrl } from '@/components/layout/embed-context'
 
 const STAGE_COLORS: Record<string, string> = {
   'Agendado (Nuevo)': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
