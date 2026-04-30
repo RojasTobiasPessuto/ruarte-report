@@ -58,6 +58,7 @@ export function PipelineList({
               const lastPaymentDate = paidPayments.length > 0
                 ? new Date(Math.max(...paidPayments.map(p => new Date(p.fecha_pago!).getTime())))
                 : null
+              const oppUrl = getEmbedUrl(`/dashboard/pipeline/${opp.id}`)
 
               return (
                 <tr key={opp.id} className="hover:bg-gray-800/30 transition-colors group">
@@ -119,7 +120,15 @@ export function PipelineList({
                   </td>
                   <td className="px-6 py-4 text-right">
                     <Link
-                      href={`/dashboard/pipeline/${opp.id}`}
+                      href={oppUrl}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        const width = 1100
+                        const height = 800
+                        const left = typeof window !== 'undefined' ? (window.innerWidth - width) / 2 : 0
+                        const top = typeof window !== 'undefined' ? (window.innerHeight - height) / 2 : 0
+                        window.open(oppUrl, '_blank', `width=${width},height=${height},left=${left},top=${top},scrollbars=yes`)
+                      }}
                       className="inline-flex items-center gap-1.5 text-gray-400 hover:text-white text-sm bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
                     >
                       Ver <ExternalLink className="h-3.5 w-3.5" />

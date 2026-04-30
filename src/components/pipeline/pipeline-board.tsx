@@ -52,12 +52,22 @@ export function PipelineBoard({
                 {opps.length === 0 ? (
                   <p className="text-xs text-gray-600 text-center py-6">—</p>
                 ) : (
-                  opps.map((opp) => (
-                    <Link
-                      key={opp.id}
-                      href={getEmbedUrl(`/dashboard/pipeline/${opp.id}`)}
-                      className="block bg-gray-900/80 hover:bg-gray-800 border border-gray-800 rounded-lg p-3 transition-colors"
-                    >
+                  opps.map((opp) => {
+                    const oppUrl = getEmbedUrl(`/dashboard/pipeline/${opp.id}`)
+                    return (
+                      <Link
+                        key={opp.id}
+                        href={oppUrl}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          const width = 1100
+                          const height = 800
+                          const left = typeof window !== 'undefined' ? (window.innerWidth - width) / 2 : 0
+                          const top = typeof window !== 'undefined' ? (window.innerHeight - height) / 2 : 0
+                          window.open(oppUrl, '_blank', `width=${width},height=${height},left=${left},top=${top},scrollbars=yes`)
+                        }}
+                        className="block bg-gray-900/80 hover:bg-gray-800 border border-gray-800 rounded-lg p-3 transition-colors"
+                      >
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <p className="text-sm font-medium text-white line-clamp-1">
                           {opp.contact_name || opp.contact?.name || 'Sin nombre'}
@@ -102,7 +112,8 @@ export function PipelineBoard({
                         </span>
                       )}
                     </Link>
-                  ))
+                  )
+                })
                 )}
               </div>
             </div>
