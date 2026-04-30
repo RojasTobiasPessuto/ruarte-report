@@ -47,6 +47,7 @@ interface SaleInput {
   cash: number
   deposito_broker?: number
   cantidad_cuotas: number
+  fecha_pago: string
   fecha_proximo_pago: string | null
   justificante_urls?: string[] | null
 }
@@ -242,6 +243,7 @@ export async function PATCH(
           .from('payments')
           .update({
             monto: cashAmount,
+            fecha_pago: saleInput.fecha_pago,
             fecha_proximo_pago: saleInput.fecha_proximo_pago || null,
             justificante_urls: saleInput.justificante_urls ?? existingFirstPayment.justificante_urls ?? null,
             pagado: true,
@@ -255,7 +257,7 @@ export async function PATCH(
             sale_id: createdSale.id,
             nro_cuota: 1,
             monto: cashAmount,
-            fecha_pago: new Date().toISOString().slice(0, 10),
+            fecha_pago: saleInput.fecha_pago,
             fecha_proximo_pago: saleInput.fecha_proximo_pago || null,
             justificante_urls: saleInput.justificante_urls || null,
             pagado: true,
@@ -279,6 +281,7 @@ export async function PATCH(
       if (saleInput?.forma_pago) customFields.push({ id: GHL_FIELD_IDS.formaPago, field_value: saleInput.forma_pago })
       if (saleInput?.revenue !== undefined) customFields.push({ id: GHL_FIELD_IDS.revenue, field_value: saleInput.revenue })
       if (saleInput?.cash !== undefined) customFields.push({ id: GHL_FIELD_IDS.cash, field_value: saleInput.cash })
+      if (saleInput?.fecha_pago) customFields.push({ id: GHL_FIELD_IDS.fechaPago, field_value: saleInput.fecha_pago })
       if (saleInput?.deposito_broker !== undefined) customFields.push({ id: GHL_FIELD_IDS.depositoBroker, field_value: saleInput.deposito_broker })
       if (saleInput?.cantidad_cuotas !== undefined) customFields.push({ id: GHL_FIELD_IDS.cantidadCuotas, field_value: String(saleInput.cantidad_cuotas) })
       // Justificante: NO se sincroniza con GHL (solo en la app)
@@ -327,6 +330,13 @@ export async function PATCH(
         deposito_broker: Number(createdSale.deposito_broker),
         codigo_transaccion: createdSale.codigo_transaccion,
         completada: createdSale.completada,
+      } : undefined,
+      payment: createdPaymentId ? {
+        nro_cuota: 1,
+        monto: saleInput?.cash || 0,
+        fecha_pago: saleInput?.fecha_pago || null,
+        fecha_proximo_pago: saleInput?.fecha_proximo_pago || null,
+        pagado: true,
       } : undefined,
     })
     await sendOutboundWebhook(payload)

@@ -91,6 +91,9 @@ export function PostAgendaForm({
   const [cantidadCuotas, setCantidadCuotas] = useState(
     existingSale?.cantidad_cuotas?.toString() || opportunity.legacy_cantidad_cuotas?.toString() || ''
   )
+  const [fechaPago, setFechaPago] = useState(
+    firstPayment?.fecha_pago || new Date().toISOString().slice(0, 10)
+  )
   const [fechaProximoPago, setFechaProximoPago] = useState(firstPayment?.fecha_proximo_pago || '')
   // Defensive: aceptar tanto array como string legacy
   const initialJustificantes: string[] | null = (() => {
@@ -130,6 +133,7 @@ export function PostAgendaForm({
           revenue: revenue ? parseFloat(revenue) : 0,
           cash: cash ? parseFloat(cash) : 0,
           cantidad_cuotas: cantidadCuotas ? parseInt(cantidadCuotas) : 0,
+          fecha_pago: fechaPago,
           fecha_proximo_pago: fechaProximoPago || null,
           justificante_urls: justificanteUrls,
         }
@@ -140,6 +144,7 @@ export function PostAgendaForm({
           revenue: 0,
           cash: 0,
           deposito_broker: depositoBroker ? parseFloat(depositoBroker) : 0,
+          fecha_pago: fechaPago,
           justificante_urls: justificanteUrls,
         }
       }
@@ -290,6 +295,15 @@ export function PostAgendaForm({
               </>
             )}
 
+            <Field label="Fecha de Pago">
+              <input
+                type="date"
+                value={fechaPago}
+                onChange={(e) => setFechaPago(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-900/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50"
+              />
+            </Field>
+
             <Field label="Justificante (Primer pago)">
               <JustificanteUpload value={justificanteUrls} onChange={setJustificanteUrls} />
             </Field>
@@ -308,6 +322,14 @@ export function PostAgendaForm({
                 value={depositoBroker}
                 onChange={(e) => setDepositoBroker(e.target.value)}
                 placeholder="0"
+                className="w-full px-3 py-2 bg-gray-900/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50"
+              />
+            </Field>
+            <Field label="Fecha de Pago">
+              <input
+                type="date"
+                value={fechaPago}
+                onChange={(e) => setFechaPago(e.target.value)}
                 className="w-full px-3 py-2 bg-gray-900/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50"
               />
             </Field>
