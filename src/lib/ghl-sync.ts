@@ -134,6 +134,8 @@ export interface SyncResult {
   stage_has_more: boolean
   has_next_stage: boolean
   orphans_cleaned?: number
+  cursor_used?: { startAfter?: number; startAfterId?: string } | null
+  cursor_reset?: boolean
 }
 
 export async function runGhlSyncBatch(): Promise<SyncResult> {
@@ -167,12 +169,32 @@ export async function runGhlSyncBatch(): Promise<SyncResult> {
     cycleStartedAt = new Date().toISOString()
   }
 
-  const res = await searchOpportunities({
+  let res = await searchOpportunities({
     pipelineStageId: currentStageId,
     limit: BATCH_SIZE,
     startAfter,
     startAfterId,
   })
+
+  // Auto-recuperación: si el cursor no devuelve nada pero la stage tiene oportunidades,
+  // el cursor está trabado. Limpiar y reintentar desde el principio de la stage.
+  let cursorReset = false
+  if (
+    (startAfter || startAfterId) &&
+    res.opportunities.length === 0 &&
+    res.meta.total > 0
+  ) {
+    console.log(
+      `[GHL Sync] Cursor trabado en "${currentStageName}" (total=${res.meta.total}, devolvió 0). Reseteando y reintentando.`
+    )
+    cursorReset = true
+    startAfter = undefined
+    startAfterId = undefined
+    res = await searchOpportunities({
+      pipelineStageId: currentStageId,
+      limit: BATCH_SIZE,
+    })
+  }
 
   const opportunities = res.opportunities
 
@@ -365,5 +387,7 @@ export async function runGhlSyncBatch(): Promise<SyncResult> {
     error_samples: errorSamples.length > 0 ? errorSamples : undefined,
     stage_has_more: stageHasMore,
     has_next_stage: hasNextStage,
+    cursor_used: startAfter || startAfterId ? { startAfter, startAfterId } : null,
+    cursor_reset: cursorReset || undefined,
   }
 }

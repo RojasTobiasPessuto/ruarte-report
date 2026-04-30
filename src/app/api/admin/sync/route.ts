@@ -75,10 +75,14 @@ export async function POST(request: NextRequest) {
         last_result: results[results.length - 1],
         all_results: results.map((r) => ({
           stage: r.stage,
+          total_in_stage: r.total_in_stage,
           batch: r.batch_size,
           created: r.created,
           updated: r.updated,
           errors: r.errors,
+          cursor_used: r.cursor_used,
+          cursor_reset: r.cursor_reset,
+          error_samples: r.error_samples,
           message: r.message,
         })),
       })

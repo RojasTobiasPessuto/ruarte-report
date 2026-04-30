@@ -4,10 +4,10 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { requireAuth, hasPermission, isAdmin } from '@/lib/permissions'
 import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/header'
-import { PipelineBoard } from '@/components/pipeline/pipeline-board'
+import { PipelineList } from '@/components/pipeline/pipeline-list'
 import { PipelineSearch } from '@/components/pipeline/pipeline-search'
 import type { Opportunity } from '@/types'
-import { Kanban, Phone, TrendingUp, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { List, Phone, TrendingUp, CheckCircle, XCircle, Clock } from 'lucide-react'
 
 const STAGES = [
   'Post Llamada',
@@ -80,29 +80,20 @@ export default async function PipelinePage({
   }
 
   const { data: opportunities } = await query
+  const allOpps = (opportunities || []) as Opportunity[]
 
   // Get closers for filter dropdown (admin only)
   const { data: closers } = viewAllOpps
     ? await supabase.from('closers').select('id, name').eq('active', true).order('name')
     : { data: [] }
 
-  // Group by stage (solo las etapas que mostramos)
-  const byStage: Record<string, Opportunity[]> = {}
-  for (const stage of STAGES) byStage[stage] = []
-  for (const opp of (opportunities || []) as Opportunity[]) {
-    const stage = opp.pipeline_stage
-    if (stage && byStage[stage]) byStage[stage].push(opp)
-    // Si la etapa no está en STAGES (ej: Agendado Nuevo), se ignora
-  }
-
-  // Stats
-  const allOpps = (opportunities || []) as Opportunity[]
+  // Stats para las tarjetas (basadas en todas las opps filtradas)
   const total = allOpps.length
-  const postLlamada = byStage['Post Llamada']?.length || 0
-  const seguimiento = byStage['Seguimiento']?.length || 0
-  const compro = byStage['Compro']?.length || 0
-  const noCompro = byStage['No Compro']?.length || 0
-  const cancelado = (byStage['Cancelado']?.length || 0) + (byStage['No Asistio']?.length || 0)
+  const postLlamada = allOpps.filter(o => o.pipeline_stage === 'Post Llamada').length
+  const seguimiento = allOpps.filter(o => o.pipeline_stage === 'Seguimiento').length
+  const compro = allOpps.filter(o => o.pipeline_stage === 'Compro').length
+  const noCompro = allOpps.filter(o => o.pipeline_stage === 'No Compro').length
+  const cancelado = allOpps.filter(o => o.pipeline_stage === 'Cancelado' || o.pipeline_stage === 'No Asistio').length
   const conversionRate = (compro + noCompro) > 0 ? (compro / (compro + noCompro)) * 100 : 0
 
   return (
@@ -111,7 +102,7 @@ export default async function PipelinePage({
       <div className="p-4 md:p-8 space-y-4 md:space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
-          <StatCard label="Total" value={total} icon={Kanban} color="text-indigo-400" bg="from-indigo-500/10 to-purple-500/5" />
+          <StatCard label="Total" value={total} icon={List} color="text-indigo-400" bg="from-indigo-500/10 to-purple-500/5" />
           <StatCard label="Post Llamada" value={postLlamada} icon={Phone} color="text-orange-400" bg="from-orange-500/10 to-red-500/5" />
           <StatCard label="Seguimiento" value={seguimiento} icon={Clock} color="text-yellow-400" bg="from-yellow-500/10 to-amber-500/5" />
           <StatCard label="Compro" value={compro} icon={CheckCircle} color="text-emerald-400" bg="from-emerald-500/10 to-green-500/5" />
@@ -147,7 +138,7 @@ export default async function PipelinePage({
           )}
         </div>
 
-        <PipelineBoard byStage={byStage} stages={STAGES} />
+        <PipelineList opportunities={allOpps} />
       </div>
     </div>
   )
