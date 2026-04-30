@@ -36,7 +36,7 @@ const navItems: NavItem[] = [
   { href: '/dashboard/pipeline', label: 'Oportunidades', icon: List, requiredPermission: 'can_fill_post_agenda' },
   { href: '/dashboard/closers', label: 'Closers', icon: Users, requiredPermission: 'can_view_all' },
   { href: '/dashboard/leads', label: 'Leads', icon: UserCheck, requiredPermission: 'can_view_leads' },
-  { href: '/dashboard/payments', label: 'Pagos', icon: Wallet, requiredPermission: 'can_view_all_payments' },
+  { href: '/dashboard/payments', label: 'Ventas', icon: DollarSign, requiredPermission: 'can_view_all_payments' },
   { href: '/dashboard/import', label: 'Importar', icon: Upload, requiredPermission: 'can_import' },
   { href: '/dashboard/settings', label: 'Configuración', icon: Settings, adminOnly: true },
 ]
