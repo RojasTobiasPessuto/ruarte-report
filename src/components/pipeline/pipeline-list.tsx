@@ -5,7 +5,7 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { Opportunity } from '@/types'
 import { cn } from '@/lib/utils'
-import { AtSign, Calendar, ExternalLink, User, CheckCircle2 } from 'lucide-react'
+import { AtSign, Calendar, ExternalLink, User, CheckCircle2, DollarSign } from 'lucide-react'
 
 const STAGE_COLORS: Record<string, string> = {
   'Agendado (Nuevo)': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -41,6 +41,7 @@ export function PipelineList({
               <th className="px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Contacto</th>
               <th className="px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Etapa</th>
               <th className="px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Fecha Llamada</th>
+              <th className="px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Último Pago</th>
               <th className="px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Closer</th>
               <th className="px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Programa</th>
               <th className="px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider text-right">Acción</th>
@@ -50,6 +51,13 @@ export function PipelineList({
             {opportunities.map((opp) => {
               const stageColor = STAGE_COLORS[opp.pipeline_stage || ''] || STAGE_COLORS['Agendado (Nuevo)']
               
+              // Calcular último pago
+              const allPayments = (opp.sales || []).flatMap(s => s.payments || [])
+              const paidPayments = allPayments.filter(p => p.pagado && p.fecha_pago)
+              const lastPaymentDate = paidPayments.length > 0
+                ? new Date(Math.max(...paidPayments.map(p => new Date(p.fecha_pago!).getTime())))
+                : null
+
               return (
                 <tr key={opp.id} className="hover:bg-gray-800/30 transition-colors group">
                   <td className="px-6 py-4">
@@ -77,11 +85,21 @@ export function PipelineList({
                     <div className="flex items-center gap-2 text-sm text-gray-300">
                       <Calendar className="h-3.5 w-3.5 text-gray-500" />
                       {opp.fecha_llamada ? (
-                        format(new Date(opp.fecha_llamada), "d 'de' MMM, HH:mm", { locale: es })
+                        format(new Date(opp.fecha_llamada), "d 'de' MMM", { locale: es })
                       ) : (
                         <span className="text-gray-600">—</span>
                       )}
                     </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    {lastPaymentDate ? (
+                      <div className="flex items-center gap-2 text-sm text-emerald-400 font-medium">
+                        <DollarSign className="h-3.5 w-3.5 text-emerald-500/50" />
+                        {format(lastPaymentDate, "d 'de' MMM", { locale: es })}
+                      </div>
+                    ) : (
+                      <span className="text-gray-600">—</span>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-sm text-indigo-400 font-medium">

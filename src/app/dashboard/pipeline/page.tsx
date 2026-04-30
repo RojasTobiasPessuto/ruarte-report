@@ -49,7 +49,8 @@ export default async function PipelinePage({
       contact:contacts(*),
       closer:closers(*),
       lead:leads(id, ig_username),
-      call:calls(id, fathom_url)
+      call:calls(id, fathom_url),
+      sales(id, payments(fecha_pago, pagado))
     `)
     .order('created_at', { ascending: false })
 
