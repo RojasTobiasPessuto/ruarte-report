@@ -164,87 +164,99 @@ function PaymentRow({ payment, canEdit, isAdmin, onUpdate }: {
   }
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2 bg-gray-800/40 rounded-lg text-xs">
-      <span className="text-gray-500 w-8">#{payment.nro_cuota}</span>
-      <span className={cn('flex-1 font-medium', payment.pagado ? 'text-green-400' : 'text-gray-400')}>
-        ${Number(payment.monto).toLocaleString('es-AR')}
-      </span>
+    <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-3 py-2.5 bg-gray-800/40 rounded-lg text-xs">
+      <div className="flex items-center gap-3 flex-1">
+        <span className="text-gray-500 w-6">#{payment.nro_cuota}</span>
+        <span className={cn('font-bold text-sm', payment.pagado ? 'text-green-400' : 'text-gray-400')}>
+          ${Number(payment.monto).toLocaleString('es-AR')}
+        </span>
+      </div>
       
-      <div className="flex items-center gap-2 min-w-[120px]">
-        <Calendar className="h-3 w-3 text-gray-500 shrink-0" />
-        {isEditing ? (
-          <div className="flex items-center gap-1">
-            <input
-              type="date"
-              value={editDate}
-              onChange={(e) => setEditDate(e.target.value)}
-              disabled={saving}
-              className="bg-gray-900 border border-indigo-500/50 rounded px-1.5 py-0.5 text-[10px] text-white focus:outline-none"
-            />
-            <button
-              onClick={handleSaveDate}
-              disabled={saving}
-              className="text-emerald-400 hover:text-emerald-300 disabled:opacity-50"
-            >
-              <Check className="h-3 w-3" />
-            </button>
-            <button
-              onClick={() => {
-                setIsEditing(false)
-                setEditDate(payment.fecha_pago || '')
-              }}
-              disabled={saving}
-              className="text-gray-500 hover:text-gray-300"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </div>
-        ) : (
-          <span 
-            className={cn(
-              "text-gray-500",
-              isAdmin && "hover:text-indigo-400 cursor-pointer transition-colors"
+      <div className="flex flex-wrap gap-4 items-center">
+        {/* Fecha de Pago */}
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[9px] text-gray-500 uppercase font-medium">Pago</span>
+          <div className="flex items-center gap-1.5">
+            <Calendar className="h-3 w-3 text-gray-500 shrink-0" />
+            {isEditing ? (
+              <div className="flex items-center gap-1">
+                <input
+                  type="date"
+                  value={editDate}
+                  onChange={(e) => setEditDate(e.target.value)}
+                  disabled={saving}
+                  className="bg-gray-900 border border-indigo-500/50 rounded px-1.5 py-0.5 text-[10px] text-white focus:outline-none"
+                />
+                <button onClick={handleSaveDate} disabled={saving} className="text-emerald-400 hover:text-emerald-300">
+                  <Check className="h-3 w-3" />
+                </button>
+                <button onClick={() => setIsEditing(false)} disabled={saving} className="text-gray-500">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <span 
+                className={cn(
+                  "text-gray-300",
+                  isAdmin && "hover:text-indigo-400 cursor-pointer transition-colors"
+                )}
+                onClick={() => isAdmin && setIsEditing(true)}
+              >
+                {payment.fecha_pago 
+                  ? format(new Date(payment.fecha_pago), "d MMM yyyy", { locale: es })
+                  : 'Sin fecha'
+                }
+              </span>
             )}
-            onClick={() => isAdmin && setIsEditing(true)}
-          >
-            {payment.fecha_pago 
-              ? format(new Date(payment.fecha_pago), "d MMM yyyy", { locale: es })
-              : 'Sin fecha'
-            }
-          </span>
+          </div>
+        </div>
+
+        {/* Fecha Próximo Pago */}
+        {payment.fecha_proximo_pago && (
+          <div className="flex flex-col gap-0.5 border-l border-gray-700 pl-4">
+            <span className="text-[9px] text-gray-500 uppercase font-medium">Próximo</span>
+            <div className="flex items-center gap-1.5">
+              <Calendar className="h-3 w-3 text-amber-500/50 shrink-0" />
+              <span className="text-gray-400">
+                {format(new Date(payment.fecha_proximo_pago), "d MMM yyyy", { locale: es })}
+              </span>
+            </div>
+          </div>
         )}
       </div>
 
-      {payment.justificante_urls && payment.justificante_urls.length > 0 && (
-        <div className="flex items-center gap-1">
-          {payment.justificante_urls.map((url, i) => (
-            <a
-              key={i}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-indigo-400 hover:text-indigo-300"
-              title={`Justificante ${i + 1}`}
-            >
-              <FileText className="h-3.5 w-3.5" />
-            </a>
-          ))}
-        </div>
-      )}
-      {payment.pagado ? (
-        <span className="text-[10px] bg-green-400/10 text-green-400 px-2 py-0.5 rounded-full">Pagado</span>
-      ) : (
-        <span className="text-[10px] bg-amber-400/10 text-amber-400 px-2 py-0.5 rounded-full">Pendiente</span>
-      )}
-      {canEdit && !isEditing && (
-        <button
-          onClick={handleDelete}
-          disabled={deleting}
-          className="text-red-400 hover:text-red-300 ml-1"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </button>
-      )}
+      <div className="flex items-center gap-3 ml-auto sm:ml-0">
+        {payment.justificante_urls && payment.justificante_urls.length > 0 && (
+          <div className="flex items-center gap-1">
+            {payment.justificante_urls.map((url, i) => (
+              <a
+                key={i}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-400 hover:text-indigo-300"
+                title={`Justificante ${i + 1}`}
+              >
+                <FileText className="h-3.5 w-3.5" />
+              </a>
+            ))}
+          </div>
+        )}
+        {payment.pagado ? (
+          <span className="text-[10px] bg-green-400/10 text-green-400 px-2 py-0.5 rounded-full border border-green-400/20">Pagado</span>
+        ) : (
+          <span className="text-[10px] bg-amber-400/10 text-amber-400 px-2 py-0.5 rounded-full border border-amber-400/20">Pendiente</span>
+        )}
+        {canEdit && !isEditing && (
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="text-red-400 hover:text-red-300 transition-colors"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
     </div>
   )
 }
@@ -296,29 +308,37 @@ function AddPaymentForm({ saleId, nextCuota, onClose, onSaved }: {
   return (
     <form onSubmit={handleSubmit} className="mt-3 p-3 bg-gray-800/60 border border-indigo-500/20 rounded-lg space-y-3">
       <p className="text-xs font-semibold text-indigo-400">Nueva cuota #{nextCuota}</p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-        <input
-          type="number"
-          value={monto}
-          onChange={(e) => setMonto(e.target.value)}
-          placeholder="Monto"
-          required
-          className="px-3 py-2 bg-gray-900 border border-gray-700 rounded text-sm text-white"
-        />
-        <input
-          type="date"
-          value={fechaPago}
-          onChange={(e) => setFechaPago(e.target.value)}
-          required
-          className="px-3 py-2 bg-gray-900 border border-gray-700 rounded text-sm text-white"
-        />
-        <input
-          type="date"
-          value={fechaProxPago}
-          onChange={(e) => setFechaProxPago(e.target.value)}
-          placeholder="Próximo pago"
-          className="px-3 py-2 bg-gray-900 border border-gray-700 rounded text-sm text-white"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="space-y-1">
+          <label className="text-[10px] text-gray-500 uppercase tracking-widest block">Monto</label>
+          <input
+            type="number"
+            value={monto}
+            onChange={(e) => setMonto(e.target.value)}
+            placeholder="0.00"
+            required
+            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-sm text-white"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[10px] text-gray-500 uppercase tracking-widest block">Fecha de Pago</label>
+          <input
+            type="date"
+            value={fechaPago}
+            onChange={(e) => setFechaPago(e.target.value)}
+            required
+            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-sm text-white"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[10px] text-gray-500 uppercase tracking-widest block">Próximo Pago</label>
+          <input
+            type="date"
+            value={fechaProxPago}
+            onChange={(e) => setFechaProxPago(e.target.value)}
+            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-sm text-white"
+          />
+        </div>
       </div>
       <div>
         <label className="text-[10px] text-gray-500 uppercase tracking-widest block mb-1">Justificante</label>
