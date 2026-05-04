@@ -158,14 +158,16 @@ async function getDashboardData(dateFrom: Date | null, dateTo: Date | null) {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string; from?: string; to?: string }>
+  searchParams: Promise<{ range?: string; from?: string; to?: string; embed?: string }>
 }) {
   const ctx = await requireAuth()
+  const params = await searchParams
+
   // Solo admin y roles con can_view_all pueden ver el dashboard (closer solo pipeline)
   if (!isAdmin(ctx) && !hasPermission(ctx, 'can_view_all')) {
-    redirect('/dashboard/pipeline')
+    redirect(params.embed === 'true' ? '/dashboard/pipeline?embed=true' : '/dashboard/pipeline')
   }
-  const params = await searchParams
+
   const { from, to } = getDateRange(params)
   const { stats, closerComparison, trendData, objectionsData, recentCalls } =
     await getDashboardData(from, to)

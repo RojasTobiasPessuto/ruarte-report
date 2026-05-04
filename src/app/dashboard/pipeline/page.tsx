@@ -29,16 +29,17 @@ export default async function PipelinePage({
     form_completed?: string;
     from?: string;
     to?: string;
+    embed?: string;
   }>
 }) {
   const ctx = await requireAuth()
+  const params = await searchParams
 
   // Solo admin, closer (con can_fill_post_agenda) pueden entrar
   if (!isAdmin(ctx) && !hasPermission(ctx, 'can_fill_post_agenda')) {
-    redirect('/dashboard')
+    redirect(params.embed === 'true' ? '/dashboard?embed=true' : '/dashboard')
   }
 
-  const params = await searchParams
   const supabase = await createServerSupabaseClient()
 
   // Build query
