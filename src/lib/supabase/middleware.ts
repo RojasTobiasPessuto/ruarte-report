@@ -39,11 +39,15 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Allow public routes
-  const publicPaths = ['/login', '/summary', '/api/webhook', '/api/cron']
-  const isPublicPath = publicPaths.some(path => request.nextUrl.pathname.startsWith(path))
+  // Rutas que requieren autenticación
+  const isDashboard = request.nextUrl.pathname.startsWith('/dashboard')
+  const isProtectedApi = request.nextUrl.pathname.startsWith('/api') && 
+                         !request.nextUrl.pathname.startsWith('/api/webhook') && 
+                         !request.nextUrl.pathname.startsWith('/api/cron')
 
-  if (!user && !isPublicPath) {
+  const requiresAuth = isDashboard || isProtectedApi
+
+  if (!user && requiresAuth) {
     const url = request.nextUrl.clone()
     const embed = request.nextUrl.searchParams.get('embed')
     url.pathname = '/login'
