@@ -152,23 +152,38 @@ export function OpportunityDetail({
             </div>
           </div>
 
-          {canFillForm && (
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className={`px-4 py-2 text-white text-sm rounded-lg flex items-center gap-2 ${
-                !opportunity.form_completed && isPostLlamada
-                  ? 'bg-indigo-600 hover:bg-indigo-700'
-                  : 'bg-gray-800 hover:bg-gray-700'
-              }`}
-            >
-              <FileText className="h-4 w-4" />
-              {showForm
-                ? 'Cerrar'
-                : opportunity.form_completed || !isPostLlamada
-                  ? 'Editar Post-Agenda'
-                  : 'Completar Post-Agenda'}
-            </button>
-          )}
+          {canFillForm && (() => {
+            const isSeguimiento = stage === 'Seguimiento'
+            const isAllowedStage = isPostLlamada || isSeguimiento
+            const isButtonDisabled = !isAllowedStage && !isAdmin
+
+            return (
+              <button
+                onClick={() => {
+                  if (!isButtonDisabled) setShowForm(!showForm)
+                }}
+                disabled={isButtonDisabled}
+                title={isButtonDisabled ? "Solo habilitado en Post Llamada y Seguimiento" : ""}
+                className={cn(
+                  "px-4 py-2 text-sm rounded-lg flex items-center gap-2 transition-all",
+                  isButtonDisabled
+                    ? "bg-red-500/10 text-red-400 border border-red-500/20 cursor-not-allowed opacity-80"
+                    : !opportunity.form_completed && isPostLlamada
+                      ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                      : "bg-gray-800 hover:bg-gray-700 text-white"
+                )}
+              >
+                <FileText className="h-4 w-4" />
+                {showForm
+                  ? 'Cerrar'
+                  : isButtonDisabled
+                    ? 'Bloqueado por Etapa'
+                    : opportunity.form_completed || !isPostLlamada
+                      ? 'Editar Post-Agenda'
+                      : 'Completar Post-Agenda'}
+              </button>
+            )
+          })()}
         </div>
 
         {/* Key data */}
