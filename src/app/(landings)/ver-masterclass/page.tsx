@@ -14,7 +14,9 @@ export default function MasterclassLanding() {
 
   // Sticky
   const sticky = document.getElementById('sticky');
-  window.addEventListener('scroll', () => sticky.classList.toggle('on', window.scrollY > 500));
+  window.addEventListener('scroll', () => {
+    if (sticky) sticky.classList.toggle('on', window.scrollY > 500);
+  });
 
   // Track carousel — duplicate cards for seamless loop
   (function() {
