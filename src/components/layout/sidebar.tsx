@@ -21,6 +21,7 @@ import {
 import { cn } from '@/lib/utils'
 import type { Role } from '@/types'
 import { useEmbedUrl } from './embed-context'
+import { useSidebar } from './sidebar-context'
 
 type PermissionKey = keyof Role
 
@@ -46,7 +47,8 @@ const navItems: NavItem[] = [
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false) // Mobile state
+  const { isOpen } = useSidebar() // Desktop state
   const [role, setRole] = useState<Role | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const getEmbedUrl = useEmbedUrl()
@@ -104,12 +106,15 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed lg:static z-40 w-64 bg-gray-900/95 backdrop-blur-xl border-r border-gray-800/50 min-h-screen flex flex-col transition-transform duration-200',
+          'fixed lg:static z-40 bg-gray-900/95 backdrop-blur-xl border-r border-gray-800/50 min-h-screen flex flex-col transition-all duration-300 overflow-hidden',
+          // Mobile visibility
+          open ? 'translate-x-0 w-64' : '-translate-x-full w-64',
+          // Desktop visibility controlled by context
           'lg:translate-x-0',
-          open ? 'translate-x-0' : '-translate-x-full'
+          isOpen ? 'lg:w-64 lg:opacity-100' : 'lg:w-0 lg:opacity-0 lg:border-none'
         )}
       >
-        <div className="p-6 border-b border-gray-800/50 hidden lg:block">
+        <div className="p-6 border-b border-gray-800/50 hidden lg:block w-64">
           <Link href="/dashboard" className="flex items-center group">
             <img src="/logo.png" alt="Ruarte Reports" className="h-10" />
           </Link>
@@ -118,7 +123,7 @@ export function Sidebar() {
         {/* Spacer for mobile header */}
         <div className="h-14 lg:hidden" />
 
-        <nav className="flex-1 p-3 space-y-0.5">
+        <nav className="flex-1 p-3 space-y-0.5 w-64">
           <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 pt-3 pb-2">
             Menu
           </p>
@@ -150,7 +155,7 @@ export function Sidebar() {
           })}
         </nav>
 
-        <div className="p-3 border-t border-gray-800/50">
+        <div className="p-3 border-t border-gray-800/50 w-64">
           <p className="text-[10px] text-gray-600 text-center">
             Ruarte Report v1.0
           </p>

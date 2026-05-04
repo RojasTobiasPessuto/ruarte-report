@@ -31,8 +31,7 @@ function LoginForm() {
     }
 
     const redirectPath = isEmbedded ? '/dashboard?embed=true' : '/dashboard'
-    router.push(redirectPath)
-    router.refresh()
+    window.location.href = redirectPath
   }
 
   return (

@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/layout/sidebar'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { EmbedProvider, useIsEmbedded } from '@/components/layout/embed-context'
+import { SidebarProvider } from '@/components/layout/sidebar-context'
 import { cn } from '@/lib/utils'
 
 function DashboardLayoutContent({
@@ -20,7 +21,7 @@ function DashboardLayoutContent({
     )}>
       {!isEmbedded && <Sidebar />}
       <main className={cn(
-        "flex-1 overflow-auto",
+        "flex-1 overflow-auto transition-all duration-300",
         !isEmbedded ? "pt-14 lg:pt-0" : "p-0"
       )}>
         {children}
@@ -37,7 +38,9 @@ export default function DashboardLayout({
   return (
     <Suspense fallback={<div className="min-h-screen bg-gray-950" />}>
       <EmbedProvider>
-        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+        <SidebarProvider>
+          <DashboardLayoutContent>{children}</DashboardLayoutContent>
+        </SidebarProvider>
       </EmbedProvider>
     </Suspense>
   )
