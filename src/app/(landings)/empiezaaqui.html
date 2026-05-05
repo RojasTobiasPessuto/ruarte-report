@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Empieza Aquí — Ruarte Reports</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --blue:       #2B5EA7;
+      --blue-light: #3A7BD5;
+      --blue-dark:  #1E4A8A;
+      --gold:       #C9A96E;
+      --gold-light: #D4BC8A;
+      --gold-dark:  #B08D4F;
+      --bg:         #0A0A0F;
+      --bg2:        #111118;
+      --bg-card:    #16161F;
+      --text:       #FFFFFF;
+      --text2:      #A0A0B0;
+      --text3:      #6B6B7B;
+      --border:     #2A2A3A;
+      --r:          16px;
+      --r-lg:       24px;
+      --max:        1000px;
+      --container-pad: 48px;
+      --section-pad:   52px;
+      --title-size: 25px;
+      --body-size:  16px;
+      --small-size: 13px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes shimmer { 0%{background-position:-200% center;} 100%{background-position:200% center;} }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+    @keyframes trackScroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+
+    .fade { opacity:0; }
+    .fade.in { animation: fadeUp 0.7s ease forwards; }
+    .d1 { animation-delay:0.1s!important; }
+    .d2 { animation-delay:0.2s!important; }
+    .d3 { animation-delay:0.3s!important; }
+    .d4 { animation-delay:0.4s!important; }
+
+    /* LAYOUT */
+    .container { max-width:var(--max); margin:0 auto; padding:0 var(--container-pad); }
+    @media (max-width:700px) { .container { padding:0 20px; } }
+    section { padding:var(--section-pad) 0; }
+
+    /* HEADER */
+    .header {
+      padding: 16px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,10,15,0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(42,42,58,0.5);
+      text-align: center;
+    }
+    .logo-img { height: 40px; width: auto; }
+
+    /* HERO */
+    .hero {
+      padding: 56px 0 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content:'';
+      position:absolute;
+      top:-100px; left:50%;
+      transform:translateX(-50%);
+      width:700px; height:700px;
+      background: radial-gradient(circle, rgba(43,94,167,0.12) 0%, transparent 70%);
+      pointer-events:none;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 18px;
+      background: rgba(201,169,110,0.1);
+      border: 1px solid rgba(201,169,110,0.25);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gold-light);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .hero-tag-dot {
+      width: 6px; height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .hero h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: clamp(26px, 4.5vw, 46px);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+      max-width: 860px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .gold-text {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold));
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 3s linear infinite;
+    }
+
+    .hero p {
+      font-size: var(--body-size);
+      color: var(--text2);
+      max-width: 640px;
+      margin: 0 auto 40px;
+      line-height: 1.75;
+    }
+
+    /* BUTTON */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 40px;
+      background: linear-gradient(135deg, var(--blue), var(--blue-light));
+      color: white;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(43,94,167,0.35);
+      letter-spacing: 0.01em;
+    }
+    .btn:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(43,94,167,0.55); }
+    .btn .arrow { transition: transform 0.3s; }
+    .btn:hover .arrow { transform: translateX(4px); }
+    .btn--lg { padding: 18px 52px; font-size: 16px; }
+    .btn--gold {
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
+      box-shadow: 0 4px 20px rgba(201,169,110,0.3);
+      color: #0A0A0F;
+    }
+    .btn--gold:hover { box-shadow: 0 8px 30px rgba(201,169,110,0.5); }
+
+    .hero-note { margin-top:14px; font-size:13px; color:var(--text3); }
+
+    /* STATS STRIP */
+    .stats-strip {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 0;
+    }
+    .stats-items {
+      display: flex;
+      justify-content: center;
+      gap: 0 60px;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-big {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: 32px;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .stat-desc {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* SEC HEADER */
+    .sec-header { text-align:center; margin-bottom:52px; }
+    .sec-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      margin-bottom: 14px;
+    }
+    .sec-header h2 {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: clamp(22px, 4vw, 32px);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+    .sec-header p {
+      margin-top: 14px;
+      font-size: var(--body-size);
+      color: var(--text2);
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* TESTIMONIALS */
+    .testimonios { background: var(--bg2); }
+
+    .testimonios-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    @media (max-width:700px) { .testimonios-grid { grid-template-columns: 1fr; } }
+
+    .testimonial-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 28px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .testimonial-card:hover { border-color: rgba(201,169,110,0.25); transform: translateY(-3px); }
+
+    .testimonial-stars {
+      color: var(--gold);
+      font-size: 14px;
+      letter-spacing: 2px;
+      margin-bottom: 14px;
+    }
+    .testimonial-text {
+      font-size: 15px;
+      color: var(--text2);
+      line-height: 1.7;
+      font-style: italic;
+      margin-bottom: 20px;
+    }
+    .testimonial-text strong { color: var(--text); font-style: normal; }
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .testimonial-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-dark), var(--gold-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .testimonial-name {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .testimonial-role { font-size: 12px; color: var(--text3); }
+
+    /* FUNDADORES */
+    .fundadores { background: var(--bg); }
+
+    .fundadores-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    @media (max-width:700px) { .fundadores-grid { grid-template-columns: 1fr; } }
+
+    .fundador-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 36px 32px;
+      transition: border-color 0.3s;
+    }
+    .fundador-card:hover { border-color: rgba(201,169,110,0.25); }
+
+    .fundador-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .fundador-photo-wrap {
+      position: relative;
+      width: 80px;
+      flex-shrink: 0;
+    }
+    .fundador-photo-wrap img {
+      width: 80px;
+      height: 100px;
+      object-fit: cover;
+      object-position: center top;
+      border-radius: 12px;
+      display: block;
+      filter: grayscale(15%);
+    }
+    .fundador-photo-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, var(--gold), var(--blue));
+      z-index: -1;
+    }
+    .fundador-photo-wrap::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, var(--gold), var(--blue));
+      filter: blur(12px);
+      opacity: 0.3;
+      z-index: -2;
+    }
+    .fundador-info h3 {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    .fundador-handle {
+      font-size: 12px;
+      color: var(--gold);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .fundador-years { font-size: 12px; color: var(--text3); }
+    .fundador-bio { font-size: 14px; color: var(--text2); line-height: 1.7; }
+
+    /* PILARES */
+    .pilares { background: var(--bg2); }
+
+    .pilares-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    @media (max-width:700px) { .pilares-grid { grid-template-columns: 1fr; } }
+
+    .pilar-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 32px 24px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .pilar-card:hover { border-color: rgba(201,169,110,0.3); transform: translateY(-4px); }
+
+    .pilar-num {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+    .pilar-card h3 {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 17px;
+      line-height: 1.3;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+    .pilar-list { list-style: none; }
+    .pilar-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text2);
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+      line-height: 1.5;
+    }
+    .pilar-list li:last-child { border-bottom: none; }
+    .pilar-dot {
+      width: 5px; height: 5px;
+      background: var(--gold);
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 7px;
+    }
+
+    /* CLIENTES — logo carousel */
+    .clientes { background: var(--bg); border-top: 1px solid var(--border); }
+
+    .logo-carousel-wrap {
+      position: relative;
+      overflow: hidden;
+      max-width: 100%;
+      margin-top: 48px;
+      mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+      -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    }
+    .logo-track {
+      display: flex;
+      align-items: center;
+      gap: 48px;
+      width: max-content;
+      animation: logoScroll 28s linear infinite;
+    }
+    .logo-track:hover { animation-play-state: paused; }
+    @keyframes logoScroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .logo-item img {
+      height: 44px;
+      width: auto;
+      opacity: 0.65;
+      transition: opacity 0.3s;
+    }
+    .logo-item img:hover { opacity: 1; }
+
+    /* TRACK RECORD */
+    .track-carousel-wrap {
+      overflow: hidden;
+      position: relative;
+      margin-top: 52px;
+    }
+    .track-carousel-wrap::before,
+    .track-carousel-wrap::after {
+      content:'';
+      position:absolute;
+      top:0; bottom:0;
+      width:80px;
+      z-index:2;
+      pointer-events:none;
+    }
+    .track-carousel-wrap::before { left:0; background:linear-gradient(to right, var(--bg), transparent); }
+    .track-carousel-wrap::after  { right:0; background:linear-gradient(to left, var(--bg), transparent); }
+
+    .track-track {
+      display:flex;
+      gap:16px;
+      width:max-content;
+      animation: trackScroll 35s linear infinite;
+    }
+    .track-track:hover { animation-play-state:paused; }
+
+    .track-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 24px 20px;
+      width: 300px;
+      flex-shrink: 0;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .track-card:hover { border-color: rgba(43,94,167,0.4); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+    .track-year {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+    .track-card p { font-size:14px; color:var(--text2); line-height:1.65; }
+    .track-card p strong { color:var(--text); }
+
+    /* FAQ */
+    .faq { background: var(--bg2); }
+
+    .faq-list { max-width: 720px; margin: 0 auto; }
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+    }
+    .faq-item:first-child { border-top: 1px solid var(--border); }
+    .faq-q {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 22px 0;
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text);
+      gap: 16px;
+      user-select: none;
+    }
+    .faq-q:hover { color: var(--gold-light); }
+    .faq-chevron {
+      color: var(--gold);
+      font-size: 18px;
+      flex-shrink: 0;
+      transition: transform 0.3s;
+    }
+    .faq-item.open .faq-chevron { transform: rotate(45deg); }
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+    }
+    .faq-item.open .faq-a { max-height: 400px; }
+    .faq-a-inner {
+      padding-bottom: 22px;
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.75;
+    }
+
+    /* CTA FINAL */
+    .cta-final { background: var(--bg); }
+    .cta-final-card {
+      max-width: 680px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      border: 1px solid rgba(201,169,110,0.2);
+      border-radius: var(--r-lg);
+      padding: 60px 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-final-card::before {
+      content:'';
+      position:absolute;
+      top:-60px; left:50%;
+      transform:translateX(-50%);
+      width:400px; height:300px;
+      background: radial-gradient(circle, rgba(201,169,110,0.06) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    @media (max-width:520px) { .cta-final-card { padding: 40px 24px; } }
+    .cta-final-card h2 {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: clamp(22px, 4vw, 30px);
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .cta-final-card p { font-size:15px; color:var(--text2); margin-bottom:32px; line-height:1.7; }
+
+    /* FOOTER */
+    footer {
+      background: #060608;
+      border-top: 1px solid var(--border);
+      padding: 32px 24px 80px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text3);
+      line-height: 1.7;
+    }
+    footer img { height:28px; margin-bottom:12px; opacity:0.6; }
+
+    /* STICKY */
+    .sticky {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(10,10,15,0.97);
+      border-top: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+    .sticky.on { transform: translateY(0); }
+    .sticky p { font-size:13px; color:var(--text2); }
+    .sticky p strong { color:var(--text); }
+    .sticky .btn { padding:11px 24px; font-size:13px; }
+
+    /* TESTIMONIOS VIDEO + RESEÑA */
+    .testimonios-video { background: var(--bg2); }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    @media (max-width:700px) { .testimonials-grid { grid-template-columns: 1fr; gap: 16px; } }
+
+    .testimonial-card-v {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+    .testimonial-card-v:hover {
+      border-color: rgba(201,169,110,0.25);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+
+    .testimonial-video {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #0a0a0f;
+      position: relative;
+      cursor: pointer;
+    }
+    .testimonial-video video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .play-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.4);
+      transition: opacity 0.3s, background 0.3s;
+    }
+    .play-overlay:hover { background: rgba(0,0,0,0.2); }
+
+    .play-icon {
+      width: 64px; height: 64px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid rgba(255,255,255,0.3);
+      transition: all 0.3s;
+    }
+    .play-overlay:hover .play-icon { background: rgba(255,255,255,0.25); transform: scale(1.1); }
+    .play-icon svg { width:24px; height:24px; fill:white; margin-left:3px; }
+
+    .testimonial-review {
+      padding: 24px 28px;
+      border-top: 1px solid var(--border);
+    }
+    .testimonial-stars { color: var(--gold); font-size: 13px; letter-spacing: 2px; margin-bottom: 12px; }
+    .testimonial-quote {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.75;
+      font-style: italic;
+      margin-bottom: 18px;
+    }
+    .testimonial-quote strong { color: var(--text); font-style: normal; }
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .testimonial-avatar { display: none; }
+    .testimonial-name {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .testimonial-role-v { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .sound-hint { display: none; }
+
+    /* CREDENCIALES */
+    .creds-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 52px;
+    }
+    @media (max-width:700px) { .creds-grid { grid-template-columns: repeat(2,1fr); } }
+
+    .cred-num-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 28px 20px;
+      text-align: center;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .cred-num-card:hover { border-color: rgba(201,169,110,0.3); transform: translateY(-3px); }
+    .cred-big {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: 36px;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .cred-desc { font-size: 13px; color: var(--text2); line-height: 1.4; }
+
+    .cred-intro {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 48px;
+      align-items: center;
+      margin-top: 40px;
+      margin-bottom: 48px;
+    }
+    @media (max-width:700px) {
+      .cred-intro { grid-template-columns: 1fr; }
+      .cred-photo-wrap { margin: 0 auto; }
+    }
+    .cred-photo-wrap {
+      position: relative;
+      width: 220px;
+      flex-shrink: 0;
+    }
+    .cred-photo-wrap img {
+      width: 220px;
+      height: 280px;
+      object-fit: cover;
+      object-position: center top;
+      border-radius: 16px;
+      display: block;
+      filter: grayscale(15%);
+    }
+    .cred-photo-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--gold), var(--blue));
+      z-index: -1;
+    }
+    .cred-photo-wrap::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--gold), var(--blue));
+      filter: blur(16px);
+      opacity: 0.35;
+      z-index: -2;
+    }
+
+    .cred-list { list-style: none; margin-bottom: 0; }
+    .cred-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 15px;
+      color: var(--text2);
+      line-height: 1.55;
+    }
+    .cred-list li:last-child { border-bottom: none; }
+    .cred-list .dot {
+      width: 6px; height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 8px;
+    }
+    .cred-list strong { color: var(--text); }
+
+    /* MOBILE */
+    @media (max-width:600px) {
+      /* General */
+      section { padding: 28px 0; }
+
+      /* Header */
+      .header { padding: 12px 0; }
+      .logo-img { height: 30px; }
+
+      /* Hero */
+      .hero { padding: 32px 0 0; }
+      .hero-tag { font-size: 9px; padding: 6px 12px; letter-spacing: 0.04em; white-space: nowrap; }
+      .hero h1 { font-size: clamp(20px, 6.5vw, 28px); }
+      #hero-line1 { line-height: 1.45; }
+      .sub-l1, .sub-l2, .sub-l3 { display: block; }
+      .hero-frase-1 { display: block; font-size: 19px !important; }
+      .hero-frase-2 { display: block; font-size: 13px !important; margin-top: 4px; }
+      .hero-frase-3 { display: block; font-size: 19px !important; margin-top: 4px; }
+      .hero p { font-size: 14px; }
+
+      /* Botones */
+      .btn--lg { padding: 14px 24px; font-size: 14px; width: 100%; justify-content: center; }
+
+      /* VSL */
+      [data-block="vsl"] { padding: 0 0 24px; }
+
+      /* CTA bajo VSL / testimonios / pilares */
+      [style*="justify-content:center"] { padding: 0 20px 40px !important; }
+
+      /* Sec headers */
+      .sec-header { margin-bottom: 32px; }
+      .sec-header h2 { font-size: clamp(18px, 5.5vw, 24px); white-space: normal !important; }
+      #pilares-h2 { font-size: clamp(14px, 4.2vw, 18px) !important; white-space: nowrap !important; }
+      #clientes-h2 { font-size: clamp(14px, 4.5vw, 17px) !important; }
+      #cta-final-h2 { font-size: clamp(14px, 4.5vw, 17px) !important; }
+      .sec-header p { font-size: 13px; }
+      .sec-tag { font-size: 10px; }
+
+      /* Testimonios video */
+      .testimonials-grid { grid-template-columns: 1fr; gap: 16px; }
+      .testimonial-review { padding: 18px 20px; }
+      .testimonial-quote { font-size: 13px; }
+      .testimonial-name { font-size: 12px; }
+
+      /* Credenciales */
+      .creds-grid { grid-template-columns: repeat(2,1fr); gap: 12px; }
+      .cred-big { font-size: 28px; }
+      .cred-desc { font-size: 12px; }
+      .cred-intro { grid-template-columns: 1fr; gap: 24px; }
+      .cred-photo-wrap { margin: 0 auto; width: 160px; }
+      .cred-photo-wrap img { width: 160px; height: 200px; }
+      .cred-list li { font-size: 13px; }
+
+      /* Track record */
+      .track-card { width: 240px; }
+      .track-card p { font-size: 13px; }
+
+      /* Pilares */
+      .pilares-grid { grid-template-columns: 1fr; gap: 16px; }
+      .pilar-card { padding: 24px 20px; }
+      .pilar-card h3 { font-size: 15px; }
+      .pilar-list li { font-size: 12px; }
+
+      /* Logo carousel */
+      .logo-item img { height: 32px; }
+      .logo-track { gap: 32px; }
+
+      /* FAQ */
+      .faq-q { font-size: 13px; }
+      .faq-a-inner { font-size: 13px; }
+
+      /* CTA final */
+      .cta-final-card { padding: 36px 20px; }
+      .cta-final-card h2 { font-size: clamp(18px, 5vw, 22px); }
+      .cta-final-card p { font-size: 13px; }
+
+      /* Sticky */
+      .sticky { padding: 12px 16px; }
+      .sticky p { display: none; }
+      .sticky .btn { width: calc(100% - 32px); justify-content: center; font-size: 13px; }
+    }
+
+    /* Tablet */
+    @media (min-width:601px) and (max-width:900px) {
+      .hero h1 { font-size: clamp(24px, 4vw, 34px); }
+      .cred-intro { grid-template-columns: 1fr; }
+      .cred-photo-wrap { margin: 0 auto; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .pilares-grid { grid-template-columns: 1fr; gap: 16px; }
+      .sec-header h2 { white-space: normal !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header" data-block="header">
+  <img src="logo-rr.png" alt="Ruarte Reports" class="logo-img" id="topbar-logo" />
+</header>
+
+<!-- HERO -->
+<section class="hero" data-block="hero">
+  <div class="container">
+    <div class="hero-tag fade in">
+      <div class="hero-tag-dot"></div>
+      Solo para Empresarios / Profesionales / Emprendedores
+    </div>
+
+    <h1 class="fade in d1">
+      <span id="hero-line1" style="font-size:29px;">
+        <span class="hero-frase-1"><span style="color:rgb(183,150,88);">Arma tu portafolio</span> en menos de <span style="color:rgb(187,152,92);">7 dias</span></span>
+        <span class="hero-frase-2"> aprovechando las siguientes oportunidades historicas</span>
+      </span>
+    </h1>
+
+    <p class="fade in d2" id="hero-sub">
+      <span class="sub-l1">Aplicaras el sistema que utilizamos</span>
+      <span class="sub-l2">con instituciones y fondos de inversion,</span>
+      <span class="sub-l3">con tan solo <b><span style="color:rgb(255,255,255);">30 minutos de tu tiempo a la semana</span></b></span>
+    </p>
+
+  </div>
+</section>
+
+<!-- VSL -->
+<section data-block="vsl" style="background:var(--bg); padding:0 0 20px;">
+  <div class="container">
+    <div style="max-width:780px; margin:0 auto; border-radius:16px; overflow:hidden; border:1px solid var(--border); box-shadow:0 8px 40px rgba(0,0,0,0.5);">
+      <div style="position:relative; padding-bottom:56.25%; height:0; background:#0a0a0f;">
+        <!-- Reemplazá el src con la URL del video VSL -->
+        <iframe id="vsl-iframe" src="" frameborder="0" allowfullscreen
+          style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;">
+        </iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BAJO VSL -->
+<div style="background:var(--bg); padding:0 20px 36px; display:flex; flex-direction:column; align-items:center;">
+  <a href="CALENDLY_LINK_AQUI" target="_blank" class="btn btn--lg btn--gold" id="hero-cta">
+    Agendá tu sesión <span class="arrow">→</span>
+  </a>
+  <p class="hero-note" id="hero-note" style="margin-top:14px;">Sin costo. Sin compromiso. Solo para inversores serios.</p>
+</div>
+
+
+<!-- TESTIMONIOS VIDEO + RESEÑA -->
+<section class="testimonios-video" data-block="testimonios-video">
+  <div class="container">
+    <div class="sec-header fade">
+      <div class="sec-tag">Testimonios reales</div>
+      <h2 id="testv-h2">Opiniones de <span class="gold-text">nuestros clientes</span></h2>
+      <p id="testv-p">Profesionales de distintos rubros que decidieron trabajar con Roberto.</p>
+    </div>
+
+    <div class="testimonials-grid">
+
+      <!-- Testimonio 1 — Corredor de Bolsa -->
+      <div class="testimonial-card-v fade">
+        <div class="testimonial-video" onclick="toggleVideo(this)">
+          <video preload="metadata">
+            <source src="https://assets.cdn.filesafe.space/KtUHW6Xfym4HTBF8Ujq8/media/69d6812e3d9f7a33e41ce234.mp4" type="video/mp4">
+          </video>
+          <div class="play-overlay">
+            <div class="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          </div>
+        </div>
+        <div class="testimonial-review">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"Opero en mercados hace años pero con la metodología de Ruarte entendí los ciclos de una manera completamente diferente. Hoy tengo <strong>un sistema claro para anticipar movimientos</strong> y posicionar a mis clientes."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">CB</div>
+            <div>
+              <div class="testimonial-name">Corredor de Bolsa</div>
+              <div class="testimonial-role-v">ALYC (broker) en Argentina</div>
+            </div>
+          </div>
+          <div class="sound-hint">🔊 Activá el sonido</div>
+        </div>
+      </div>
+
+      <!-- Testimonio 2 — Docente Universitario -->
+      <div class="testimonial-card-v fade d1">
+        <div class="testimonial-video" onclick="toggleVideo(this)">
+          <video preload="metadata">
+            <source src="https://assets.cdn.filesafe.space/KtUHW6Xfym4HTBF8Ujq8/media/69d680a43d829c73b2df3f99.mp4" type="video/mp4">
+          </video>
+          <div class="play-overlay">
+            <div class="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          </div>
+        </div>
+        <div class="testimonial-review">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"Como economista enseñaba teoría, pero Ruarte me mostró cómo leer los mercados en tiempo real. <strong>El análisis de ciclos y Elliott Waves cambió completamente mi perspectiva</strong> tanto personal como profesional."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">DE</div>
+            <div>
+              <div class="testimonial-name">Docente Universitario y Economista</div>
+              <div class="testimonial-role-v">Profesional independiente</div>
+            </div>
+          </div>
+          <div class="sound-hint">🔊 Activá el sonido</div>
+        </div>
+      </div>
+
+      <!-- Testimonio 3 — Gerente Agropecuario -->
+      <div class="testimonial-card-v fade">
+        <div class="testimonial-video" onclick="toggleVideo(this)">
+          <video preload="metadata">
+            <source src="https://assets.cdn.filesafe.space/KtUHW6Xfym4HTBF8Ujq8/media/69d57a533d829c73b2b7aa70.mp4" type="video/mp4">
+          </video>
+          <div class="play-overlay">
+            <div class="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          </div>
+        </div>
+        <div class="testimonial-review">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"Como contador y gerente agropecuario entendía los números, pero no el timing del mercado. Con Ruarte Reports <strong>pude estructurar el portafolio de mi empresa</strong> ante la rotación de ciclos."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">JP</div>
+            <div>
+              <div class="testimonial-name">Juan P.</div>
+              <div class="testimonial-role-v">Gerente agropecuario y contador público</div>
+            </div>
+          </div>
+          <div class="sound-hint">🔊 Activá el sonido</div>
+        </div>
+      </div>
+
+      <!-- Testimonio 4 — Ingeniero Petrolero -->
+      <div class="testimonial-card-v fade d1">
+        <div class="testimonial-video" onclick="toggleVideo(this)">
+          <video preload="metadata">
+            <source src="https://assets.cdn.filesafe.space/KtUHW6Xfym4HTBF8Ujq8/media/69d57185cc3e8e01b2b5ce0b.mp4" type="video/mp4">
+          </video>
+          <div class="play-overlay">
+            <div class="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          </div>
+        </div>
+        <div class="testimonial-review">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"En la industria petrolera manejamos capitales importantes. Roberto nos ayudó a entender <strong>cómo proteger el patrimonio frente a ciclos de dólar débil</strong> y reposicionarnos a tiempo."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">AV</div>
+            <div>
+              <div class="testimonial-name">Andrés V.</div>
+              <div class="testimonial-role-v">Industria petrolera</div>
+            </div>
+          </div>
+          <div class="sound-hint">🔊 Activá el sonido</div>
+        </div>
+      </div>
+
+      <!-- Testimonio 5 — Importador -->
+      <div class="testimonial-card-v fade">
+        <div class="testimonial-video" onclick="toggleVideo(this)">
+          <video preload="metadata">
+            <source src="https://assets.cdn.filesafe.space/KtUHW6Xfym4HTBF8Ujq8/media/69d57c15ad0e3e3270605fdc.mp4" type="video/mp4">
+          </video>
+          <div class="play-overlay">
+            <div class="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          </div>
+        </div>
+        <div class="testimonial-review">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"Importamos artículos de iluminación y estamos constantemente expuestos al dólar. Gracias al análisis de ciclos de Ruarte <strong>pudimos anticipar movimientos cambiarios</strong> y proteger nuestra operación."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">RL</div>
+            <div>
+              <div class="testimonial-name">Ricardo L.</div>
+              <div class="testimonial-role-v">Empresa importadora de artículos de iluminación</div>
+            </div>
+          </div>
+          <div class="sound-hint">🔊 Activá el sonido</div>
+        </div>
+      </div>
+
+      <!-- Testimonio 6 — Comerciante -->
+      <div class="testimonial-card-v fade d1">
+        <div class="testimonial-video" onclick="toggleVideo(this)">
+          <video preload="metadata">
+            <source src="https://assets.cdn.filesafe.space/KtUHW6Xfym4HTBF8Ujq8/media/69d57b44ad0e3e3270602af2.mp4" type="video/mp4">
+          </video>
+          <div class="play-overlay">
+            <div class="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          </div>
+        </div>
+        <div class="testimonial-review">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"La metodología de Ruarte me dio el <strong>criterio que me faltaba</strong> para saber cuándo entrar y cuándo esperar. Dejé de operar por intuición y empecé a estructurar mis decisiones con análisis real."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">MC</div>
+            <div>
+              <div class="testimonial-name">Mauricio C.</div>
+              <div class="testimonial-role-v">Comercio minorista y mayorista de Commodities</div>
+            </div>
+          </div>
+          <div class="sound-hint">🔊 Activá el sonido</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CTA TESTIMONIOS -->
+<div style="background:var(--bg2); padding:0 0 36px; display:flex; justify-content:center;">
+  <a href="CALENDLY_LINK_AQUI" target="_blank" class="btn btn--lg btn--gold">
+    Agendá tu sesión <span class="arrow">→</span>
+  </a>
+</div>
+
+<!-- CREDENCIALES -->
+<section data-block="creds" style="background:var(--bg); padding-top:36px; padding-bottom:24px;">
+  <div class="container">
+    <div class="sec-header fade">
+      <img src="logo-rr.png" alt="Ruarte Reports" style="height:85px; width:auto; margin-bottom:16px;" />
+      <h2 id="creds-h2" style="font-size:clamp(16px,2.4vw,26px); white-space:nowrap;">Nuestros fundamentos son respaldados por historial real</h2>
+      <p id="creds-p">Somos la firma de análisis técnico con más trayectoria de Latinoamérica.</p>
+    </div>
+
+    <div class="creds-grid">
+      <div class="cred-num-card fade">
+        <div class="cred-big">+40</div>
+        <div class="cred-desc">Años de trayectoria operando mercados reales</div>
+      </div>
+      <div class="cred-num-card fade d1">
+        <div class="cred-big">+20K</div>
+        <div class="cred-desc">Personas formadas en toda Latinoamérica</div>
+      </div>
+      <div class="cred-num-card fade d2">
+        <div class="cred-big">+1B</div>
+        <div class="cred-desc">USD en fondos gestionados</div>
+      </div>
+      <div class="cred-num-card fade d3">
+        <div class="cred-big">+10</div>
+        <div class="cred-desc">Aciertos históricos documentados</div>
+      </div>
+    </div>
+
+    <div class="cred-intro fade">
+      <div class="cred-photo-wrap">
+        <img src="roberto.png" alt="Roberto Ruarte" />
+      </div>
+      <ul class="cred-list">
+        <li><span class="dot"></span><div id="cred-item1">Metodología basada en <strong>Ondas de Elliott</strong> y <strong>Ciclos Económicos de Mercado</strong></div></li>
+        <li><span class="dot"></span><div id="cred-item2"><strong>Assets Consultor</strong> del Fondo Toronto Trust —<br /><strong>Top 4</strong> fondos más rentables de Argentina</div></li>
+        <li><span class="dot"></span><div id="cred-item3"><strong>Roberto A. Ruarte</strong> — <strong>Dr. Honoris Causa</strong>. Precursor del Análisis Técnico en Latinoamérica</div></li>
+        <li><span class="dot"></span><div id="cred-item4">Gestión de patrimonios de <strong>family offices</strong> en Argentina, México, Colombia, Perú y <span style="color:var(--text2);">Estados Unidos</span></div></li>
+      </ul>
+      <div class="cred-photo-wrap">
+        <img src="roberto-jr.png" alt="Roberto Ruarte Jr." />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRACK RECORD -->
+<div style="background:var(--bg); padding:0 0 36px;">
+  <div class="container">
+    <div class="track-carousel-wrap fade">
+      <div class="track-track" id="trackTrack">
+        <div class="track-card">
+          <div class="track-year">1989 — Techo del Nikkei (Japón)</div>
+          <p>Predijimos el colapso del mercado japonés mediante Elliott Waves. <strong>El Nikkei tardaría décadas en recuperarse.</strong></p>
+        </div>
+        <div class="track-card">
+          <div class="track-year">1994–95 — Crisis del Tequila</div>
+          <p>Marcamos el fin de la fase correctiva en LATAM y el punto de reposicionamiento para inversores regionales.</p>
+        </div>
+        <div class="track-card">
+          <div class="track-year">2000 — Burbuja Punto Com</div>
+          <p>Alertamos el techo del Nasdaq meses antes del colapso. <strong>El índice cayó más del 75% en los siguientes dos años.</strong></p>
+        </div>
+        <div class="track-card">
+          <div class="track-year">2001 — Crisis Argentina</div>
+          <p>Anunciamos en vivo en Crónica TV el <strong>piso del mercado</strong> cuando todos hablaban de colapso total.</p>
+        </div>
+        <div class="track-card">
+          <div class="track-year">2008 — Crisis Subprime</div>
+          <p>Publicamos la alerta antes del colapso de Lehman Brothers. Nuestros clientes estaban posicionados en consecuencia.</p>
+        </div>
+        <div class="track-card">
+          <div class="track-year">2009 — Fondo de Wall Street</div>
+          <p>Publicamos en Ámbito Financiero que <strong>Wall Street tocó piso</strong> en pleno pánico post-Lehman.</p>
+        </div>
+        <div class="track-card">
+          <div class="track-year">2011 — Techo del Oro</div>
+          <p>Detectamos la quinta onda terminal en el oro. <strong>El metal cayó más del 40% en los años siguientes.</strong></p>
+        </div>
+        <div class="track-card">
+          <div class="track-year">2020 — Ciclo Alcista Commodities</div>
+          <p>Identificamos el inicio del ciclo alcista en commodities. Co-fundamos un fondo con resultado de <strong>+600% de rendimiento</strong>.</p>
+        </div>
+        <div class="track-card">
+          <div class="track-year">2022 — Mercado Bajista</div>
+          <p>Anticipamos el mercado bajista en acciones tecnológicas. El Nasdaq llegó a caer <strong>más del 33% ese año.</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PILARES -->
+<section class="pilares" data-block="pilares">
+  <div class="container">
+    <div class="sec-header fade">
+      <h2 id="pilares-h2"><span class="gold-text">Metodología</span></h2>
+    </div>
+
+    <div class="pilares-grid">
+      <div class="pilar-card fade">
+        <div class="pilar-num">Pilar 01</div>
+        <h3>Reestructuración de Portfolio</h3>
+        <ul class="pilar-list">
+          <li><span class="pilar-dot"></span>Tu cartera actual es el resultado de decisiones aisladas, sin un criterio que las una</li>
+          <li><span class="pilar-dot"></span>En menos de 2 semanas reestructuramos tu portfolio según tu perfil de riesgo y el ciclo actual</li>
+          <li><span class="pilar-dot"></span>Basado en Ondas de Elliott y ciclos económicos, apuntando a un 30–40% anual</li>
+          <li><span class="pilar-dot"></span>Vas a saber exactamente qué tenés, por qué lo tenés y qué esperar de cada posición</li>
+        </ul>
+      </div>
+
+      <div class="pilar-card fade d1">
+        <div class="pilar-num">Pilar 02</div>
+        <h3>Criterio de Inversión</h3>
+        <ul class="pilar-list">
+          <li><span class="pilar-dot"></span>Reestructurar el portfolio es el punto de partida — lo que importa es entender el criterio detrás</li>
+          <li><span class="pilar-dot"></span>Aprendés la metodología aplicada a tu situación real: Elliott Waves, ciclos y gestión de riesgo</li>
+          <li><span class="pilar-dot"></span>Cada decisión que tomamos juntos es práctica real, no teoría ni casos hipotéticos</li>
+          <li><span class="pilar-dot"></span>Al terminar sabés gestionar tu capital solo, sin depender de nadie ni dedicarle el día</li>
+        </ul>
+      </div>
+
+      <div class="pilar-card fade d2">
+        <div class="pilar-num">Pilar 03</div>
+        <h3>Acompañamiento 1 a 1</h3>
+        <ul class="pilar-list">
+          <li><span class="pilar-dot"></span>La mayoría de programas te dan contenido y te dejan solo con las dudas — nosotros no</li>
+          <li><span class="pilar-dot"></span>Arrancamos con una auditoría de tu cartera actual y un plan de acción claro</li>
+          <li><span class="pilar-dot"></span>Acompañamiento personalizado durante todo el proceso: tus preguntas tienen respuesta a tiempo</li>
+          <li><span class="pilar-dot"></span>Porque una duda sin respuesta con capital real en el mercado te cuesta dinero</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA PILARES -->
+<div style="background:var(--bg2); padding:0 0 36px; display:flex; justify-content:center;">
+  <a href="CALENDLY_LINK_AQUI" target="_blank" class="btn btn--lg btn--gold">
+    Agendá tu sesión <span class="arrow">→</span>
+  </a>
+</div>
+
+<!-- CLIENTES -->
+<section class="clientes" data-block="clientes">
+  <div class="container">
+    <div class="sec-header fade">
+      <div class="sec-tag">Confianza institucional</div>
+      <h2 id="clientes-h2">Ayudamos a las Principales Instituciones Financieras del <span class="gold-text">MUNDO</span></h2>
+      <p id="clientes-p">Hemos asesorado a <strong>bancos, brokers, universidades y empresas líderes</strong> en América, consolidando una reputación de excelencia y confiabilidad.</p>
+    </div>
+
+    <div class="logo-carousel-wrap fade">
+      <div class="logo-track">
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/691e7dde59e47b677e5eaaf7.png" alt="Tecnológico de Monterrey"></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/691e7dde59e47b12a75eaaf8.png" alt="Ámbito"></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/691e7dde59e47b83fd5eaaf6.png" alt="Santander"></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/691e7ddf88e1e61e82a0b5d4.png" alt="Banco Hipotecario"></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/691e7dde5e13ec4738182031.png" alt="Banco Patagonia"></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/69125919b0326a9a7a5bbe29.png" alt=""></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/6912591940d0247fbff1e23c.png" alt=""></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/6912591940d0246c7af1e23b.png" alt=""></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/691e7dde8273687f9dd740b5.webp" alt=""></div>
+        <!-- duplicado para loop infinito -->
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/691e7dde59e47b677e5eaaf7.png" alt="Tecnológico de Monterrey"></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/691e7dde59e47b12a75eaaf8.png" alt="Ámbito"></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/691e7dde59e47b83fd5eaaf6.png" alt="Santander"></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/691e7ddf88e1e61e82a0b5d4.png" alt="Banco Hipotecario"></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/691e7dde5e13ec4738182031.png" alt="Banco Patagonia"></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/69125919b0326a9a7a5bbe29.png" alt=""></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/6912591940d0247fbff1e23c.png" alt=""></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/6912591940d0246c7af1e23b.png" alt=""></div>
+        <div class="logo-item"><img src="https://storage.googleapis.com/msgsndr/KtUHW6Xfym4HTBF8Ujq8/media/691e7dde8273687f9dd740b5.webp" alt=""></div>
+      </div>
+    </div>
+
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" data-block="faq">
+  <div class="container">
+    <div class="sec-header fade">
+      <div class="sec-tag">Preguntas frecuentes</div>
+      <h2 id="faq-h2">Todo lo que necesitás<br /><span class="gold-text">saber antes de comenzar</span></h2>
+    </div>
+
+    <div class="faq-list fade">
+      <div class="faq-item">
+        <div class="faq-q">
+          ¿Con quiénes han trabajado?
+          <span class="faq-chevron">+</span>
+        </div>
+        <div class="faq-a">
+          <p class="faq-a-inner">
+            Durante los últimos 40 años hemos capacitado a más de 20.000 personas en análisis técnico, macroeconomía, trading e inversiones. Hemos asesorado instituciones financieras, empresas públicas y privadas, y universidades en Argentina, México, Perú, Colombia y Estados Unidos.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          ¿A quién está dirigida la consultoría?
+          <span class="faq-chevron">+</span>
+        </div>
+        <div class="faq-a">
+          <p class="faq-a-inner">
+            A traders, inversores o empresarios con capital y experiencia que buscan resultados estables, o que desean estructurar su operativa con mentalidad profesional. No es un curso para principiantes absolutos — trabajamos con personas que ya tienen skin in the game.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          ¿Necesito experiencia previa en mercados?
+          <span class="faq-chevron">+</span>
+        </div>
+        <div class="faq-a">
+          <p class="faq-a-inner">
+            No necesariamente. El programa ofrece diferentes niveles: desde la profesionalización de operadores experimentados hasta la construcción de bases sólidas para quienes recién se inician con capital real. La primera sesión es para entender tu situación y definir el punto de partida.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          ¿En qué consiste la consultoría?
+          <span class="faq-chevron">+</span>
+        </div>
+        <div class="faq-a">
+          <p class="faq-a-inner">
+            Acompañamiento personalizado en tres áreas: <strong>estrategia</strong> (lectura de ciclos, timing de entrada/salida, selección de activos), <strong>gestión</strong> (capital, riesgo y métricas) y <strong>mentalidad</strong> (emociones, disciplina y toma de decisiones bajo presión). Todo basado en un sistema de 40 años con track record real.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final" data-block="cta-final" style="padding-bottom:60px;">
+  <div class="container">
+    <div class="cta-final-card fade">
+      <div class="sec-tag" style="margin-bottom:20px;">El próximo paso</div>
+      <h2 id="cta-final-h2">¿Estás listo para estructurar<br /><span class="gold-text">tu capital con criterio profesional?</span></h2>
+      <p id="cta-final-p">
+        Una sesión. Sin compromiso. Te mostramos exactamente cómo podés posicionarte
+        en los activos que van a liderar el próximo ciclo.
+      </p>
+      <a href="CALENDLY_LINK_AQUI" target="_blank" class="btn btn--lg btn--gold" id="cta-final-btn">
+        Agendá tu sesión gratuita <span class="arrow">→</span>
+      </a>
+      <p class="hero-note" id="cta-final-note" style="margin-top:16px;">Solo para inversores con capital activo. Cupos limitados.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer data-block="footer">
+  <img src="logo-rr.png" alt="Ruarte Reports" />
+  <p id="footer-copy" style="margin-top:-6px;">© 2026 Ruarte Reports. Todos los derechos reservados.</p>
+  <p style="max-width:500px; margin:9px auto 0;">
+    Este contenido es de carácter educativo e informativo. No constituye asesoramiento financiero
+    ni recomendación de inversión. Los resultados pasados no garantizan rendimientos futuros.
+  </p>
+</footer>
+
+<!-- STICKY BAR -->
+<div class="sticky" id="sticky">
+  <p><strong>Ruarte Reports</strong> — Agendá tu sesión sin costo</p>
+  <a href="CALENDLY_LINK_AQUI" target="_blank" class="btn">Agendar ahora <span class="arrow">→</span></a>
+</div>
+
+<script>
+  // Toggle video testimonials
+  function toggleVideo(container) {
+    const video = container.querySelector('video');
+    const overlay = container.querySelector('.play-overlay');
+    if (video.paused) {
+      document.querySelectorAll('.testimonial-video video').forEach(v => {
+        v.pause();
+        v.parentElement.querySelector('.play-overlay').style.opacity = '1';
+      });
+      video.play();
+      overlay.style.opacity = '0';
+    } else {
+      video.pause();
+      overlay.style.opacity = '1';
+    }
+  }
+
+  // Scroll animations
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.fade').forEach(el => obs.observe(el));
+
+  // Sticky bar
+  const sticky = document.getElementById('sticky');
+  window.addEventListener('scroll', () => sticky.classList.toggle('on', window.scrollY > 500));
+
+  // Track record carousel — duplicar para loop infinito
+  (function() {
+    const track = document.getElementById('trackTrack');
+    if (!track) return;
+    const originals = Array.from(track.children);
+    originals.forEach(card => track.appendChild(card.cloneNode(true)));
+  })();
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(q => {
+    q.addEventListener('click', () => {
+      const item = q.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+</script>
+
+
+
+</body>
+</html>
