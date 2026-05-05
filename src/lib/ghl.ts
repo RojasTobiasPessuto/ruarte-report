@@ -134,9 +134,7 @@ export async function searchOpportunities(options: {
   if (options.startAfter) params.set('startAfter', String(options.startAfter))
   if (options.startAfterId) params.set('startAfterId', options.startAfterId)
   
-  // Sort by createdAt DESC to prioritize new leads
-  params.set('order', 'desc')
-  params.set('sort', 'createdAt')
+
 
   const url = `${GHL_API_BASE}/opportunities/search?${params.toString()}`
   const response = await fetch(url, { headers: getHeaders() })
