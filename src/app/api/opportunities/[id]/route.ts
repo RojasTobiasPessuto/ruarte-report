@@ -208,10 +208,74 @@ export async function PATCH(
     updated_at: new Date().toISOString(),
   }
 
-  // Si no es un post-agenda completo, no marcar como form_completed obligatoriamente
-  // pero si vienen campos de post-agenda, asumimos que se completó.
-  if (estado_cita || programa || situacion) {
-    updateData.form_completed = true
+  // Lógica estricta de validación para form_completed
+  const isPostAgendaUpdate = 
+    estado_cita !== undefined || 
+    programa !== undefined || 
+    situacion !== undefined || 
+    fecha_seguimiento !== undefined || 
+    saleInput !== undefined
+
+  if (isPostAgendaUpdate) {
+    const evalEstado = estado_cita !== undefined ? estado_cita : opp.estado_cita
+    const evalPrograma = programa !== undefined ? programa : opp.programa
+    const evalSituacion = situacion !== undefined ? situacion : opp.situacion
+    const evalFechaSeg = fecha_seguimiento !== undefined ? fecha_seguimiento : opp.fecha_seguimiento
+
+    let isCompleted = false
+
+    if (evalEstado === 'No Asistido') {
+      isCompleted = true // Exception 1: No asistió, no se pide nada más.
+    } else if (evalEstado && evalPrograma && evalSituacion) {
+      isCompleted = true
+
+      // Exception 2: Seguimiento requiere fecha
+      if (evalSituacion === 'Seguimiento') {
+        if (!evalFechaSeg) isCompleted = false
+      }
+
+      // Exception 3: Venta
+      const insideSales = ['Adentro en Llamada', 'Adentro en Seguimiento', 'ReCompra'].includes(evalSituacion as string)
+      
+      if (insideSales) {
+        if (!saleInput) {
+          isCompleted = false
+        } else {
+          const isLiteOrPamm = evalPrograma === 'LITE' || evalPrograma === 'PAMM - Manejo de Portafolio'
+          
+          if (isLiteOrPamm) {
+            // Broker only: Depósito en Broker, Justificante, Fecha de pago (Tipo de pago es opcional pero usualmente nulo o específico)
+            if (
+              saleInput.deposito_broker === undefined || saleInput.deposito_broker === null || saleInput.deposito_broker <= 0 ||
+              !saleInput.fecha_pago ||
+              !saleInput.justificante_urls || saleInput.justificante_urls.length === 0
+            ) {
+              isCompleted = false
+            }
+          } else {
+            // Venta normal: Forma, Tipo, Fecha, Justificante, Revenue, Cash
+            if (
+              !saleInput.forma_pago ||
+              !saleInput.payment_type_id ||
+              !saleInput.fecha_pago ||
+              !saleInput.justificante_urls || saleInput.justificante_urls.length === 0 ||
+              saleInput.revenue === undefined || saleInput.revenue === null || saleInput.revenue <= 0 ||
+              saleInput.cash === undefined || saleInput.cash === null
+            ) {
+              isCompleted = false
+            }
+            // Regla Pago Dividido
+            if (saleInput.forma_pago === 'Pago Dividido') {
+              if (!saleInput.cantidad_cuotas || saleInput.cantidad_cuotas <= 0) {
+                isCompleted = false
+              }
+            }
+          }
+        }
+      }
+    }
+
+    updateData.form_completed = isCompleted
   }
 
   if (estado_cita) updateData.estado_cita = estado_cita
