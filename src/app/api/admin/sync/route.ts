@@ -42,9 +42,9 @@ export async function POST(request: NextRequest) {
   }
 
   if (action === 'run') {
-    // Ejecutar hasta 8 batches consecutivos (máx ~40s, bajo el límite de Vercel)
+    // Reducimos a 3 batches para evitar timeout 500 en Vercel (máx ~15s)
     try {
-      const MAX_BATCHES = 8
+      const MAX_BATCHES = 3 
       const results = []
       let totalCreated = 0
       let totalUpdated = 0
@@ -66,29 +66,22 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json({
-        message: `Ejecutados ${results.length} batches`,
+        message: `Ejecutados ${results.length} batches exitosamente`,
         total_created: totalCreated,
         total_updated: totalUpdated,
         total_errors: totalErrors,
         total_processed: totalProcessed,
         total_orphans_cleaned: totalOrphansCleaned,
-        last_result: results[results.length - 1],
-        all_results: results.map((r) => ({
-          stage: r.stage,
-          total_in_stage: r.total_in_stage,
-          batch: r.batch_size,
-          created: r.created,
-          updated: r.updated,
-          errors: r.errors,
-          cursor_used: r.cursor_used,
-          cursor_reset: r.cursor_reset,
-          error_samples: r.error_samples,
-          message: r.message,
-        })),
+        status: 'success'
       })
     } catch (err) {
       console.error('Manual sync error:', err)
-      return NextResponse.json({ error: 'Error ejecutando sync', details: String(err) }, { status: 500 })
+      const errorMessage = err instanceof Error ? err.message : String(err)
+      return NextResponse.json({ 
+        error: 'Error ejecutando sync', 
+        details: errorMessage,
+        suggestion: 'Verifica la HIGHLEVEL_API_KEY y que GHL esté respondiendo.' 
+      }, { status: 500 })
     }
   }
 
