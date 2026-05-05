@@ -35,8 +35,8 @@ export default async function PipelinePage({
   const ctx = await requireAuth()
   const params = await searchParams
 
-  // Solo admin, closer (con can_fill_post_agenda) pueden entrar
-  if (!isAdmin(ctx) && !hasPermission(ctx, 'can_fill_post_agenda')) {
+  // Permitir acceso si es admin, o si puede llenar post-agenda, o si puede ver todas las oportunidades
+  if (!isAdmin(ctx) && !hasPermission(ctx, 'can_fill_post_agenda') && !hasPermission(ctx, 'can_view_all_opportunities')) {
     redirect(params.embed === 'true' ? '/dashboard?embed=true' : '/dashboard')
   }
 
