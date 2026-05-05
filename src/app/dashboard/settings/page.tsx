@@ -117,29 +117,38 @@ export default function SettingsPage() {
   }
 
   async function runSync() {
+    if (syncLoading) return
     setSyncLoading(true)
-    setMessage('Ejecutando sync (puede tardar hasta 40s)...')
-    const res = await fetch('/api/admin/sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'run' }),
-    })
-    const data = await res.json()
-    if (res.ok) {
-      const errorsInfo = data.total_errors > 0
-        ? ` · ${data.total_errors} ERRORES${data.last_result?.error_samples ? ': ' + data.last_result.error_samples.join(' | ') : ''}`
-        : ''
-      const orphansInfo = data.last_result?.orphans_cleaned ? ` · ${data.last_result.orphans_cleaned} huérfanas eliminadas` : ''
-      const lastMsg = data.last_result?.message ? ` · ${data.last_result.message}` : ''
-      setMessage(
-        `Sync: +${data.total_created || 0} creadas, ${data.total_updated || 0} actualizadas, ${data.total_processed || 0} procesadas${orphansInfo}${errorsInfo}${lastMsg}`
-      )
-    } else {
-      setMessage(data.error || 'Error')
+    setMessage('Ejecutando sync (proceso optimizado)...')
+    
+    try {
+      const res = await fetch('/api/admin/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'run' }),
+      })
+
+      const text = await res.text()
+      let data
+      try {
+        data = JSON.parse(text)
+      } catch {
+        throw new Error(`Error del servidor (${res.status}): ${text.substring(0, 100)}`)
+      }
+
+      if (res.ok) {
+        setMessage(`Sync: +${data.total_created || 0} creadas, ${data.total_updated || 0} actualizadas.`)
+      } else {
+        setMessage(data.error || data.details || 'Error en la sincronización')
+      }
+    } catch (err) {
+      console.error('Frontend sync error:', err)
+      setMessage(err instanceof Error ? err.message : 'Error de conexión con el servidor')
+    } finally {
+      setSyncLoading(false)
+      loadSyncStatus()
+      setTimeout(() => setMessage(''), 8000)
     }
-    setSyncLoading(false)
-    loadSyncStatus()
-    setTimeout(() => setMessage(''), 8000)
   }
 
   async function updateUser(userId: string, updates: { role_id?: string | null; closer_id?: string | null }) {
