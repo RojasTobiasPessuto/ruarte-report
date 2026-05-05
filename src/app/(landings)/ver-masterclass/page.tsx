@@ -137,7 +137,7 @@ export default function MasterclassLanding() {
 <section data-block="creds" style={{paddingTop: '0px', paddingBottom: '35px'}}>
   <div className="container">
     <div className="sec-header fade">
-      <img src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69e2c5cdaa2fdcccf64c3d65.png" alt="Ruarte Reports" style={{height: '85px', width: 'auto', marginBottom: '16px'}}  />
+      <img src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69e2c5cdaa2fdcccf64c3d65.png" alt="Ruarte Reports" style={{height: '85px', width: 'auto', marginBottom: '16px', display: 'inline-block'}}  />
       <h2 id="creds-h2" style={{fontSize: '25px'}}>Nuestros fundamentos son respaldados por historial real</h2>
       <p>Somos la firma de análisis técnico con<br className="mobile-br2" /> más trayectoria de Latinoamérica.</p>
     </div>
