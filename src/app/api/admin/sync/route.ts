@@ -43,16 +43,33 @@ export async function POST(request: NextRequest) {
 
   if (action === 'run') {
     try {
-      const result = await runGhlSyncBatch()
+      const MAX_BATCHES = 8
+      const results = []
+      let totalCreated = 0
+      let totalUpdated = 0
+      let totalErrors = 0
+      let totalProcessed = 0
+      let totalOrphansCleaned = 0
+
+      for (let i = 0; i < MAX_BATCHES; i++) {
+        const result = await runGhlSyncBatch()
+        results.push(result)
+        totalCreated += result.created
+        totalUpdated += result.updated
+        totalErrors += result.errors
+        totalProcessed += result.batch_size
+        if (result.orphans_cleaned) totalOrphansCleaned += result.orphans_cleaned
+
+        if (!result.stage_has_more && !result.has_next_stage) break
+      }
+
       return NextResponse.json({
-        message: 'Sync ejecutado exitosamente',
-        total_created: result.created,
-        total_updated: result.updated,
-        total_errors: result.errors,
-        total_processed: result.batch_size,
-        total_orphans_cleaned: result.orphans_cleaned || 0,
-        stage: result.stage,
-        stage_index: result.stage_index,
+        message: `Ejecutados ${results.length} batches exitosamente`,
+        total_created: totalCreated,
+        total_updated: totalUpdated,
+        total_errors: totalErrors,
+        total_processed: totalProcessed,
+        total_orphans_cleaned: totalOrphansCleaned,
         status: 'success'
       })
     } catch (err) {
