@@ -172,7 +172,7 @@ export default function EmpiezaAquiLanding() {
         <div className="container">
           <div style={{ maxWidth: '780px', margin: '0 auto', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border)', boxShadow: '0 8px 40px rgba(0,0,0,0.5)' }}>
             <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, background: '#0a0a0f' }}>
-              <video controls preload="metadata"
+              <video controls playsInline preload="metadata"
                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
               >
                 <source src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69fa69525facc6ea31519500.mp4" type="video/mp4" />
@@ -184,7 +184,7 @@ export default function EmpiezaAquiLanding() {
 
       {/* CTA BAJO VSL */}
       <div style={{ background: 'var(--bg)', padding: '0 20px 36px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <a href={CALENDLY_LINK} target="_blank" className="btn btn--lg btn--gold" id="hero-cta" rel="noopener noreferrer">
+        <a href={CALENDLY_LINK} className="btn btn--lg btn--gold" id="hero-cta" rel="noopener noreferrer">
           Agendá tu sesión <span className="arrow">→</span>
         </a>
         <p className="hero-note" style={{ marginTop: '14px' }}>Sin costo. Sin compromiso. Solo para inversores serios.</p>
@@ -229,7 +229,7 @@ export default function EmpiezaAquiLanding() {
 
       {/* CTA TESTIMONIOS */}
       <div style={{ background: 'var(--bg2)', padding: '0 0 36px', display: 'flex', justifyContent: 'center' }}>
-        <a href={CALENDLY_LINK} target="_blank" className="btn btn--lg btn--gold" rel="noopener noreferrer">
+        <a href={CALENDLY_LINK} className="btn btn--lg btn--gold" rel="noopener noreferrer">
           Agendá tu sesión <span className="arrow">→</span>
         </a>
       </div>
@@ -340,7 +340,7 @@ export default function EmpiezaAquiLanding() {
 
       {/* CTA PILARES */}
       <div style={{ background: 'var(--bg2)', padding: '0 0 36px', display: 'flex', justifyContent: 'center' }}>
-        <a href={CALENDLY_LINK} target="_blank" className="btn btn--lg btn--gold" rel="noopener noreferrer">
+        <a href={CALENDLY_LINK} className="btn btn--lg btn--gold" rel="noopener noreferrer">
           Agendá tu sesión <span className="arrow">→</span>
         </a>
       </div>
@@ -400,7 +400,7 @@ export default function EmpiezaAquiLanding() {
               Una sesión. Sin compromiso. Te mostramos exactamente cómo podés posicionarte
               en los activos que van a liderar el próximo ciclo.
             </p>
-            <a href={CALENDLY_LINK} target="_blank" className="btn btn--lg btn--gold" rel="noopener noreferrer">
+            <a href={CALENDLY_LINK} className="btn btn--lg btn--gold" rel="noopener noreferrer">
               Agendá tu sesión gratuita <span className="arrow">→</span>
             </a>
             <p className="hero-note" style={{ marginTop: '16px' }}>Solo para inversores con capital activo. Cupos limitados.</p>
@@ -421,7 +421,7 @@ export default function EmpiezaAquiLanding() {
       {/* STICKY BAR */}
       <div className="sticky" id="sticky">
         <p><strong>Ruarte Reports</strong> — Agendá tu sesión sin costo</p>
-        <a href={CALENDLY_LINK} target="_blank" className="btn" rel="noopener noreferrer">Agendar ahora <span className="arrow">→</span></a>
+        <a href={CALENDLY_LINK} className="btn" rel="noopener noreferrer">Agendar ahora <span className="arrow">→</span></a>
       </div>
     </>
   );
