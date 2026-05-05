@@ -311,7 +311,7 @@ export async function runGhlSyncBatch(): Promise<SyncResult> {
     }
   }
 
-  const stageHasMore = !!res.meta.nextPageUrl && opportunities.length > 0
+  const stageHasMore = opportunities.length >= BATCH_SIZE && !!res.meta.nextPageUrl
   const hasNextStage = stageIndex + 1 < STAGES_TO_SYNC.length
   const newTotalProcessed = totalProcessedBefore + opportunities.length
 
