@@ -119,7 +119,7 @@ export default function SettingsPage() {
   async function runSync() {
     if (syncLoading) return
     setSyncLoading(true)
-    setMessage('Ejecutando sync (proceso optimizado)...')
+    setMessage('Ejecutando sync...')
     
     try {
       const res = await fetch('/api/admin/sync', {
@@ -137,7 +137,11 @@ export default function SettingsPage() {
       }
 
       if (res.ok) {
-        setMessage(`Sync: +${data.total_created || 0} creadas, ${data.total_updated || 0} actualizadas.`)
+        const batchDetails = data.batches?.map((b: Record<string, unknown>) => 
+          `${b.stage}(${b.stage_index}): ${b.batch_size}opp, +${b.created}/-${b.updated}, ${b.message || ''}`
+        ).join(' → ') || ''
+        const orphansInfo = data.total_orphans_cleaned > 0 ? ` | 🧹${data.total_orphans_cleaned} huérfanas` : ''
+        setMessage(`Sync OK: +${data.total_created || 0} creadas, ${data.total_updated || 0} actualizadas${orphansInfo} | ${batchDetails}`)
       } else {
         setMessage(data.error || data.details || 'Error en la sincronización')
       }
@@ -147,7 +151,7 @@ export default function SettingsPage() {
     } finally {
       setSyncLoading(false)
       loadSyncStatus()
-      setTimeout(() => setMessage(''), 8000)
+      setTimeout(() => setMessage(''), 15000)
     }
   }
 

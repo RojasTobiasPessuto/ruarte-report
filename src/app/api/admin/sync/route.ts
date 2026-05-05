@@ -70,6 +70,19 @@ export async function POST(request: NextRequest) {
         total_errors: totalErrors,
         total_processed: totalProcessed,
         total_orphans_cleaned: totalOrphansCleaned,
+        batches: results.map((r) => ({
+          stage: r.stage,
+          stage_index: r.stage_index,
+          batch_size: r.batch_size,
+          total_in_stage: r.total_in_stage,
+          created: r.created,
+          updated: r.updated,
+          errors: r.errors,
+          has_more: r.stage_has_more,
+          has_next: r.has_next_stage,
+          message: r.message,
+          orphans_cleaned: r.orphans_cleaned,
+        })),
         status: 'success'
       })
     } catch (err) {
