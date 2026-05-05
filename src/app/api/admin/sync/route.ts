@@ -42,69 +42,20 @@ export async function POST(request: NextRequest) {
   }
 
   if (action === 'run') {
-    // 1. Verificar si ya hay una sincronización en curso (Lock)
-    const { data: currentState } = await supabase
-      .from('sync_state')
-      .select('*')
-      .eq('key', SYNC_KEY)
-      .maybeSingle()
-
-    if (currentState?.is_running) {
-      const lastUpdate = new Date(currentState.updated_at).getTime()
-      const now = new Date().getTime()
-      // Si lleva más de 2 minutos corriendo, asumimos que se quedó trabada y la dejamos pasar
-      if (now - lastUpdate < 120000) {
-        return NextResponse.json({ 
-          error: 'Sincronización ya en curso', 
-          details: 'Hay otra tarea de sincronización ejecutándose. Esperá un minuto e intentá de nuevo.' 
-        }, { status: 409 })
-      }
-    }
-
-    // 2. Activar Lock
-    await supabase.from('sync_state').upsert({ 
-      key: SYNC_KEY, 
-      is_running: true, 
-      updated_at: new Date().toISOString() 
-    })
-
     try {
-      const MAX_BATCHES = 3 
-      const results = []
-      let totalCreated = 0
-      let totalUpdated = 0
-      let totalErrors = 0
-      let totalProcessed = 0
-      let totalOrphansCleaned = 0
-
-      for (let i = 0; i < MAX_BATCHES; i++) {
-        const result = await runGhlSyncBatch()
-        results.push(result)
-        totalCreated += result.created
-        totalUpdated += result.updated
-        totalErrors += result.errors
-        totalProcessed += result.batch_size
-        if (result.orphans_cleaned) totalOrphansCleaned += result.orphans_cleaned
-
-        if (!result.stage_has_more && !result.has_next_stage) break
-      }
-
-      // 3. Liberar Lock al éxito
-      await supabase.from('sync_state').update({ is_running: false }).eq('key', SYNC_KEY)
-
+      const result = await runGhlSyncBatch()
       return NextResponse.json({
-        message: `Ejecutados ${results.length} batches exitosamente`,
-        total_created: totalCreated,
-        total_updated: totalUpdated,
-        total_errors: totalErrors,
-        total_processed: totalProcessed,
-        total_orphans_cleaned: totalOrphansCleaned,
+        message: 'Sync ejecutado exitosamente',
+        total_created: result.created,
+        total_updated: result.updated,
+        total_errors: result.errors,
+        total_processed: result.batch_size,
+        total_orphans_cleaned: result.orphans_cleaned || 0,
+        stage: result.stage,
+        stage_index: result.stage_index,
         status: 'success'
       })
     } catch (err) {
-      // 4. Liberar Lock al error
-      await supabase.from('sync_state').update({ is_running: false }).eq('key', SYNC_KEY)
-      
       console.error('Manual sync error:', err)
       const errorMessage = err instanceof Error ? err.message : String(err)
       return NextResponse.json({ 

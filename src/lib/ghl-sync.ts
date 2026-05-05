@@ -14,7 +14,7 @@ import {
 } from '@/lib/ghl'
 
 const SYNC_KEY = 'ghl_opportunities'
-const BATCH_SIZE = 25
+const BATCH_SIZE = 10
 
 const STAGES_TO_SYNC = [
   GHL_STAGE_IDS.postLlamada,
