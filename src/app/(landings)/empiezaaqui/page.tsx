@@ -238,7 +238,7 @@ export default function EmpiezaAquiLanding() {
       <section data-block="creds" style={{ background: 'var(--bg)', paddingTop: '36px', paddingBottom: '24px' }}>
         <div className="container">
           <div className="sec-header fade">
-            <img src={LOGO_URL} alt="Ruarte Reports" style={{ height: '85px', width: 'center', marginBottom: '16px' }} />
+            <img src={LOGO_URL} alt="Ruarte Reports" style={{ height: '85px', width: 'auto', marginBottom: '16px', display: 'inline-block' }} />
             <h2 style={{ fontSize: 'clamp(16px,2.4vw,26px)', whiteSpace: 'nowrap' }}>Nuestros fundamentos son respaldados por historial real</h2>
             <p>Somos la firma de análisis técnico con más trayectoria de Latinoamérica.</p>
           </div>
@@ -410,7 +410,7 @@ export default function EmpiezaAquiLanding() {
 
       {/* FOOTER */}
       <footer data-block="footer">
-        <img src={LOGO_URL} alt="Ruarte Reports" />
+        <img src={LOGO_URL} alt="Ruarte Reports" style={{ display: 'inline-block' }} />
         <p style={{ marginTop: '-6px' }}>© 2026 Ruarte Reports. Todos los derechos reservados.</p>
         <p style={{ maxWidth: '500px', margin: '9px auto 0' }}>
           Este contenido es de carácter educativo e informativo. No constituye asesoramiento financiero
