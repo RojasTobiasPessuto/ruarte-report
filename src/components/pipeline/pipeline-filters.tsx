@@ -60,8 +60,9 @@ export function PipelineFilters({
 
         <FilterSelect 
           placeholder="Estado Formulario" 
-          value={searchParams.get('form_completed') || ''}
+          value={searchParams.get('form_completed') || (viewAllOpps ? 'all' : 'false')}
           options={[
+            { label: 'Todos', value: 'all' },
             { label: 'Completado', value: 'true' },
             { label: 'Pendiente', value: 'false' },
           ]} 

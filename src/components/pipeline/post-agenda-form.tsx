@@ -115,6 +115,52 @@ export function PostAgendaForm({
     setSaving(true)
     setError('')
 
+    // --- Lógica Estricta de Validación Frontend ---
+    let isCompleted = false
+    if (estadoCita === 'No Asistido') {
+      isCompleted = true
+    } else if (estadoCita && programa && situacion) {
+      isCompleted = true
+
+      if (situacion === 'Seguimiento') {
+        if (!fechaSeguimiento) isCompleted = false
+      }
+
+      const insideSales = ['Adentro en Llamada', 'Adentro en Seguimiento', 'ReCompra'].includes(situacion)
+      if (insideSales) {
+        const isLiteOrPamm = programa === 'LITE' || programa === 'PAMM - Manejo de Portafolio'
+        if (isLiteOrPamm) {
+          if (
+            !depositoBroker || Number(depositoBroker) <= 0 || 
+            !fechaPago || 
+            !justificanteUrls || justificanteUrls.length === 0
+          ) {
+            isCompleted = false
+          }
+        } else {
+          if (
+            !formaPago || 
+            !tipoPagoId || 
+            !fechaPago || 
+            !justificanteUrls || justificanteUrls.length === 0 || 
+            !revenue || Number(revenue) <= 0 || 
+            cash === '' || cash === null
+          ) {
+            isCompleted = false
+          }
+          if (formaPago === 'Pago Dividido' && (!cantidadCuotas || Number(cantidadCuotas) <= 0)) {
+            isCompleted = false
+          }
+        }
+      }
+    }
+
+    if (!isCompleted) {
+      setError('Faltan campos obligatorios para guardar la Post-Agenda en esta etapa. Por favor completá todos los datos de seguimiento/venta.')
+      setSaving(false)
+      return
+    }
+
     try {
       const body: Record<string, unknown> = {
         estado_cita: estadoCita,

@@ -85,8 +85,11 @@ export default async function PipelinePage({
     query = query.eq('programa', params.programa)
   }
 
-  if (params.form_completed) {
-    query = query.eq('form_completed', params.form_completed === 'true')
+  const formCompletedParam = params.form_completed || (viewAllOpps ? 'all' : 'false')
+  if (formCompletedParam === 'true') {
+    query = query.eq('form_completed', true)
+  } else if (formCompletedParam === 'false') {
+    query = query.eq('form_completed', false)
   }
 
   if (params.from) {
@@ -104,6 +107,37 @@ export default async function PipelinePage({
 
   const { data: opportunities } = await query
   const allOpps = (opportunities || []) as Opportunity[]
+
+  // Ordenamiento personalizado por Etapa
+  const STAGE_ORDER = [
+    'Post Llamada',
+    'Seguimiento',
+    'Agendado (Nuevo)',
+    'Agendado (Confirmado)',
+    'ReAgendado',
+    'Compro',
+    'No Compro',
+    'No Asistio',
+    'Cancelado'
+  ]
+
+  allOpps.sort((a, b) => {
+    const stageA = a.pipeline_stage || ''
+    const stageB = b.pipeline_stage || ''
+    
+    const indexA = STAGE_ORDER.indexOf(stageA)
+    const indexB = STAGE_ORDER.indexOf(stageB)
+    
+    const rankA = indexA === -1 ? 999 : indexA
+    const rankB = indexB === -1 ? 999 : indexB
+
+    if (rankA !== rankB) return rankA - rankB
+    
+    // Si están en la misma etapa, ordenamos por fecha de llamada más reciente
+    const dateA = new Date(a.fecha_llamada || 0).getTime()
+    const dateB = new Date(b.fecha_llamada || 0).getTime()
+    return dateB - dateA
+  })
 
   // Get closers and other filter metadata
   const { data: closers } = viewAllOpps
