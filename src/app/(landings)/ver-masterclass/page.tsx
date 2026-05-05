@@ -238,7 +238,7 @@ export default function MasterclassLanding() {
 
 {/* FOOTER */}
 <footer data-block="footer" style={{paddingBottom: '90px'}}>
-  <img src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69e2c5cdaa2fdcccf64c3d65.png" alt="Ruarte Reports"  />
+  <img src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69e2c5cdaa2fdcccf64c3d65.png" alt="Ruarte Reports" style={{display: 'inline-block'}} />
   <p id="footer-copy" style={{marginTop: '-6px'}}>© 2026 Ruarte Reports. Todos los derechos reservados.</p>
   <p style={{maxWidth: '500px', margin: '9px auto 0'}}>Carácter educativo. No constituye asesoramiento financiero. Resultados pasados no garantizan rendimientos futuros.</p>
 </footer>

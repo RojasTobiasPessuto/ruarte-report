@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import './styles.css';
 
 const LOGO_URL = 'https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69e2c5cdaa2fdcccf64c3d65.png';
-const CALENDLY_LINK = 'CALENDLY_LINK_AQUI';
+const CALENDLY_LINK = 'https://ruartereports.org/calendario-3986';
 
 const TESTIMONIALS = [
   {
@@ -140,7 +140,7 @@ export default function EmpiezaAquiLanding() {
   return (
     <>
       {/* HEADER */}
-      <header className="header" data-block="header">
+      <header className="header" data-block="header" style={{ textAlign: 'center' }}>
         <img src={LOGO_URL} alt="Ruarte Reports" className="logo-img" />
       </header>
 
@@ -153,8 +153,8 @@ export default function EmpiezaAquiLanding() {
           </div>
 
           <h1 className="fade in d1">
-            <span id="hero-line1" style={{fontSize: '29px'}}>
-              <span className="hero-frase-1"><span style={{color: 'rgb(183,150,88)'}}>Arma tu portafolio</span> en menos de <span style={{color: 'rgb(187,152,92)'}}>7 dias</span></span>
+            <span id="hero-line1" style={{ fontSize: '29px' }}>
+              <span className="hero-frase-1"><span style={{ color: 'rgb(183,150,88)' }}>Arma tu portafolio</span> en menos de <span style={{ color: 'rgb(187,152,92)' }}>7 dias</span></span>
               <span className="hero-frase-2"> aprovechando las siguientes oportunidades historicas</span>
             </span>
           </h1>
@@ -162,30 +162,32 @@ export default function EmpiezaAquiLanding() {
           <p className="fade in d2" id="hero-sub">
             <span className="sub-l1">Aplicaras el sistema que utilizamos</span>
             <span className="sub-l2">con instituciones y fondos de inversion,</span>
-            <span className="sub-l3">con tan solo <b><span style={{color: 'rgb(255,255,255)'}}>30 minutos de tu tiempo a la semana</span></b></span>
+            <span className="sub-l3">con tan solo <b><span style={{ color: 'rgb(255,255,255)' }}>30 minutos de tu tiempo a la semana</span></b></span>
           </p>
         </div>
       </section>
 
       {/* VSL */}
-      <section data-block="vsl" style={{background: 'var(--bg)', padding: '0 0 20px'}}>
+      <section data-block="vsl" style={{ background: 'var(--bg)', padding: '0 0 20px' }}>
         <div className="container">
-          <div style={{maxWidth: '780px', margin: '0 auto', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border)', boxShadow: '0 8px 40px rgba(0,0,0,0.5)'}}>
-            <div style={{position: 'relative', paddingBottom: '56.25%', height: 0, background: '#0a0a0f'}}>
-              <iframe id="vsl-iframe" src="" frameBorder="0" allowFullScreen
-                style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none'}}
-              ></iframe>
+          <div style={{ maxWidth: '780px', margin: '0 auto', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border)', boxShadow: '0 8px 40px rgba(0,0,0,0.5)' }}>
+            <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, background: '#0a0a0f' }}>
+              <video controls preload="metadata"
+                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+              >
+                <source src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69fa69525facc6ea31519500.mp4" type="video/mp4" />
+              </video>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA BAJO VSL */}
-      <div style={{background: 'var(--bg)', padding: '0 20px 36px', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+      <div style={{ background: 'var(--bg)', padding: '0 20px 36px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <a href={CALENDLY_LINK} target="_blank" className="btn btn--lg btn--gold" id="hero-cta" rel="noopener noreferrer">
           Agendá tu sesión <span className="arrow">→</span>
         </a>
-        <p className="hero-note" style={{marginTop: '14px'}}>Sin costo. Sin compromiso. Solo para inversores serios.</p>
+        <p className="hero-note" style={{ marginTop: '14px' }}>Sin costo. Sin compromiso. Solo para inversores serios.</p>
       </div>
 
       {/* TESTIMONIOS VIDEO */}
@@ -205,12 +207,12 @@ export default function EmpiezaAquiLanding() {
                     <source src={t.video} type="video/mp4" />
                   </video>
                   <div className="play-overlay">
-                    <div className="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+                    <div className="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg></div>
                   </div>
                 </div>
                 <div className="testimonial-review">
                   <div className="testimonial-stars">★★★★★</div>
-                  <p className="testimonial-quote" dangerouslySetInnerHTML={{__html: `"${t.quote}"`}} />
+                  <p className="testimonial-quote" dangerouslySetInnerHTML={{ __html: `"${t.quote}"` }} />
                   <div className="testimonial-author">
                     <div className="testimonial-avatar">{t.initials}</div>
                     <div>
@@ -226,18 +228,18 @@ export default function EmpiezaAquiLanding() {
       </section>
 
       {/* CTA TESTIMONIOS */}
-      <div style={{background: 'var(--bg2)', padding: '0 0 36px', display: 'flex', justifyContent: 'center'}}>
+      <div style={{ background: 'var(--bg2)', padding: '0 0 36px', display: 'flex', justifyContent: 'center' }}>
         <a href={CALENDLY_LINK} target="_blank" className="btn btn--lg btn--gold" rel="noopener noreferrer">
           Agendá tu sesión <span className="arrow">→</span>
         </a>
       </div>
 
       {/* CREDENCIALES */}
-      <section data-block="creds" style={{background: 'var(--bg)', paddingTop: '36px', paddingBottom: '24px'}}>
+      <section data-block="creds" style={{ background: 'var(--bg)', paddingTop: '36px', paddingBottom: '24px' }}>
         <div className="container">
           <div className="sec-header fade">
-            <img src={LOGO_URL} alt="Ruarte Reports" style={{height: '85px', width: 'auto', marginBottom: '16px'}} />
-            <h2 style={{fontSize: 'clamp(16px,2.4vw,26px)', whiteSpace: 'nowrap'}}>Nuestros fundamentos son respaldados por historial real</h2>
+            <img src={LOGO_URL} alt="Ruarte Reports" style={{ height: '85px', width: 'center', marginBottom: '16px' }} />
+            <h2 style={{ fontSize: 'clamp(16px,2.4vw,26px)', whiteSpace: 'nowrap' }}>Nuestros fundamentos son respaldados por historial real</h2>
             <p>Somos la firma de análisis técnico con más trayectoria de Latinoamérica.</p>
           </div>
 
@@ -273,14 +275,14 @@ export default function EmpiezaAquiLanding() {
       </section>
 
       {/* TRACK RECORD */}
-      <div style={{background: 'var(--bg)', padding: '0 0 36px'}}>
+      <div style={{ background: 'var(--bg)', padding: '0 0 36px' }}>
         <div className="container">
           <div className="track-carousel-wrap fade">
             <div className="track-track" id="trackTrack" ref={trackRef}>
               {TRACK_RECORDS.map((t, i) => (
                 <div key={i} className="track-card">
                   <div className="track-year">{t.year}</div>
-                  <p dangerouslySetInnerHTML={{__html: t.text}} />
+                  <p dangerouslySetInnerHTML={{ __html: t.text }} />
                 </div>
               ))}
             </div>
@@ -297,24 +299,30 @@ export default function EmpiezaAquiLanding() {
 
           <div className="pilares-grid">
             {[
-              { num: 'Pilar 01', title: 'Reestructuración de Portfolio', items: [
-                'Tu cartera actual es el resultado de decisiones aisladas, sin un criterio que las una',
-                'En menos de 2 semanas reestructuramos tu portfolio según tu perfil de riesgo y el ciclo actual',
-                'Basado en Ondas de Elliott y ciclos económicos, apuntando a un 30–40% anual',
-                'Vas a saber exactamente qué tenés, por qué lo tenés y qué esperar de cada posición',
-              ]},
-              { num: 'Pilar 02', title: 'Criterio de Inversión', delay: 'd1', items: [
-                'Reestructurar el portfolio es el punto de partida — lo que importa es entender el criterio detrás',
-                'Aprendés la metodología aplicada a tu situación real: Elliott Waves, ciclos y gestión de riesgo',
-                'Cada decisión que tomamos juntos es práctica real, no teoría ni casos hipotéticos',
-                'Al terminar sabés gestionar tu capital solo, sin depender de nadie ni dedicarle el día',
-              ]},
-              { num: 'Pilar 03', title: 'Acompañamiento 1 a 1', delay: 'd2', items: [
-                'La mayoría de programas te dan contenido y te dejan solo con las dudas — nosotros no',
-                'Arrancamos con una auditoría de tu cartera actual y un plan de acción claro',
-                'Acompañamiento personalizado durante todo el proceso: tus preguntas tienen respuesta a tiempo',
-                'Porque una duda sin respuesta con capital real en el mercado te cuesta dinero',
-              ]},
+              {
+                num: 'Pilar 01', title: 'Reestructuración de Portfolio', items: [
+                  'Tu cartera actual es el resultado de decisiones aisladas, sin un criterio que las una',
+                  'En menos de 2 semanas reestructuramos tu portfolio según tu perfil de riesgo y el ciclo actual',
+                  'Basado en Ondas de Elliott y ciclos económicos, apuntando a un 30–40% anual',
+                  'Vas a saber exactamente qué tenés, por qué lo tenés y qué esperar de cada posición',
+                ]
+              },
+              {
+                num: 'Pilar 02', title: 'Criterio de Inversión', delay: 'd1', items: [
+                  'Reestructurar el portfolio es el punto de partida — lo que importa es entender el criterio detrás',
+                  'Aprendés la metodología aplicada a tu situación real: Elliott Waves, ciclos y gestión de riesgo',
+                  'Cada decisión que tomamos juntos es práctica real, no teoría ni casos hipotéticos',
+                  'Al terminar sabés gestionar tu capital solo, sin depender de nadie ni dedicarle el día',
+                ]
+              },
+              {
+                num: 'Pilar 03', title: 'Acompañamiento 1 a 1', delay: 'd2', items: [
+                  'La mayoría de programas te dan contenido y te dejan solo con las dudas — nosotros no',
+                  'Arrancamos con una auditoría de tu cartera actual y un plan de acción claro',
+                  'Acompañamiento personalizado durante todo el proceso: tus preguntas tienen respuesta a tiempo',
+                  'Porque una duda sin respuesta con capital real en el mercado te cuesta dinero',
+                ]
+              },
             ].map((p, i) => (
               <div key={i} className={`pilar-card fade ${p.delay || ''}`}>
                 <div className="pilar-num">{p.num}</div>
@@ -331,7 +339,7 @@ export default function EmpiezaAquiLanding() {
       </section>
 
       {/* CTA PILARES */}
-      <div style={{background: 'var(--bg2)', padding: '0 0 36px', display: 'flex', justifyContent: 'center'}}>
+      <div style={{ background: 'var(--bg2)', padding: '0 0 36px', display: 'flex', justifyContent: 'center' }}>
         <a href={CALENDLY_LINK} target="_blank" className="btn btn--lg btn--gold" rel="noopener noreferrer">
           Agendá tu sesión <span className="arrow">→</span>
         </a>
@@ -374,7 +382,7 @@ export default function EmpiezaAquiLanding() {
                   <span className="faq-chevron">+</span>
                 </div>
                 <div className="faq-a">
-                  <p className="faq-a-inner" dangerouslySetInnerHTML={{__html: item.a}} />
+                  <p className="faq-a-inner" dangerouslySetInnerHTML={{ __html: item.a }} />
                 </div>
               </div>
             ))}
@@ -383,10 +391,10 @@ export default function EmpiezaAquiLanding() {
       </section>
 
       {/* CTA FINAL */}
-      <section className="cta-final" data-block="cta-final" style={{paddingBottom: '60px'}}>
+      <section className="cta-final" data-block="cta-final" style={{ paddingBottom: '60px' }}>
         <div className="container">
           <div className="cta-final-card fade">
-            <div className="sec-tag" style={{marginBottom: '20px'}}>El próximo paso</div>
+            <div className="sec-tag" style={{ marginBottom: '20px' }}>El próximo paso</div>
             <h2 id="cta-final-h2">¿Estás listo para estructurar<br /><span className="gold-text">tu capital con criterio profesional?</span></h2>
             <p>
               Una sesión. Sin compromiso. Te mostramos exactamente cómo podés posicionarte
@@ -395,7 +403,7 @@ export default function EmpiezaAquiLanding() {
             <a href={CALENDLY_LINK} target="_blank" className="btn btn--lg btn--gold" rel="noopener noreferrer">
               Agendá tu sesión gratuita <span className="arrow">→</span>
             </a>
-            <p className="hero-note" style={{marginTop: '16px'}}>Solo para inversores con capital activo. Cupos limitados.</p>
+            <p className="hero-note" style={{ marginTop: '16px' }}>Solo para inversores con capital activo. Cupos limitados.</p>
           </div>
         </div>
       </section>
@@ -403,8 +411,8 @@ export default function EmpiezaAquiLanding() {
       {/* FOOTER */}
       <footer data-block="footer">
         <img src={LOGO_URL} alt="Ruarte Reports" />
-        <p style={{marginTop: '-6px'}}>© 2026 Ruarte Reports. Todos los derechos reservados.</p>
-        <p style={{maxWidth: '500px', margin: '9px auto 0'}}>
+        <p style={{ marginTop: '-6px' }}>© 2026 Ruarte Reports. Todos los derechos reservados.</p>
+        <p style={{ maxWidth: '500px', margin: '9px auto 0' }}>
           Este contenido es de carácter educativo e informativo. No constituye asesoramiento financiero
           ni recomendación de inversión. Los resultados pasados no garantizan rendimientos futuros.
         </p>
