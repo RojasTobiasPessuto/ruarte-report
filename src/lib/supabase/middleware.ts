@@ -50,10 +50,19 @@ export async function updateSession(request: NextRequest) {
   if (!user && requiresAuth) {
     const url = request.nextUrl.clone()
     const embed = request.nextUrl.searchParams.get('embed')
+    
+    // Guardar la ruta original (con sus query params) para volver a ella post-login
+    const returnTo = request.nextUrl.pathname + request.nextUrl.search
+    
     url.pathname = '/login'
     if (embed === 'true') {
       url.searchParams.set('embed', 'true')
     }
+    // Añadimos el returnTo solo si no estamos intentando ir ya a la raíz
+    if (returnTo !== '/' && returnTo !== '/dashboard') {
+      url.searchParams.set('returnTo', returnTo)
+    }
+    
     return NextResponse.redirect(url)
   }
 

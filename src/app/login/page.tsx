@@ -30,7 +30,13 @@ function LoginForm() {
       return
     }
 
-    const redirectPath = isEmbedded ? '/dashboard?embed=true' : '/dashboard'
+    const returnTo = searchParams.get('returnTo')
+    
+    // Si existe returnTo, usamos esa ruta exacta. Si no, usamos el fallback.
+    const redirectPath = returnTo 
+      ? returnTo 
+      : (isEmbedded ? '/dashboard?embed=true' : '/dashboard')
+      
     window.location.href = redirectPath
   }
 
