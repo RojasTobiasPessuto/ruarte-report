@@ -33,8 +33,8 @@ export default function MasterclassLanding() {
 
 
 {/* HEADER */}
-<header className="header" data-block="header">
-  <img src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69e2c5cdaa2fdcccf64c3d65.png" alt="Ruarte Reports" className="logo-img"  />
+<header className="header" data-block="header" style={{ textAlign: 'center' }}>
+  <img src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69e2c5cdaa2fdcccf64c3d65.png" alt="Ruarte Reports" className="logo-img" style={{ display: 'inline-block' }} />
 </header>
 
 {/* HERO */}
@@ -56,7 +56,7 @@ export default function MasterclassLanding() {
   <div className="container">
     <div className="video-wrap fade">
       <div className="video-embed" id="video-container">
-        <video controls playsInline preload="metadata" style={{position: 'absolute', inset: '0', width: '100%', height: '100%'}}>
+        <video controls playsInline {...{ 'webkit-playsinline': 'true' }} preload="auto" style={{position: 'absolute', inset: '0', width: '100%', height: '100%'}}>
           <source src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69f8cd486f6468fa0219db68.mp4" type="video/mp4"  />
         </video>
       </div>
@@ -69,7 +69,7 @@ export default function MasterclassLanding() {
   <div className="container" style={{textAlign: 'center'}}>
     <p style={{fontSize: 'clamp(15px,4vw,18px)', marginBottom: '8px'}}><strong>¿Querés aplicar esto a tu capital?</strong></p>
     <p style={{fontSize: 'clamp(13px,3.5vw,15px)', color: 'var(--text2)', marginBottom: '24px'}}>Agendá una llamada gratuita con nuestro equipo.</p>
-    <a href="CALENDLY_LINK_AQUI" className="btn btn--lg" id="cta-video-btn">
+    <a href="https://ruartereports.org/calendario-3986" className="btn btn--lg" id="cta-video-btn">
       Agendar mi llamada gratuita <span className="arrow">→</span>
     </a>
   </div>
@@ -229,7 +229,7 @@ export default function MasterclassLanding() {
       <p id="cta-final-p">Agendá una llamada gratuita con nuestro equipo. Sin compromisos.</p>
     </div>
     <div className="fade" style={{marginTop: '-20px'}}>
-      <a href="CALENDLY_LINK_AQUI" className="btn btn--lg" id="cta-final-btn">
+      <a href="https://ruartereports.org/calendario-3986" className="btn btn--lg" id="cta-final-btn">
         Agendar mi llamada gratuita <span className="arrow">→</span>
       </a>
     </div>
@@ -246,7 +246,7 @@ export default function MasterclassLanding() {
 {/* STICKY */}
 <div className="sticky" id="sticky">
   <p><strong>¿Listo para posicionarte?</strong> Agendá tu llamada gratuita con el equipo.</p>
-  <a href="CALENDLY_LINK_AQUI" className="btn" id="sticky-btn">Agendar llamada <span className="arrow">→</span></a>
+  <a href="https://ruartereports.org/calendario-3986" className="btn" id="sticky-btn">Agendar llamada <span className="arrow">→</span></a>
 </div>
 
 
