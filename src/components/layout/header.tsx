@@ -22,8 +22,19 @@ export function Header({ title }: { title: string }) {
   }, [supabase.auth])
 
   const handleLogout = async () => {
+    const pathname = window.location.pathname
+    const search = window.location.search
+    const isInsideIframe = window.self !== window.top
+    
     await supabase.auth.signOut()
-    router.push('/login')
+    
+    let loginUrl = '/login'
+    if (isInsideIframe || isEmbedded) {
+      const returnTo = encodeURIComponent(pathname + search)
+      loginUrl = `/login?embed=true&returnTo=${returnTo}`
+    }
+    
+    router.push(loginUrl)
     router.refresh()
   }
 

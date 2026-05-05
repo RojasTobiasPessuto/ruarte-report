@@ -74,9 +74,17 @@ export function Sidebar() {
   })
 
   const handleLogout = async () => {
+    const isEmbedded = window.self !== window.top || pathname.includes('embed=true')
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/login')
+    
+    let loginUrl = '/login'
+    if (isEmbedded) {
+      const returnTo = encodeURIComponent(window.location.pathname + window.location.search)
+      loginUrl = `/login?embed=true&returnTo=${returnTo}`
+    }
+    
+    router.push(loginUrl)
     router.refresh()
   }
 
