@@ -259,7 +259,7 @@ export default function EmpiezaAquiLanding() {
 
           <div className="cred-intro fade">
             <div className="cred-photo-wrap">
-              <img src="https://assets.cdn.filesafe.space/KtUHW6Xfym4HTBF8Ujq8/media/roberto.png" alt="Roberto Ruarte" />
+              <img src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69e2c5cdc87cb8c801853e2f.png" alt="Roberto Ruarte" />
             </div>
             <ul className="cred-list">
               <li><span className="dot"></span><div>Metodología basada en <strong>Ondas de Elliott</strong> y <strong>Ciclos Económicos de Mercado</strong></div></li>
@@ -268,7 +268,7 @@ export default function EmpiezaAquiLanding() {
               <li><span className="dot"></span><div>Gestión de patrimonios de <strong>family offices</strong> en Argentina, México, Colombia, Perú y Estados Unidos</div></li>
             </ul>
             <div className="cred-photo-wrap">
-              <img src="https://assets.cdn.filesafe.space/KtUHW6Xfym4HTBF8Ujq8/media/roberto-jr.png" alt="Roberto Ruarte Jr." />
+              <img src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69e2c5cd8696a78b8dbff264.png" alt="Roberto Ruarte Jr." />
             </div>
           </div>
         </div>
