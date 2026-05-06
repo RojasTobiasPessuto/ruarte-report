@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import './styles.css';
 
 const LOGO_URL = 'https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69e2c5cdaa2fdcccf64c3d65.png';
-const CALENDLY_LINK = 'https://ruartereports.org/calendario-3986';
+const BASE_CALENDLY_LINK = 'https://ruartereports.org/calendario-3986';
 
 const TESTIMONIALS = [
   {
@@ -105,6 +105,13 @@ function toggleVideo(container: HTMLDivElement) {
 
 export default function EmpiezaAquiLanding() {
   const trackRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+
+  const calendlyLink = useMemo(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    const queryString = params.toString();
+    return queryString ? `${BASE_CALENDLY_LINK}?${queryString}` : BASE_CALENDLY_LINK;
+  }, [searchParams]);
 
   useEffect(() => {
     // Scroll animations
@@ -125,16 +132,22 @@ export default function EmpiezaAquiLanding() {
     }
 
     // FAQ accordion
-    document.querySelectorAll('.faq-q').forEach(q => {
-      q.addEventListener('click', () => {
+    const faqElements = document.querySelectorAll('.faq-q');
+    const faqHandlers = Array.from(faqElements).map(q => {
+      const handler = () => {
         const item = q.closest('.faq-item');
         const isOpen = item?.classList.contains('open');
         document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
         if (!isOpen) item?.classList.add('open');
-      });
+      };
+      q.addEventListener('click', handler);
+      return { q, handler };
     });
 
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      faqHandlers.forEach(({ q, handler }) => q.removeEventListener('click', handler));
+    };
   }, []);
 
   return (
@@ -184,7 +197,7 @@ export default function EmpiezaAquiLanding() {
 
       {/* CTA BAJO VSL */}
       <div style={{ background: 'var(--bg)', padding: '0 20px 36px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <a href={CALENDLY_LINK} className="btn btn--lg btn--gold" id="hero-cta" rel="noopener noreferrer">
+        <a href={calendlyLink} className="btn btn--lg btn--gold" id="hero-cta" rel="noopener noreferrer">
           Agendá tu sesión <span className="arrow">→</span>
         </a>
         <p className="hero-note" style={{ marginTop: '14px' }}>Sin costo. Sin compromiso. Solo para inversores serios.</p>
@@ -229,7 +242,7 @@ export default function EmpiezaAquiLanding() {
 
       {/* CTA TESTIMONIOS */}
       <div style={{ background: 'var(--bg2)', padding: '0 0 36px', display: 'flex', justifyContent: 'center' }}>
-        <a href={CALENDLY_LINK} className="btn btn--lg btn--gold" rel="noopener noreferrer">
+        <a href={calendlyLink} className="btn btn--lg btn--gold" rel="noopener noreferrer">
           Agendá tu sesión <span className="arrow">→</span>
         </a>
       </div>
@@ -340,7 +353,7 @@ export default function EmpiezaAquiLanding() {
 
       {/* CTA PILARES */}
       <div style={{ background: 'var(--bg2)', padding: '0 0 36px', display: 'flex', justifyContent: 'center' }}>
-        <a href={CALENDLY_LINK} className="btn btn--lg btn--gold" rel="noopener noreferrer">
+        <a href={calendlyLink} className="btn btn--lg btn--gold" rel="noopener noreferrer">
           Agendá tu sesión <span className="arrow">→</span>
         </a>
       </div>
@@ -400,7 +413,7 @@ export default function EmpiezaAquiLanding() {
               Una sesión. Sin compromiso. Te mostramos exactamente cómo podés posicionarte
               en los activos que van a liderar el próximo ciclo.
             </p>
-            <a href={CALENDLY_LINK} className="btn btn--lg btn--gold" rel="noopener noreferrer">
+            <a href={calendlyLink} className="btn btn--lg btn--gold" rel="noopener noreferrer">
               Agendá tu sesión gratuita <span className="arrow">→</span>
             </a>
             <p className="hero-note" style={{ marginTop: '16px' }}>Solo para inversores con capital activo. Cupos limitados.</p>
