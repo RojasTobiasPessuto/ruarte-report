@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo, Suspense } from 'react';
 import './styles.css';
+import { useSearchParams } from 'next/navigation';
 
 const LOGO_URL = 'https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69e2c5cdaa2fdcccf64c3d65.png';
 const BASE_CALENDLY_LINK = 'https://ruartereports.org/calendario-3986';
@@ -103,7 +104,7 @@ function toggleVideo(container: HTMLDivElement) {
   }
 }
 
-export default function EmpiezaAquiLanding() {
+function EmpiezaAquiContent() {
   const trackRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
 
@@ -434,8 +435,16 @@ export default function EmpiezaAquiLanding() {
       {/* STICKY BAR */}
       <div className="sticky" id="sticky">
         <p><strong>Ruarte Reports</strong> — Agendá tu sesión sin costo</p>
-        <a href={CALENDLY_LINK} className="btn" rel="noopener noreferrer">Agendar ahora <span className="arrow">→</span></a>
+        <a href={calendlyLink} className="btn" rel="noopener noreferrer">Agendar ahora <span className="arrow">→</span></a>
       </div>
     </>
+  );
+}
+
+export default function EmpiezaAquiLanding() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center text-white">Cargando...</div>}>
+      <EmpiezaAquiContent />
+    </Suspense>
   );
 }
