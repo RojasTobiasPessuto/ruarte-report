@@ -252,7 +252,7 @@ function EmpiezaAquiContent() {
       <section data-block="creds" style={{ background: 'var(--bg)', paddingTop: '36px', paddingBottom: '24px' }}>
         <div className="container">
           <div className="sec-header fade">
-            <img src={LOGO_URL} alt="Ruarte Reports" style={{ height: '85px', width: 'auto', marginBottom: '16px', display: 'inline-block' }} />
+            <img src={LOGO_URL} alt="Ruarte Reports" className="logo-img" style={{ marginBottom: '16px', display: 'inline-block' }} />
             <h2 style={{ fontSize: 'clamp(16px,2.4vw,26px)', whiteSpace: 'nowrap' }}>Nuestros fundamentos son respaldados por historial real</h2>
             <p>Somos la firma de análisis técnico con más trayectoria de Latinoamérica.</p>
           </div>
