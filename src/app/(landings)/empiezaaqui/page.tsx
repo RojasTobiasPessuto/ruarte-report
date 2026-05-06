@@ -141,7 +141,7 @@ export default function EmpiezaAquiLanding() {
     <>
       {/* HEADER */}
       <header className="header" data-block="header" style={{ textAlign: 'center' }}>
-        <img src={LOGO_URL} alt="Ruarte Reports" className="logo-img" />
+        <img src={LOGO_URL} alt="Ruarte Reports" className="logo-img" style={{ display: 'inline-block' }} />
       </header>
 
       {/* HERO */}
