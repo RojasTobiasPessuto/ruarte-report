@@ -249,10 +249,8 @@ export async function PATCH(
         if (!saleInput) {
           isCompleted = false
         } else {
-          const isLiteOrPamm = evalPrograma === 'LITE' || evalPrograma === 'PAMM - Manejo de Portafolio'
-          
-          if (isLiteOrPamm) {
-            // Broker only: Depósito en Broker, Justificante, Fecha de pago (Tipo de pago es opcional pero usualmente nulo o específico)
+          if (evalPrograma === 'PAMM - Manejo de Portafolio') {
+            // PAMM: Solo broker es obligatorio
             if (
               saleInput.deposito_broker === undefined || saleInput.deposito_broker === null || saleInput.deposito_broker <= 0 ||
               !saleInput.fecha_pago ||
@@ -261,7 +259,8 @@ export async function PATCH(
               isCompleted = false
             }
           } else {
-            // Venta normal: Forma, Tipo, Fecha, Justificante, Revenue, Cash
+            // Mastermind, Formación, LITE, etc.
+            // La venta es obligatoria
             if (
               !saleInput.forma_pago ||
               !saleInput.payment_type_id ||
