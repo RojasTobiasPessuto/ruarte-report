@@ -173,6 +173,27 @@ export async function getAllOpportunities(pipelineId?: string): Promise<GHLOppor
 }
 
 /**
+ * Obtiene UNA oportunidad de GHL por su ID.
+ * Usada por webhooks para traer datos completos al recibir un evento.
+ */
+export async function getOpportunity(opportunityId: string): Promise<GHLOpportunity | null> {
+  const response = await fetch(
+    `${GHL_API_BASE}/opportunities/${opportunityId}`,
+    { headers: getHeaders() }
+  )
+
+  if (!response.ok) {
+    if (response.status === 404) return null
+    const text = await response.text()
+    console.error(`[GHL] getOpportunity error ${response.status}:`, text.substring(0, 300))
+    return null
+  }
+
+  const data = await response.json()
+  return data.opportunity || data || null
+}
+
+/**
  * Obtiene un contacto de GHL por ID.
  */
 export async function getContact(contactId: string): Promise<Record<string, unknown> | null> {
