@@ -23,11 +23,14 @@ function getVisibleFields(situacion: Situacion | '', programa: Programa | '') {
   // Adentro en Llamada / Adentro en Seguimiento / ReCompra
   const insideSales = ['Adentro en Llamada', 'Adentro en Seguimiento', 'ReCompra'].includes(situacion)
   if (insideSales) {
-    const isLiteOrPamm = programa === 'LITE' || programa === 'PAMM - Manejo de Portafolio'
+    if (programa === 'LITE') {
+      return { showFollowUp: false, showSaleFields: true, showBrokerOnly: true }
+    }
+    const isPamm = programa === 'PAMM - Manejo de Portafolio'
     return {
       showFollowUp: false,
-      showSaleFields: !isLiteOrPamm,
-      showBrokerOnly: isLiteOrPamm,
+      showSaleFields: !isPamm,
+      showBrokerOnly: isPamm,
     }
   }
   return { showFollowUp: false, showSaleFields: false, showBrokerOnly: false }
@@ -128,8 +131,8 @@ export function PostAgendaForm({
 
       const insideSales = ['Adentro en Llamada', 'Adentro en Seguimiento', 'ReCompra'].includes(situacion)
       if (insideSales) {
-        const isLiteOrPamm = programa === 'LITE' || programa === 'PAMM - Manejo de Portafolio'
-        if (isLiteOrPamm) {
+        if (programa === 'PAMM - Manejo de Portafolio') {
+          // PAMM: Solo broker es obligatorio
           if (
             !depositoBroker || Number(depositoBroker) <= 0 || 
             !fechaPago || 
@@ -138,6 +141,8 @@ export function PostAgendaForm({
             isCompleted = false
           }
         } else {
+          // Mastermind, Formación, LITE, etc.
+          // La venta es obligatoria
           if (
             !formaPago || 
             !tipoPagoId || 
@@ -151,6 +156,7 @@ export function PostAgendaForm({
           if (formaPago === 'Pago Dividido' && (!cantidadCuotas || Number(cantidadCuotas) <= 0)) {
             isCompleted = false
           }
+          // Nota: Para LITE, depositoBroker es opcional, así que no se valida aquí.
         }
       }
     }
@@ -182,6 +188,8 @@ export function PostAgendaForm({
           fecha_pago: fechaPago,
           fecha_proximo_pago: fechaProximoPago || null,
           justificante_urls: justificanteUrls,
+          // Si también se permite broker (LITE), incluirlo
+          deposito_broker: (showBrokerOnly && depositoBroker) ? parseFloat(depositoBroker) : 0,
         }
       } else if (showBrokerOnly) {
         body.sale = {
