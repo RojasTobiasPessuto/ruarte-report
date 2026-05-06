@@ -119,50 +119,40 @@ export function PostAgendaForm({
     setError('')
 
     // --- Lógica Estricta de Validación Frontend ---
-    let isCompleted = false
-    if (estadoCita === 'No Asistido') {
-      isCompleted = true
-    } else if (estadoCita && programa && situacion) {
-      isCompleted = true
+    const missingFields: string[] = []
 
-      if (situacion === 'Seguimiento') {
-        if (!fechaSeguimiento) isCompleted = false
+    if (!estadoCita) missingFields.push('Estado de la Cita')
+    if (!programa) missingFields.push('Programa')
+    if (!situacion) missingFields.push('Situación')
+
+    if (estadoCita && programa && situacion && estadoCita !== 'No Asistido') {
+      if (situacion === 'Seguimiento' && !fechaSeguimiento) {
+        missingFields.push('Fecha Próximo Seguimiento')
       }
 
       const insideSales = ['Adentro en Llamada', 'Adentro en Seguimiento', 'ReCompra'].includes(situacion)
       if (insideSales) {
         if (programa === 'PAMM - Manejo de Portafolio') {
-          // PAMM: Solo broker es obligatorio
-          if (
-            !depositoBroker || Number(depositoBroker) <= 0 || 
-            !fechaPago || 
-            !justificanteUrls || justificanteUrls.length === 0
-          ) {
-            isCompleted = false
-          }
+          if (!depositoBroker || Number(depositoBroker) <= 0) missingFields.push('Depósito en Broker')
+          if (!fechaPago) missingFields.push('Fecha de Pago')
+          if (!justificanteUrls || justificanteUrls.length === 0) missingFields.push('Justificante')
         } else {
-          // Mastermind, Formación, LITE, etc.
-          // La venta es obligatoria
-          if (
-            !formaPago || 
-            !tipoPagoId || 
-            !fechaPago || 
-            !justificanteUrls || justificanteUrls.length === 0 || 
-            !revenue || Number(revenue) <= 0 || 
-            cash === '' || cash === null
-          ) {
-            isCompleted = false
-          }
+          if (!formaPago) missingFields.push('Forma de Pago')
+          if (!tipoPagoId) missingFields.push('Tipo de Pago')
+          if (!fechaPago) missingFields.push('Fecha de Pago')
+          if (!justificanteUrls || justificanteUrls.length === 0) missingFields.push('Justificante')
+          if (!revenue || Number(revenue) <= 0) missingFields.push('Revenue')
+          if (cash === '' || cash === null) missingFields.push('Cash')
+          
           if (formaPago === 'Pago Dividido' && (!cantidadCuotas || Number(cantidadCuotas) <= 0)) {
-            isCompleted = false
+            missingFields.push('Cantidad de Cuotas')
           }
-          // Nota: Para LITE, depositoBroker es opcional, así que no se valida aquí.
         }
       }
     }
 
-    if (!isCompleted) {
-      setError('Faltan campos obligatorios para guardar la Post-Agenda en esta etapa. Por favor completá todos los datos de seguimiento/venta.')
+    if (missingFields.length > 0) {
+      setError(`Faltan campos obligatorios: ${missingFields.join(', ')}`)
       setSaving(false)
       return
     }
