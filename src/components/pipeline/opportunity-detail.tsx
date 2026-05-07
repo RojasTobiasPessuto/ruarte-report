@@ -155,9 +155,7 @@ export function OpportunityDetail({
           </div>
 
           {canFillForm && (() => {
-            const isSeguimiento = stage === 'Seguimiento'
-            const isAllowedStage = isPostLlamada || isSeguimiento
-            const isButtonDisabled = !isAllowedStage && !isAdmin && !canViewAll
+            const isButtonDisabled = false // Ya lo controlamos desde el componente padre con canFillForm
 
             return (
               <button
