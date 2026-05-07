@@ -25,6 +25,7 @@ export function OpportunityDetail({
   canCreatePayment,
   canEditPayment,
   canChangeOwner = false,
+  canViewAll = false,
   isAdmin = false,
 }: {
   opportunity: Opportunity
