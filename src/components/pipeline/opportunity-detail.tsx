@@ -35,6 +35,7 @@ export function OpportunityDetail({
   canCreatePayment: boolean
   canEditPayment: boolean
   canChangeOwner?: boolean
+  canViewAll?: boolean
   isAdmin?: boolean
 }) {
   const [showForm, setShowForm] = useState(false)
@@ -155,7 +156,7 @@ export function OpportunityDetail({
           {canFillForm && (() => {
             const isSeguimiento = stage === 'Seguimiento'
             const isAllowedStage = isPostLlamada || isSeguimiento
-            const isButtonDisabled = !isAllowedStage && !isAdmin
+            const isButtonDisabled = !isAllowedStage && !isAdmin && !canViewAll
 
             return (
               <button

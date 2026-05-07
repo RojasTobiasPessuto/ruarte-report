@@ -86,7 +86,7 @@ export default async function OpportunityDetailPage({
   // Closers solo las suyas (isOwnOpp).
   const EDITABLE_STAGES = ['Post Llamada', 'Seguimiento']
   const canFillForm = isAdmin(ctx) 
-    || (canViewAll && EDITABLE_STAGES.includes(opp.pipeline_stage || ''))
+    || canViewAll
     || (hasPermission(ctx, 'can_fill_post_agenda') && EDITABLE_STAGES.includes(opp.pipeline_stage || '') && isOwnOpp)
 
   // Pagos: admin y manager cualquier venta; closers solo las suyas.
@@ -107,6 +107,7 @@ export default async function OpportunityDetailPage({
           canCreatePayment={canCreatePayment}
           canEditPayment={canEditPayment}
           canChangeOwner={canChangeOwner}
+          canViewAll={canViewAll}
           isAdmin={isAdmin(ctx)}
         />
       </div>
