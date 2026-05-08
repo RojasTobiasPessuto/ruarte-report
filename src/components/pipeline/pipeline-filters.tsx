@@ -35,10 +35,14 @@ export function PipelineFilters({
 
   return (
     <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-4 space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <PipelineSearch />
+      <div className="flex flex-wrap items-end gap-3 md:gap-5">
+        <div className="flex-1 min-w-[200px]">
+          <span className="block text-gray-500 text-[10px] uppercase font-bold tracking-wider mb-1.5 ml-1">Buscar</span>
+          <PipelineSearch />
+        </div>
         
         <FilterSelect 
+          label="Etapa"
           placeholder="Todas las etapas" 
           value={searchParams.get('stage') || ''}
           options={STAGES.map(s => ({ label: s, value: s }))} 
@@ -46,6 +50,7 @@ export function PipelineFilters({
         />
 
         <FilterSelect 
+          label="Programa"
           placeholder="Todos los programas" 
           value={searchParams.get('programa') || ''}
           options={[
@@ -59,6 +64,7 @@ export function PipelineFilters({
         />
 
         <FilterSelect 
+          label="Formulario"
           placeholder="Estado Formulario" 
           value={searchParams.get('form_completed') || (viewAllOpps ? 'all' : 'false')}
           options={[
@@ -71,6 +77,7 @@ export function PipelineFilters({
 
         {viewAllOpps && closers.length > 0 && (
           <FilterSelect 
+            label="Closer"
             placeholder="Todos los Closers" 
             value={searchParams.get('closer') || ''}
             options={closers.map(c => ({ label: c.name, value: c.id }))} 
@@ -79,9 +86,9 @@ export function PipelineFilters({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 text-sm">
+      <div className="flex flex-wrap items-center gap-4 text-sm border-t border-gray-800/50 pt-3">
         <div className="flex items-center gap-2">
-          <span className="text-gray-500 text-xs uppercase font-medium">Llamada desde:</span>
+          <span className="text-gray-500 text-[10px] uppercase font-bold tracking-wider">Llamada desde:</span>
           <input 
             type="date" 
             value={searchParams.get('from') || ''}
@@ -90,7 +97,7 @@ export function PipelineFilters({
           />
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-gray-500 text-xs uppercase font-medium">Hasta:</span>
+          <span className="text-gray-500 text-[10px] uppercase font-bold tracking-wider">Hasta:</span>
           <input 
             type="date" 
             value={searchParams.get('to') || ''}
@@ -111,22 +118,26 @@ export function PipelineFilters({
   )
 }
 
-function FilterSelect({ placeholder, options, value, onChange }: { 
+function FilterSelect({ label, placeholder, options, value, onChange }: { 
+  label: string,
   placeholder: string, 
   options: { label: string, value: string }[],
   value: string,
   onChange: (v: string) => void
 }) {
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-    >
-      <option value="">{placeholder}</option>
-      {options.map(opt => (
-        <option key={opt.value} value={opt.value}>{opt.label}</option>
-      ))}
-    </select>
+    <div className="flex flex-col gap-1.5">
+      <span className="text-gray-500 text-[10px] uppercase font-bold tracking-wider ml-1">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 min-w-[140px]"
+      >
+        <option value="">{placeholder}</option>
+        {options.map(opt => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+    </div>
   )
 }
