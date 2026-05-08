@@ -189,7 +189,7 @@ function EmpiezaAquiContent() {
               <video controls playsInline preload="metadata"
                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
               >
-                <source src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69fa69525facc6ea31519500.mp4" type="video/mp4" />
+                <source src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69fa69525facc6ea31519500.mp4#t=0.001" type="video/mp4" />
               </video>
             </div>
           </div>
@@ -217,8 +217,8 @@ function EmpiezaAquiContent() {
             {TESTIMONIALS.map((t, i) => (
               <div key={i} className={`testimonial-card-v fade ${t.delay || ''}`}>
                 <div className="testimonial-video" onClick={(e) => toggleVideo(e.currentTarget)}>
-                  <video preload="metadata">
-                    <source src={t.video} type="video/mp4" />
+                  <video preload="metadata" playsInline>
+                    <source src={`${t.video}#t=0.001`} type="video/mp4" />
                   </video>
                   <div className="play-overlay">
                     <div className="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg></div>

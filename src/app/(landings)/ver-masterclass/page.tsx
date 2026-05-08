@@ -56,8 +56,8 @@ export default function MasterclassLanding() {
   <div className="container">
     <div className="video-wrap fade">
       <div className="video-embed" id="video-container">
-        <video controls playsInline {...{ 'webkit-playsinline': 'true' }} preload="auto" style={{position: 'absolute', inset: '0', width: '100%', height: '100%'}}>
-          <source src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69f8cd486f6468fa0219db68.mp4" type="video/mp4"  />
+        <video controls playsInline preload="auto" style={{position: 'absolute', inset: '0', width: '100%', height: '100%'}}>
+          <source src="https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69f8cd486f6468fa0219db68.mp4#t=0.001" type="video/mp4"  />
         </video>
       </div>
     </div>
