@@ -5,6 +5,7 @@
  */
 
 import { createServiceRoleClient } from '@/lib/supabase/server'
+import { syncOpportunityToSheets } from '@/lib/sheets/sync-service'
 import {
   getOpportunity,
   getCustomFieldValue,
@@ -228,20 +229,25 @@ export async function syncSingleOpportunity(ghlOpportunityId: string): Promise<S
     .eq('ghl_opportunity_id', opp.id)
     .maybeSingle()
 
-  if (existingOpp) {
-    const { error } = await supabase.from('opportunities').update(oppData).eq('id', existingOpp.id)
-    if (error) {
-      console.error(`[Webhook] Update error [${opp.id}]:`, error.message)
-      throw new Error(`Update failed: ${error.message}`)
+    // 6. Google Sheets Sync (Async)
+    try {
+      const { data: finalOpp } = await supabase
+        .from('opportunities')
+        .select('*, closer:closers(*), contact:contacts(*), sales:sales(*, payments:payments(*))')
+        .eq('ghl_opportunity_id', opp.id)
+        .single()
+      
+      if (finalOpp) {
+        await syncOpportunityToSheets(finalOpp, finalOpp.sales || [], finalOpp.contact)
+      }
+    } catch (sheetErr) {
+      console.error('[Sheets] Sync error:', sheetErr)
     }
-    return { action: 'updated', name: opp.contact?.name || opp.name }
-  } else {
-    const { error } = await supabase.from('opportunities').insert(oppData)
-    if (error) {
-      console.error(`[Webhook] Insert error [${opp.id}]:`, error.message)
-      throw new Error(`Insert failed: ${error.message}`)
-    }
-    return { action: 'created', name: opp.contact?.name || opp.name }
+
+    return { action: existingOpp ? 'updated' : 'created', name: opp.contact?.name || opp.name }
+  } catch (error) {
+    console.error(`[Webhook] Error syncing opportunity ${opp.id}:`, error)
+    throw error
   }
 }
 

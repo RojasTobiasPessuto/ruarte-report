@@ -39,3 +39,5 @@ next-env.d.ts
 /supabase
 
 docs/usuarios/credenciales.md
+
+/docs/

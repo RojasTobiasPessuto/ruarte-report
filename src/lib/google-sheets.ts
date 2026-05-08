@@ -42,7 +42,7 @@ function getCredentials() {
   throw new Error('Faltan credenciales de Google Sheets. Cargá GOOGLE_SHEETS_CREDENTIALS_JSON o GOOGLE_SHEETS_CLIENT_EMAIL + GOOGLE_SHEETS_PRIVATE_KEY')
 }
 
-async function getAccessToken(): Promise<string> {
+export async function getAccessToken(): Promise<string> {
   const now = Date.now()
   if (cachedToken && cachedToken.expires > now + 60_000) {
     return cachedToken.token
@@ -92,6 +92,49 @@ async function getAccessToken(): Promise<string> {
 export type SheetValue = string | number | boolean | null
 
 /**
+ * Obtiene valores de un rango (ej: "Dashboard!A1:Z100").
+ */
+export async function getRange(
+  sheetId: string,
+  range: string
+): Promise<SheetValue[][]> {
+  const token = await getAccessToken()
+  const url = `${SHEETS_API}/${sheetId}/values/${encodeURIComponent(range)}`
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!res.ok) {
+    if (res.status === 404) return []
+    throw new Error(`Sheets read error ${res.status}: ${(await res.text()).substring(0, 300)}`)
+  }
+  const data = await res.json() as { values?: SheetValue[][] }
+  return data.values || []
+}
+
+/**
+ * Agrega filas al final de una tabla (ej: "Dashboard!A1").
+ */
+export async function appendRow(
+  sheetId: string,
+  range: string,
+  values: SheetValue[][]
+): Promise<void> {
+  const token = await getAccessToken()
+  const url = `${SHEETS_API}/${sheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ values }),
+  })
+  if (!res.ok) {
+    throw new Error(`Sheets append error ${res.status}: ${(await res.text()).substring(0, 300)}`)
+  }
+}
+
+/**
  * Limpia un rango del Sheet (ej: "Leads!A:Z").
  */
 export async function clearRange(sheetId: string, range: string): Promise<void> {
@@ -130,11 +173,33 @@ export async function writeRange(
 }
 
 /**
- * Obtiene los nombres de todas las pestañas del Sheet.
+ * Actualiza una fila específica en un índice determinado (ej: fila 5).
  */
+export async function updateRow(
+  sheetId: string,
+  sheetName: string,
+  rowIndex: number,
+  values: SheetValue[]
+): Promise<void> {
+  const token = await getAccessToken()
+  // Google Sheets es 1-indexed, y la API usa formato A1. 
+  // Si rowIndex es 0 (primera fila de datos tras el header), sería la fila 2 del Sheet.
+  const range = `${sheetName}!A${rowIndex + 1}:ZZ${rowIndex + 1}`
+  const url = `${SHEETS_API}/${sheetId}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`
+  
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ values: [values] }),
+  })
+  if (!res.ok) {
+    throw new Error(`Sheets update error ${res.status}: ${(await res.text()).substring(0, 300)}`)
+  }
 async function getSheetTabs(sheetId: string): Promise<string[]> {
   const token = await getAccessToken()
-  const res = await fetch(
     `${SHEETS_API}/${sheetId}?fields=sheets.properties.title`,
     { headers: { Authorization: `Bearer ${token}` } }
   )
