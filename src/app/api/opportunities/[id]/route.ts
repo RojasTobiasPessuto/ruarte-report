@@ -163,21 +163,22 @@ export async function PATCH(
   if (!opp) return NextResponse.json({ error: 'No encontrada' }, { status: 404 })
 
   // Lógica de permisos de edición:
-  // 1. Admin: edita cualquier cosa siempre.
-  // 2. Manager (can_view_all_opportunities): edita cualquier oportunidad pero solo en etapas permitidas.
+  // 1. Admin o can_manage_leads: edita cualquier cosa siempre en cualquier etapa.
+  // 2. Manager (can_view_all_opportunities): edita cualquier oportunidad pero sujeto a etapas permitidas (si no tiene can_manage_leads).
   // 3. Closer: solo edita sus propias oportunidades en etapas permitidas.
   const canEditAny = userIsAdmin || hasPermission(ctx, 'can_view_all_opportunities')
+  const canBypassStage = userIsAdmin || hasPermission(ctx, 'can_manage_leads')
   const EDITABLE_STAGES_FOR_NON_ADMIN = ['Post Llamada', 'Seguimiento']
 
-  if (!userIsAdmin) {
-    // Validar etapa
+  if (!canBypassStage) {
+    // 1. Validar etapa
     if (!EDITABLE_STAGES_FOR_NON_ADMIN.includes(opp.pipeline_stage)) {
       return NextResponse.json({
         error: 'Solo se puede editar el Post-Agenda cuando la oportunidad está en etapa "Post Llamada" o "Seguimiento". Contactá al administrador.',
       }, { status: 403 })
     }
 
-    // Validar propiedad (si no es manager que puede verlo todo)
+    // 2. Validar propiedad (si no es manager que puede verlo todo)
     if (!canEditAny) {
       if (!ctx.appUser.closer_id || opp.closer_id !== ctx.appUser.closer_id) {
         return NextResponse.json({
