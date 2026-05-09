@@ -12,6 +12,7 @@ import { List, Phone, TrendingUp, CheckCircle, XCircle, Clock } from 'lucide-rea
 const STAGES = [
   'Post Llamada',
   'Seguimiento',
+  'ReAgendado',
   'Compro',
   'No Compro',
   'Cancelado',

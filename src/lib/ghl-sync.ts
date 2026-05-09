@@ -19,6 +19,7 @@ const BATCH_SIZE = 25
 const STAGES_TO_SYNC = [
   GHL_STAGE_IDS.postLlamada,
   GHL_STAGE_IDS.seguimiento,
+  GHL_STAGE_IDS.reagendado,
   GHL_STAGE_IDS.compro,
   GHL_STAGE_IDS.noCompro,
   GHL_STAGE_IDS.cancelado,

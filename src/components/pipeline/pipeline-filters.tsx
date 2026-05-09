@@ -7,6 +7,7 @@ import { PipelineSearch } from './pipeline-search'
 const STAGES = [
   'Post Llamada',
   'Seguimiento',
+  'ReAgendado',
   'Compro',
   'No Compro',
   'Cancelado',
