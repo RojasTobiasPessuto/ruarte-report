@@ -198,8 +198,14 @@ export async function updateRow(
   if (!res.ok) {
     throw new Error(`Sheets update error ${res.status}: ${(await res.text()).substring(0, 300)}`)
   }
+}
+
+/**
+ * Obtiene los nombres de todas las pestañas del Sheet.
+ */
 async function getSheetTabs(sheetId: string): Promise<string[]> {
   const token = await getAccessToken()
+  const res = await fetch(
     `${SHEETS_API}/${sheetId}?fields=sheets.properties.title`,
     { headers: { Authorization: `Bearer ${token}` } }
   )

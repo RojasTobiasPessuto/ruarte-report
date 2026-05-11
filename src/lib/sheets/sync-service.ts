@@ -1,5 +1,5 @@
 
-import { getRange, appendRow, updateRow } from '../google-sheets';
+import { getRange, appendRow, updateRow, getAccessToken } from '../google-sheets';
 import { SHEETS_CONFIG } from './config';
 import { mapOpportunityToSheetRow } from './mapper';
 import type { Opportunity, Sale, Contact, Payment } from '@/types';

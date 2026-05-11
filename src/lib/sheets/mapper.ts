@@ -30,7 +30,7 @@ export function mapOpportunityToSheetRow(
   }
 
   if (contact) {
-    row[COLUMNS.PAISES] = contact.country || '';
+    row[COLUMNS.PAISES] = (contact as any).country || '';
     row[COLUMNS.SOURCES] = (contact as any).fuenteutm || '';
     row[COLUMNS.SETTERS] = (contact as any).sdr || '';
   }

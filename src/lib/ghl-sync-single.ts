@@ -101,6 +101,7 @@ async function findOrCreateContact(
  */
 export async function syncSingleOpportunity(ghlOpportunityId: string): Promise<SingleSyncResult> {
   const supabase = await createServiceRoleClient()
+  try {
 
   // 1. Obtener datos completos de GHL
   const opp = await getOpportunity(ghlOpportunityId)
@@ -246,7 +247,7 @@ export async function syncSingleOpportunity(ghlOpportunityId: string): Promise<S
 
     return { action: existingOpp ? 'updated' : 'created', name: opp.contact?.name || opp.name }
   } catch (error) {
-    console.error(`[Webhook] Error syncing opportunity ${opp.id}:`, error)
+    console.error(`[Webhook] Error syncing opportunity ${ghlOpportunityId}:`, error)
     throw error
   }
 }
