@@ -340,20 +340,22 @@ export async function runGhlSyncBatch(): Promise<SyncResult> {
     })
     nextMessage = `"${currentStageName}" completada. Siguiente: "${GHL_STAGE_NAMES[STAGES_TO_SYNC[stageIndex + 1]]}"`
   } else {
-    // Ciclo completo: limpiar oportunidades huérfanas
-    // (las que no se actualizaron durante este ciclo = no están más en GHL en las etapas trackeadas)
+    // Ciclo completo: limpiar oportunidades huérfanas del MISMO pipeline.
+    // Filtra por ghl_pipeline_stage_id IN STAGES_TO_SYNC para no tocar opps de
+    // otros pipelines (ej: pipeline de test vs producción comparten DB).
     if (cycleStartedAt) {
       const { data: deletedOpps, error: deleteError } = await supabase
         .from('opportunities')
         .delete()
         .not('ghl_opportunity_id', 'is', null)
         .lt('synced_at', cycleStartedAt)
+        .in('ghl_pipeline_stage_id', STAGES_TO_SYNC)
         .select('id')
 
       if (!deleteError && deletedOpps) {
         orphansCleaned = deletedOpps.length
         if (orphansCleaned > 0) {
-          console.log(`[GHL Sync] Cleaned ${orphansCleaned} orphan opportunities (synced_at < ${cycleStartedAt})`)
+          console.log(`[GHL Sync] Cleaned ${orphansCleaned} orphan opportunities of current pipeline (synced_at < ${cycleStartedAt})`)
         }
       } else if (deleteError) {
         console.error('[GHL Sync] Error cleaning orphans:', deleteError.message)
