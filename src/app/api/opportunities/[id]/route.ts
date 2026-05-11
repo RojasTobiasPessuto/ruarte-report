@@ -22,20 +22,41 @@ import type { Opportunity, Sale, Situacion, EstadoCita, FormaPago } from '@/type
 
 /**
  * Mapea Situación + Estado Cita a Pipeline Stage.
+ *
+ * Reglas:
+ *  1. Estados terminales (Cancelada, No Asistido): pisan la situación.
+ *  2. Si hay situación, ésta determina el stage (forma común al guardar form post-agenda).
+ *  3. Sin situación, el estado de cita decide (caso: appointment creado/confirmado/asistido sin venta aún).
+ *
+ * Reemplaza los workflows GHL "1_Estado Cita" y "2_Estado Cita".
  */
 function getTargetStage(situacion: string | null, estadoCita: string | null): string | null {
+  // Estados terminales: pisan la situación
   if (estadoCita === 'Cancelada') return 'Cancelado'
   if (estadoCita === 'No Asistido') return 'No Asistio'
-  if (!situacion) return null
-  switch (situacion) {
-    case 'Seguimiento':
-      return 'Seguimiento'
-    case 'Adentro en Llamada':
-    case 'Adentro en Seguimiento':
-    case 'ReCompra':
-      return 'Compro'
-    case 'Perdido':
-      return 'No Compro'
+
+  // Si hay situación, ésta manda
+  if (situacion) {
+    switch (situacion) {
+      case 'Seguimiento':
+        return 'Seguimiento'
+      case 'Adentro en Llamada':
+      case 'Adentro en Seguimiento':
+      case 'ReCompra':
+        return 'Compro'
+      case 'Perdido':
+        return 'No Compro'
+    }
+  }
+
+  // Sin situación, el estado de cita decide
+  switch (estadoCita) {
+    case 'Nueva':
+      return 'Agendado (Nuevo)'
+    case 'Confirmada':
+      return 'Agendado (Confirmado)'
+    case 'Asistido':
+      return 'Post Llamada'
     default:
       return null
   }
