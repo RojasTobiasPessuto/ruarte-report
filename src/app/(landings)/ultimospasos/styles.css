@@ -30,11 +30,17 @@ body {
 
 /* ===== HEADER ===== */
 .up-header {
-  padding: 20px 0;
+  padding: 24px 0;
   border-bottom: 1px solid var(--border);
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-.up-logo-img { height: 48px; width: auto; }
+.up-header .up-container {
+  display: flex;
+  justify-content: center;
+}
+.up-logo-img { height: 72px; width: auto; display: block; margin: 0 auto; }
 
 /* ===== HERO ===== */
 .up-hero {
@@ -343,8 +349,8 @@ body {
 @media (max-width: 480px) {
   .up-container { padding: 0 14px; }
 
-  .up-header { padding: 12px 0; }
-  .up-logo-img { height: 28px; }
+  .up-header { padding: 14px 0; }
+  .up-logo-img { height: 44px; }
 
   .up-hero { padding: 32px 0 20px; }
   .up-hero-badge { font-size: 0.72rem; padding: 8px 14px; letter-spacing: 0; }
