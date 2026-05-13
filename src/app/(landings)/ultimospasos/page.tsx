@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './styles.css';
 
 const LOGO_URL = 'https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/69e2c5cdaa2fdcccf64c3d65.png';
-const VIDEO_URL = 'https://assets.cdn.filesafe.space/KtUHW6Xfym4HTBF8Ujq8/media/69c146bd6f101754392753da.mov';
+const VIDEO_URL = 'https://assets.cdn.filesafe.space/52BA1ANBkC1zh16RV6WV/media/6a04efecc56db4013f6a5bbd.mp4';
 const VIDEO_POSTER = 'https://assets.cdn.filesafe.space/KtUHW6Xfym4HTBF8Ujq8/media/transcoded_videos/25e8fedf01b5178b.jpg';
 
 const LOGOS = [
