@@ -136,7 +136,7 @@ export default function PrecallLanding() {
       <section data-block="credentials" style={{ paddingTop: '0px', paddingBottom: '35px' }}>
         <div className="pc-container">
           <div className="pc-sec-header pc-animate">
-            <img src={LOGO_URL} alt="Ruarte Reports" style={{ height: '85px', width: 'auto', marginBottom: '16px' }} />
+            <img src={LOGO_URL} alt="Ruarte Reports" className="pc-logo-img" style={{ marginBottom: '16px', display: 'block', marginLeft: 'auto', marginRight: 'auto' }} />
             <h2 id="creds-h2" style={{ fontSize: '25px' }}>Nuestros fundamentos son respaldados por historial real</h2>
             <p>Somos la firma de análisis técnico con más trayectoria de Latinoamérica.</p>
           </div>
