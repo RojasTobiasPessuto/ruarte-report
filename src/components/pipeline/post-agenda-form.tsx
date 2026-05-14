@@ -121,11 +121,16 @@ export function PostAgendaForm({
     // --- Lógica Estricta de Validación Frontend ---
     const missingFields: string[] = []
 
-    if (!estadoCita) missingFields.push('Estado de la Cita')
-    if (!programa) missingFields.push('Programa')
-    if (!situacion) missingFields.push('Situación')
+    // Estados terminales: la cita no se concretó → solo se pide estado.
+    const isTerminalEstado = estadoCita === 'No Asistido' || estadoCita === 'Cancelada'
 
-    if (estadoCita && programa && situacion && estadoCita !== 'No Asistido') {
+    if (!estadoCita) missingFields.push('Estado de la Cita')
+    if (!isTerminalEstado) {
+      if (!programa) missingFields.push('Programa')
+      if (!situacion) missingFields.push('Situación')
+    }
+
+    if (estadoCita && !isTerminalEstado && programa && situacion) {
       if (situacion === 'Seguimiento' && !fechaSeguimiento) {
         missingFields.push('Fecha Próximo Seguimiento')
       }

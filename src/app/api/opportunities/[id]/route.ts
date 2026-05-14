@@ -233,8 +233,8 @@ export async function PATCH(
 
     let isCompleted = false
 
-    if (evalEstado === 'No Asistido') {
-      isCompleted = true // Exception 1: No asistió, no se pide nada más.
+    if (evalEstado === 'No Asistido' || evalEstado === 'Cancelada') {
+      isCompleted = true // Exception 1: estado terminal (no asistió / cancelada), no se pide nada más.
     } else if (evalEstado && evalPrograma && evalSituacion) {
       isCompleted = true
 
