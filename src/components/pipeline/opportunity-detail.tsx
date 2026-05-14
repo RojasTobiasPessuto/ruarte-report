@@ -27,6 +27,7 @@ export function OpportunityDetail({
   canChangeOwner = false,
   canViewAll = false,
   isAdmin = false,
+  onRefresh,
 }: {
   opportunity: Opportunity
   sales: Sale[]
@@ -38,6 +39,7 @@ export function OpportunityDetail({
   canChangeOwner?: boolean
   canViewAll?: boolean
   isAdmin?: boolean
+  onRefresh?: () => void | Promise<void>
 }) {
   const [showForm, setShowForm] = useState(false)
   const [isChangingOwner, setIsChangingOwner] = useState(false)
@@ -249,7 +251,13 @@ export function OpportunityDetail({
           onClose={() => setShowForm(false)}
           onSaved={() => {
             setShowForm(false)
-            router.refresh()
+            // Si estamos dentro del modal, refrescamos sus datos locales.
+            // Si no, usamos router.refresh() para refrescar el server route.
+            if (onRefresh) {
+              onRefresh()
+            } else {
+              router.refresh()
+            }
           }}
         />
       )}
@@ -270,7 +278,13 @@ export function OpportunityDetail({
                 canCreatePayment={canCreatePayment}
                 canEditPayment={canEditPayment}
                 isAdmin={isAdmin}
-                onUpdate={() => router.refresh()}
+                onUpdate={() => {
+                  if (onRefresh) {
+                    onRefresh()
+                  } else {
+                    router.refresh()
+                  }
+                }}
               />
             ))}
           </div>

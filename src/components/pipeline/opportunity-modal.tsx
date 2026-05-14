@@ -32,35 +32,44 @@ export function OpportunityModal({
   const [closers, setClosers] = useState<Closer[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true)
-        const res = await fetch(`/api/opportunities/${opportunityId}`)
-        if (!res.ok) throw new Error('Error al cargar la oportunidad')
-        const data = await res.json()
-        
-        setOpportunity(data.opportunity)
-        setSales(data.sales || [])
-        setPaymentTypes(data.paymentTypes || [])
-        setClosers(data.closers || [])
-      } catch (error) {
-        console.error(error)
+  async function loadData(showSpinner = true) {
+    try {
+      if (showSpinner) setLoading(true)
+      const res = await fetch(`/api/opportunities/${opportunityId}`)
+      if (!res.ok) throw new Error('Error al cargar la oportunidad')
+      const data = await res.json()
+
+      setOpportunity(data.opportunity)
+      setSales(data.sales || [])
+      setPaymentTypes(data.paymentTypes || [])
+      setClosers(data.closers || [])
+    } catch (error) {
+      console.error(error)
+      if (showSpinner) {
         alert('Error al cargar los datos')
         onClose()
-      } finally {
-        setLoading(false)
       }
+    } finally {
+      if (showSpinner) setLoading(false)
     }
+  }
 
-    loadData()
-    
+  useEffect(() => {
+    loadData(true)
+
     // Lock scroll
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = 'unset'
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opportunityId])
+
+  // Re-fetch los datos sin remontar el modal (usado después de guardar form/pago)
+  async function refresh() {
+    await loadData(false)
+    if (onUpdate) onUpdate()
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
@@ -105,6 +114,7 @@ export function OpportunityModal({
                 canEditPayment={canEditPayment}
                 canChangeOwner={canChangeOwner}
                 isAdmin={isAdmin}
+                onRefresh={refresh}
               />
             </div>
           ) : null}
