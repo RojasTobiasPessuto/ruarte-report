@@ -1,26 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
+import { getCurrentUser, hasPermission, isAdmin } from '@/lib/permissions'
 import { parseFilename, parseDocContent, toCallAnalysis } from '@/lib/import-parser'
 import mammoth from 'mammoth'
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify user is admin
-    const supabase = await createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const ctx = await getCurrentUser()
+    if (!ctx) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-    if (!user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
-
-    const { data: appUser } = await supabase
-      .from('app_users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (appUser?.role !== 'admin') {
-      return NextResponse.json({ error: 'Solo administradores pueden importar' }, { status: 403 })
+    if (!isAdmin(ctx) && !hasPermission(ctx, 'importar_llamadas')) {
+      return NextResponse.json({ error: 'Sin permisos para importar' }, { status: 403 })
     }
 
     const formData = await request.formData()

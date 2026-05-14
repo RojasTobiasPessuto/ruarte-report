@@ -36,8 +36,8 @@ export default async function PipelinePage({
   const ctx = await requireAuth()
   const params = await searchParams
 
-  // Permitir acceso si es admin, o si puede llenar post-agenda, o si puede ver todas las oportunidades
-  if (!isAdmin(ctx) && !hasPermission(ctx, 'can_fill_post_agenda') && !hasPermission(ctx, 'can_view_all_opportunities')) {
+  // Permitir acceso si es admin o si tiene visibilidad del menú Oportunidades
+  if (!isAdmin(ctx) && !hasPermission(ctx, 'ver_oportunidades')) {
     redirect(params.embed === 'true' ? '/dashboard?embed=true' : '/dashboard')
   }
 
@@ -57,7 +57,7 @@ export default async function PipelinePage({
     .order('created_at', { ascending: false })
 
   // Filtrar por closer según permisos
-  const viewAllOpps = isAdmin(ctx) || hasPermission(ctx, 'can_view_all_opportunities')
+  const viewAllOpps = isAdmin(ctx) || hasPermission(ctx, 'ver_todas_oportunidades')
   if (!viewAllOpps) {
     if (!ctx.appUser.closer_id) {
       return (
@@ -148,10 +148,10 @@ export default async function PipelinePage({
   const closersArray = (closers || []) as Closer[]
 
   const userIsAdmin = isAdmin(ctx)
-  const canFillForm = userIsAdmin || hasPermission(ctx, 'can_fill_post_agenda')
-  const canCreatePayment = userIsAdmin || hasPermission(ctx, 'can_create_payment')
-  const canEditPayment = userIsAdmin || hasPermission(ctx, 'can_edit_payment')
-  const canChangeOwner = userIsAdmin || hasPermission(ctx, 'can_view_all_opportunities')
+  const canFillForm = userIsAdmin || hasPermission(ctx, 'editar_oportunidades')
+  const canCreatePayment = userIsAdmin || hasPermission(ctx, 'crear_pago')
+  const canEditPayment = userIsAdmin || hasPermission(ctx, 'editar_pago')
+  const canChangeOwner = userIsAdmin || hasPermission(ctx, 'editar_todas_oportunidades')
 
   // Stats para las tarjetas (basadas en todas las opps filtradas)
   const total = allOpps.length

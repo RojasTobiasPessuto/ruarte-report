@@ -62,7 +62,7 @@ export async function GET(
   if (!ctx) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const userIsAdmin = isAdmin(ctx)
-  if (!hasPermission(ctx, 'can_fill_post_agenda') && !userIsAdmin) {
+  if (!hasPermission(ctx, 'editar_oportunidades') && !userIsAdmin) {
     return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
   }
 
@@ -87,8 +87,8 @@ export async function GET(
 
   const opp = opportunity as Opportunity
 
-  // Check access: si no tiene can_view_all_opportunities, debe ser suyo
-  const viewAll = userIsAdmin || hasPermission(ctx, 'can_view_all_opportunities')
+  // Check access: si no tiene ver_todas_oportunidades, debe ser suyo
+  const viewAll = userIsAdmin || hasPermission(ctx, 'ver_todas_oportunidades')
   if (!viewAll) {
     if (opp.closer_id !== ctx.appUser.closer_id) {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
@@ -147,7 +147,7 @@ export async function PATCH(
 
   const userIsAdmin = isAdmin(ctx)
 
-  if (!hasPermission(ctx, 'can_fill_post_agenda') && !userIsAdmin) {
+  if (!hasPermission(ctx, 'editar_oportunidades') && !userIsAdmin) {
     return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
   }
 
@@ -163,11 +163,11 @@ export async function PATCH(
   if (!opp) return NextResponse.json({ error: 'No encontrada' }, { status: 404 })
 
   // Lógica de permisos de edición:
-  // 1. Admin o can_manage_leads: edita cualquier cosa siempre en cualquier etapa.
-  // 2. Manager (can_view_all_opportunities): edita cualquier oportunidad pero sujeto a etapas permitidas (si no tiene can_manage_leads).
+  // 1. Admin o editar_todas_oportunidades: edita cualquier cosa siempre en cualquier etapa.
+  // 2. ver_todas_oportunidades (sin editar_todas): edita cualquier oportunidad pero sujeto a etapas permitidas.
   // 3. Closer: solo edita sus propias oportunidades en etapas permitidas.
-  const canEditAny = userIsAdmin || hasPermission(ctx, 'can_view_all_opportunities')
-  const canBypassStage = userIsAdmin || hasPermission(ctx, 'can_manage_leads')
+  const canEditAny = userIsAdmin || hasPermission(ctx, 'ver_todas_oportunidades')
+  const canBypassStage = userIsAdmin || hasPermission(ctx, 'editar_todas_oportunidades')
   const EDITABLE_STAGES_FOR_NON_ADMIN = ['Post Llamada', 'Seguimiento']
 
   if (!canBypassStage) {
@@ -305,7 +305,7 @@ export async function PATCH(
   // Owner change logic
   let newGhlAssignedTo: string | null = null
   if (closer_id && closer_id !== opp.closer_id) {
-    if (!userIsAdmin && !hasPermission(ctx, 'can_view_all_opportunities')) {
+    if (!userIsAdmin && !hasPermission(ctx, 'editar_todas_oportunidades')) {
       return NextResponse.json({ error: 'No tenés permisos para cambiar el dueño de la oportunidad' }, { status: 403 })
     }
     updateData.closer_id = closer_id

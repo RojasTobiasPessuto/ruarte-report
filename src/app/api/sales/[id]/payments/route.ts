@@ -19,7 +19,7 @@ export async function POST(
   const ctx = await getCurrentUser()
   if (!ctx) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  if (!hasPermission(ctx, 'can_create_payment') && !isAdmin(ctx)) {
+  if (!hasPermission(ctx, 'crear_pago') && !isAdmin(ctx)) {
     return NextResponse.json({ error: 'Sin permisos para crear pagos' }, { status: 403 })
   }
 

@@ -14,7 +14,7 @@ export async function DELETE(
   const { id } = await params
   const ctx = await getCurrentUser()
   if (!ctx) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-  if (!hasPermission(ctx, 'can_edit_payment') && !isAdmin(ctx)) {
+  if (!hasPermission(ctx, 'editar_pago') && !isAdmin(ctx)) {
     return NextResponse.json({ error: 'Solo admin puede eliminar pagos' }, { status: 403 })
   }
 
@@ -32,7 +32,7 @@ export async function PATCH(
   const { id } = await params
   const ctx = await getCurrentUser()
   if (!ctx) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-  if (!hasPermission(ctx, 'can_edit_payment') && !isAdmin(ctx)) {
+  if (!hasPermission(ctx, 'editar_pago') && !isAdmin(ctx)) {
     return NextResponse.json({ error: 'Solo admin puede editar pagos' }, { status: 403 })
   }
 

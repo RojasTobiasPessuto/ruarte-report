@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 
 export default async function ClosersPage() {
   const ctx = await requireAuth()
-  if (!isAdmin(ctx) && !hasPermission(ctx, 'can_view_all')) {
+  if (!isAdmin(ctx) && !hasPermission(ctx, 'ver_closers')) {
     redirect('/dashboard/pipeline')
   }
   const supabase = await createServerSupabaseClient()

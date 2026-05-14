@@ -10,12 +10,9 @@ import {
   Users,
   UserCheck,
   Settings,
-  LogOut,
-  Upload,
   Menu,
   X,
   List,
-  Wallet,
   DollarSign,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -34,14 +31,13 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, requiredPermission: 'can_view_all' },
-  { href: '/dashboard/calls', label: 'Llamadas', icon: Phone, requiredPermission: 'can_view_all_calls' },
-  { href: '/dashboard/pipeline', label: 'Oportunidades', icon: List, requiredPermission: 'can_fill_post_agenda' },
-  { href: '/dashboard/closers', label: 'Closers', icon: Users, requiredPermission: 'can_view_all' },
-  { href: '/dashboard/leads', label: 'Leads', icon: UserCheck, requiredPermission: 'can_view_leads' },
-  { href: '/dashboard/payments', label: 'Ventas', icon: DollarSign, requiredPermission: 'can_view_all_payments' },
-  { href: '/dashboard/import', label: 'Importar', icon: Upload, requiredPermission: 'can_import' },
-  { href: '/dashboard/settings', label: 'Configuración', icon: Settings, adminOnly: true },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, requiredPermission: 'ver_dashboard' },
+  { href: '/dashboard/calls', label: 'Llamadas', icon: Phone, requiredPermission: 'ver_llamadas' },
+  { href: '/dashboard/pipeline', label: 'Oportunidades', icon: List, requiredPermission: 'ver_oportunidades' },
+  { href: '/dashboard/closers', label: 'Closers', icon: Users, requiredPermission: 'ver_closers' },
+  { href: '/dashboard/leads', label: 'Leads', icon: UserCheck, requiredPermission: 'ver_leads' },
+  { href: '/dashboard/payments', label: 'Ventas', icon: DollarSign, requiredPermission: 'ver_ventas' },
+  { href: '/dashboard/settings', label: 'Configuración', icon: Settings, requiredPermission: 'ver_configuracion' },
 ]
 
 export function Sidebar() {

@@ -101,7 +101,7 @@ export async function requireAuth(): Promise<UserContext> {
 }
 
 /**
- * Helper para saber si el usuario tiene role 'admin' (role legacy o role_id con can_view_all).
+ * Helper para saber si el usuario tiene role 'admin' (role legacy o role.name === 'admin').
  */
 export function isAdmin(ctx: UserContext | null): boolean {
   if (!ctx) return false
@@ -119,7 +119,7 @@ export function isCloser(ctx: UserContext | null): boolean {
 
 /**
  * Devuelve el closer_id del usuario actual para filtrar queries.
- * Si el usuario tiene can_view_all_* lo devuelve null (sin filtro).
+ * Si el usuario tiene ver_todas_* lo devuelve null (sin filtro).
  */
 export function getCloserFilter(
   ctx: UserContext | null,

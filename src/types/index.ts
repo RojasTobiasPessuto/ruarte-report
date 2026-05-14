@@ -14,18 +14,35 @@ export interface Role {
   id: string;
   name: 'admin' | 'manager' | 'closer' | 'setter' | string;
   description: string | null;
-  can_view_all: boolean;
-  can_manage_users: boolean;
-  can_manage_closers: boolean;
-  can_view_leads: boolean;
-  can_manage_leads: boolean;
-  can_import: boolean;
-  can_view_all_opportunities: boolean;
-  can_fill_post_agenda: boolean;
-  can_create_payment: boolean;
-  can_edit_payment: boolean;
-  can_view_all_payments: boolean;
-  can_view_all_calls: boolean;
+
+  // ── Visibilidad de menús (sidebar) ──
+  ver_dashboard: boolean;
+  ver_llamadas: boolean;
+  ver_oportunidades: boolean;
+  ver_closers: boolean;
+  ver_leads: boolean;
+  ver_ventas: boolean;
+  ver_configuracion: boolean;
+
+  // ── Sub-flags Oportunidades ──
+  ver_todas_oportunidades: boolean;
+  editar_oportunidades: boolean;
+  editar_todas_oportunidades: boolean;
+
+  // ── Sub-flags Llamadas ──
+  ver_todas_llamadas: boolean;
+  importar_llamadas: boolean;
+
+  // ── Sub-flags Ventas ──
+  ver_todas_ventas: boolean;
+  crear_pago: boolean;
+  editar_pago: boolean;
+
+  // ── Sub-flags Otros (a redefinir cuando se aborden esos menús) ──
+  editar_leads: boolean;
+  editar_closers: boolean;
+  editar_usuarios: boolean;
+
   created_at: string;
 }
 

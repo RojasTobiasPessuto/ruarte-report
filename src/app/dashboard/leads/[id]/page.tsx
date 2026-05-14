@@ -26,7 +26,7 @@ export default async function LeadDetailPage({
 }) {
   const { id } = await params
 
-  await requirePermission('can_view_leads')
+  await requirePermission('ver_leads')
 
   const supabase = await createServerSupabaseClient()
 

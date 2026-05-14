@@ -16,8 +16,8 @@ export default async function OpportunityDetailPage({
   const { id } = await params
   const ctx = await requireAuth()
 
-  // Permitir acceso si es admin, o si puede llenar post-agenda, o si puede ver todas las oportunidades
-  if (!isAdmin(ctx) && !hasPermission(ctx, 'can_fill_post_agenda') && !hasPermission(ctx, 'can_view_all_opportunities')) {
+  // Permitir acceso si es admin o si tiene visibilidad del menú Oportunidades
+  if (!isAdmin(ctx) && !hasPermission(ctx, 'ver_oportunidades')) {
     redirect('/dashboard')
   }
 
@@ -39,8 +39,8 @@ export default async function OpportunityDetailPage({
 
   const opp = opportunity as Opportunity
 
-  // Check access: si no tiene can_view_all_opportunities, debe ser suyo
-  const viewAll = isAdmin(ctx) || hasPermission(ctx, 'can_view_all_opportunities')
+  // Check access: si no tiene ver_todas_oportunidades, debe ser suyo
+  const viewAll = isAdmin(ctx) || hasPermission(ctx, 'ver_todas_oportunidades')
   if (!viewAll) {
     if (opp.closer_id !== ctx.appUser.closer_id) {
       redirect('/dashboard/pipeline')
@@ -73,25 +73,26 @@ export default async function OpportunityDetailPage({
     .eq('active', true)
     .order('name')
 
-  // Get all active closers for owner change (only for admins/managers)
-  const canChangeOwner = isAdmin(ctx) || hasPermission(ctx, 'can_view_all_opportunities')
+  // Get all active closers for owner change (admin + editar_todas_oportunidades)
+  const canChangeOwner = isAdmin(ctx) || hasPermission(ctx, 'editar_todas_oportunidades')
   const { data: closers } = canChangeOwner
     ? await supabase.from('closers').select('*').eq('active', true).order('name')
     : { data: [] }
 
-  const canViewAll = isAdmin(ctx) || hasPermission(ctx, 'can_view_all_opportunities')
+  const canViewAll = isAdmin(ctx) || hasPermission(ctx, 'ver_todas_oportunidades')
   const isOwnOpp = !!ctx.appUser.closer_id && opp.closer_id === ctx.appUser.closer_id
-  
-  // Admin y Manager (canViewAll) editan cualquier oportunidad. 
-  // Closers solo las suyas (isOwnOpp).
-  const EDITABLE_STAGES = ['Post Llamada', 'Seguimiento']
-  const canFillForm = isAdmin(ctx) 
-    || canViewAll
-    || (hasPermission(ctx, 'can_fill_post_agenda') && EDITABLE_STAGES.includes(opp.pipeline_stage || '') && isOwnOpp)
 
-  // Pagos: admin y manager cualquier venta; closers solo las suyas.
-  const canCreatePayment = canViewAll || (hasPermission(ctx, 'can_create_payment') && isOwnOpp)
-  const canEditPayment = canViewAll || (hasPermission(ctx, 'can_edit_payment') && isOwnOpp)
+  // Admin y manager (editar_todas_oportunidades) editan cualquier opp en cualquier stage.
+  // Closer (editar_oportunidades) solo edita sus propias opps en stages editables.
+  const EDITABLE_STAGES = ['Post Llamada', 'Seguimiento']
+  const canFillForm = isAdmin(ctx)
+    || hasPermission(ctx, 'editar_todas_oportunidades')
+    || (hasPermission(ctx, 'editar_oportunidades') && EDITABLE_STAGES.includes(opp.pipeline_stage || '') && isOwnOpp)
+
+  // Pagos: necesita acceso a la opp (ver_todas o ser propia) + el flag específico.
+  const hasOppAccess = canViewAll || isOwnOpp
+  const canCreatePayment = isAdmin(ctx) || (hasPermission(ctx, 'crear_pago') && hasOppAccess)
+  const canEditPayment = isAdmin(ctx) || (hasPermission(ctx, 'editar_pago') && hasOppAccess)
 
   return (
     <div>

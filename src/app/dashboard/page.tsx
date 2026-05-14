@@ -163,8 +163,8 @@ export default async function DashboardPage({
   const ctx = await requireAuth()
   const params = await searchParams
 
-  // Solo admin y roles con can_view_all pueden ver el dashboard (closer solo pipeline)
-  if (!isAdmin(ctx) && !hasPermission(ctx, 'can_view_all')) {
+  // Solo admin y roles con ver_dashboard pueden ver el dashboard (closer solo pipeline)
+  if (!isAdmin(ctx) && !hasPermission(ctx, 'ver_dashboard')) {
     redirect(params.embed === 'true' ? '/dashboard/pipeline?embed=true' : '/dashboard/pipeline')
   }
 

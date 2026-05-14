@@ -16,7 +16,7 @@ export default async function VentasPage({
 }: {
   searchParams: Promise<{ from?: string; to?: string; q?: string }>
 }) {
-  await requirePermission('can_view_all_payments')
+  await requirePermission('ver_ventas')
   const params = await searchParams
   const supabase = await createServerSupabaseClient()
 

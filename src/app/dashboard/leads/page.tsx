@@ -33,8 +33,8 @@ export default async function LeadsPage({
 }) {
   const params = await searchParams
 
-  // Requiere permiso can_view_leads
-  const ctx = await requirePermission('can_view_leads')
+  // Requiere permiso ver_leads
+  const ctx = await requirePermission('ver_leads')
   const userIsAdmin = isAdmin(ctx)
 
   const supabase = await createServerSupabaseClient()
