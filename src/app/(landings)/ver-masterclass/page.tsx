@@ -1,10 +1,21 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import './styles.css';
 
+const CALENDAR_BASE = 'https://ruartereports.org/calendario-3986';
+
 export default function MasterclassLanding() {
+  // Reenvía la query string entrante (UTMs, fuente, cuenta, etc.) al calendario.
+  const [calendarUrl, setCalendarUrl] = useState(CALENDAR_BASE);
+
   useEffect(() => {
+
+  // Forward query string a los CTAs
+  const search = window.location.search;
+  if (search && search.length > 1) {
+    setCalendarUrl(`${CALENDAR_BASE}${search}`);
+  }
 
   // Scroll animations
   const obs = new IntersectionObserver(entries => {
@@ -69,7 +80,7 @@ export default function MasterclassLanding() {
   <div className="container" style={{textAlign: 'center'}}>
     <p style={{fontSize: 'clamp(15px,4vw,18px)', marginBottom: '8px'}}><strong>¿Querés aplicar esto a tu capital?</strong></p>
     <p style={{fontSize: 'clamp(13px,3.5vw,15px)', color: 'var(--text2)', marginBottom: '24px'}}>Agendá una llamada gratuita con nuestro equipo.</p>
-    <a href="https://ruartereports.org/calendario-3986" className="btn btn--lg" id="cta-video-btn">
+    <a href={calendarUrl} className="btn btn--lg" id="cta-video-btn">
       Agendar mi llamada gratuita <span className="arrow">→</span>
     </a>
   </div>
@@ -229,7 +240,7 @@ export default function MasterclassLanding() {
       <p id="cta-final-p">Agendá una llamada gratuita con nuestro equipo. Sin compromisos.</p>
     </div>
     <div className="fade" style={{marginTop: '-20px'}}>
-      <a href="https://ruartereports.org/calendario-3986" className="btn btn--lg" id="cta-final-btn">
+      <a href={calendarUrl} className="btn btn--lg" id="cta-final-btn">
         Agendar mi llamada gratuita <span className="arrow">→</span>
       </a>
     </div>
@@ -246,7 +257,7 @@ export default function MasterclassLanding() {
 {/* STICKY */}
 <div className="sticky" id="sticky">
   <p><strong>¿Listo para posicionarte?</strong> Agendá tu llamada gratuita con el equipo.</p>
-  <a href="https://ruartereports.org/calendario-3986" className="btn" id="sticky-btn">Agendar llamada <span className="arrow">→</span></a>
+  <a href={calendarUrl} className="btn" id="sticky-btn">Agendar llamada <span className="arrow">→</span></a>
 </div>
 
 
